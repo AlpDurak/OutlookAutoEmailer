@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(jar tf:*)",
+      "Bash(javap -classpath ~/.m2/repository/com/microsoft/graph/microsoft-graph/5.77.0/microsoft-graph-5.77.0.jar com.microsoft.graph.models.Contact)",
+      "Bash(javap -classpath ~/.m2/repository/com/microsoft/graph/microsoft-graph/5.77.0/microsoft-graph-5.77.0.jar com.microsoft.graph.models.EmailAddress)",
+      "Bash(javap -classpath ~/.m2/repository/com/microsoft/graph/microsoft-graph/5.77.0/microsoft-graph-5.77.0.jar com.microsoft.graph.requests.GraphServiceClient)",
+      "Bash(javap -classpath ~/.m2/repository/com/microsoft/graph/microsoft-graph/5.77.0/microsoft-graph-5.77.0.jar com.microsoft.graph.requests.GraphServiceClient$Builder)",
+      "Bash(javap -classpath ~/.m2/repository/com/microsoft/graph/microsoft-graph/5.77.0/microsoft-graph-5.77.0.jar com.microsoft.graph.models.Entity)",
+      "Bash(javap -classpath ~/.m2/repository/com/microsoft/graph/microsoft-graph/5.77.0/microsoft-graph-5.77.0.jar com.microsoft.graph.authentication.IAuthenticationProvider)",
+      "Bash(javap -classpath ~/.m2/repository/com/microsoft/graph/microsoft-graph-core/2.0.21/microsoft-graph-core-2.0.21.jar com.microsoft.graph.authentication.IAuthenticationProvider)",
+      "Bash(javap -classpath ~/.m2/repository/com/microsoft/graph/microsoft-graph/5.77.0/microsoft-graph-5.77.0.jar:~/.m2/repository/com/microsoft/graph/microsoft-graph-core/2.0.21/microsoft-graph-core-2.0.21.jar com.microsoft.graph.requests.ContactCollectionPage)",
+      "Bash(javap -classpath ~/.m2/repository/com/microsoft/graph/microsoft-graph/5.77.0/microsoft-graph-5.77.0.jar:~/.m2/repository/com/microsoft/graph/microsoft-graph-core/2.0.21/microsoft-graph-core-2.0.21.jar com.microsoft.graph.requests.ContactCollectionRequest)",
+      "Bash(javap -classpath ~/.m2/repository/com/microsoft/graph/microsoft-graph/5.77.0/microsoft-graph-5.77.0.jar:~/.m2/repository/com/microsoft/graph/microsoft-graph-core/2.0.21/microsoft-graph-core-2.0.21.jar com.microsoft.graph.requests.ContactCollectionRequestBuilder)",
+      "Bash(javap -cp ~/.m2/repository/com/microsoft/graph/microsoft-graph/5.77.0/microsoft-graph-5.77.0.jar:~/.m2/repository/com/microsoft/graph/microsoft-graph-core/2.0.21/microsoft-graph-core-2.0.21.jar com.microsoft.graph.requests.ContactCollectionRequestBuilder)",
+      "Bash(CP=\"$HOME/.m2/repository/com/microsoft/graph/microsoft-graph/5.77.0/microsoft-graph-5.77.0.jar:$HOME/.m2/repository/com/microsoft/graph/microsoft-graph-core/2.0.21/microsoft-graph-core-2.0.21.jar\")",
+      "Bash(javap -cp \"$CP\" com.microsoft.graph.requests.ContactCollectionRequestBuilder)",
+      "Bash(CP=$HOME/.m2/repository/com/microsoft/graph/microsoft-graph/5.77.0/microsoft-graph-5.77.0.jar:$HOME/.m2/repository/com/microsoft/graph/microsoft-graph-core/2.0.21/microsoft-graph-core-2.0.21.jar javap -cp $CP com.microsoft.graph.requests.ContactCollectionResponse 2)",
+      "Bash(/dev/null echo:*)",
+      "Bash(CP=$HOME/.m2/repository/com/microsoft/graph/microsoft-graph/5.77.0/microsoft-graph-5.77.0.jar:$HOME/.m2/repository/com/microsoft/graph/microsoft-graph-core/2.0.21/microsoft-graph-core-2.0.21.jar javap -cp $CP com.microsoft.graph.requests.ContactCollectionPage)",
+      "Bash(CP=$HOME/.m2/repository/com/microsoft/graph/microsoft-graph/5.77.0/microsoft-graph-5.77.0.jar:$HOME/.m2/repository/com/microsoft/graph/microsoft-graph-core/2.0.21/microsoft-graph-core-2.0.21.jar jar xf $HOME/.m2/repository/com/microsoft/graph/microsoft-graph/5.77.0/microsoft-graph-5.77.0.jar com/microsoft/graph/requests/ContactCollectionResponse.class -C /tmp 2)",
+      "Bash(/dev/null javap:*)",
+      "Read(//tmp/**)",
+      "Bash(jar xf:*)",
+      "Bash(javap com/microsoft/graph/http/BaseCollectionResponse.class)",
+      "Bash(mvn compile:*)"
+    ]
+  }
+}

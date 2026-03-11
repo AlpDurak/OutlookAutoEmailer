@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="15"
+      xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.outlookautoemailier.ui.ComposeController">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- ── Page title ──────────────────────────────────────────────────────── -->
+    <Label text="Compose Email" styleClass="page-title"/>
+
+    <!-- ── Template toolbar ────────────────────────────────────────────────── -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Template Name:"/>
+        <TextField fx:id="templateNameField"
+                   promptText="My Template"
+                   prefWidth="180"/>
+        <Button text="Save Template" onAction="#onSaveTemplate"/>
+        <Button text="Load Template" onAction="#onLoadTemplate"/>
+    </HBox>
+
+    <Separator/>
+
+    <!-- ── Subject row ─────────────────────────────────────────────────────── -->
+    <Label text="Subject:"/>
+    <HBox spacing="6" alignment="CENTER_LEFT">
+        <TextField fx:id="subjectField"
+                   promptText="Enter email subject…"
+                   HBox.hgrow="ALWAYS"/>
+        <!-- Variable-insertion buttons targeting the subject field -->
+        <Button text="{{firstName}}" onAction="#onInsertVariable" userData="subject"/>
+        <Button text="{{lastName}}"  onAction="#onInsertVariable" userData="subject"/>
+        <Button text="{{email}}"     onAction="#onInsertVariable" userData="subject"/>
+        <Button text="{{company}}"   onAction="#onInsertVariable" userData="subject"/>
+    </HBox>
+
+    <!-- ── Body area ───────────────────────────────────────────────────────── -->
+    <Label text="Message Body:"/>
+    <TextArea fx:id="bodyArea"
+              prefRowCount="15"
+              wrapText="true"
+              promptText="Write your email body here. Use the buttons below to insert personalization variables."
+              VBox.vgrow="ALWAYS"/>
+
+    <!-- Variable-insertion buttons targeting the body area -->
+    <HBox spacing="6">
+        <Button text="{{firstName}}" onAction="#onInsertVariable" userData="body"/>
+        <Button text="{{lastName}}"  onAction="#onInsertVariable" userData="body"/>
+        <Button text="{{email}}"     onAction="#onInsertVariable" userData="body"/>
+        <Button text="{{company}}"   onAction="#onInsertVariable" userData="body"/>
+    </HBox>
+
+    <Separator/>
+
+    <!-- ── Footer: recipient count + actions ───────────────────────────────── -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label fx:id="recipientCountLabel" text="0 recipients selected"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Preview"      onAction="#onPreview"/>
+        <Button text="Send Emails"
+                styleClass="primary-button"
+                onAction="#onSendEmails"/>
+    </HBox>
+
+</VBox>

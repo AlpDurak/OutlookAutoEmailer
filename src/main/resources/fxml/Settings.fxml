@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="15"
+      xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.outlookautoemailier.ui.SettingsController">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- ── Page title ──────────────────────────────────────────────────────── -->
+    <Label text="Settings" styleClass="page-title"/>
+
+    <!-- ── Settings grid ──────────────────────────────────────────────────── -->
+    <GridPane hgap="16" vgap="14">
+
+        <columnConstraints>
+            <!-- Label column: fixed reasonable width -->
+            <ColumnConstraints minWidth="180" prefWidth="200" halignment="RIGHT"/>
+            <!-- Input column: grows with window -->
+            <ColumnConstraints minWidth="200" prefWidth="260" hgrow="ALWAYS"/>
+        </columnConstraints>
+
+        <!-- Row 0: Emails per hour -->
+        <Label text="Emails per hour:"
+               GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <Spinner fx:id="emailsPerHourSpinner"
+                 min="1" max="500" initialValue="100"
+                 editable="true" prefWidth="120"
+                 GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+        <!-- Row 1: Min delay (ms) -->
+        <Label text="Min delay (ms):"
+               GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+        <Spinner fx:id="minDelaySpinner"
+                 min="500" max="30000" initialValue="3000"
+                 editable="true" prefWidth="120"
+                 GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+        <!-- Row 2: Max delay (ms) -->
+        <Label text="Max delay (ms):"
+               GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+        <Spinner fx:id="maxDelaySpinner"
+                 min="1000" max="60000" initialValue="8000"
+                 editable="true" prefWidth="120"
+                 GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+        <!-- Row 3: SMTP Host -->
+        <Label text="SMTP Host:"
+               GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+        <TextField fx:id="smtpHostField"
+                   text="smtp.office365.com"
+                   prefWidth="240"
+                   GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+        <!-- Row 4: SMTP Port -->
+        <Label text="SMTP Port:"
+               GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+        <Spinner fx:id="smtpPortSpinner"
+                 min="1" max="65535" initialValue="587"
+                 editable="true" prefWidth="120"
+                 GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+
+        <!-- Row 5: Max retry attempts -->
+        <Label text="Max Retry Attempts:"
+               GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+        <Spinner fx:id="maxRetrySpinner"
+                 min="1" max="10" initialValue="3"
+                 editable="true" prefWidth="120"
+                 GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+
+    </GridPane>
+
+    <Separator/>
+
+    <!-- ── Footer: reset + save ────────────────────────────────────────────── -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button text="Reset to Defaults" onAction="#onReset"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Save Settings"
+                styleClass="primary-button"
+                onAction="#onSave"/>
+    </HBox>
+
+    <Label fx:id="saveStatusLabel" text=""/>
+
+</VBox>

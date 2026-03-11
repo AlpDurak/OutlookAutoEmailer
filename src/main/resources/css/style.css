@@ -1,0 +1,316 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   OutlookAutoEmailer — Global Stylesheet
+   Theme: dark sidebar + light content area
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Root / global defaults ──────────────────────────────────────────────── */
+.root {
+    -fx-background-color: #f4f4f4;
+    -fx-font-family: "Segoe UI", "Helvetica Neue", "Arial", sans-serif;
+    -fx-font-size: 13px;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────── */
+.sidebar {
+    -fx-background-color: #2c3e50;
+    -fx-text-fill: white;
+}
+
+/* ── App title inside sidebar ────────────────────────────────────────────── */
+.app-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ecf0f1;
+    -fx-padding: 15px 12px 15px 12px;
+    -fx-wrap-text: true;
+}
+
+/* ── Sidebar separator ───────────────────────────────────────────────────── */
+.sidebar .separator .line {
+    -fx-border-color: #3d5166;
+    -fx-border-width: 1px;
+}
+
+/* ── Navigation toggle buttons ───────────────────────────────────────────── */
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #bdc3c7;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 12px 20px 12px 20px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-cursor: hand;
+    -fx-background-radius: 0;
+    -fx-font-size: 13px;
+    -fx-max-width: Infinity;
+}
+
+.nav-button:hover {
+    -fx-background-color: #34495e;
+    -fx-text-fill: #ecf0f1;
+}
+
+.nav-button:selected {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.nav-button:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+/* ── Main content area ───────────────────────────────────────────────────── */
+.content-area {
+    -fx-background-color: white;
+}
+
+/* ── Page titles ─────────────────────────────────────────────────────────── */
+.page-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+/* ── Primary action button ───────────────────────────────────────────────── */
+.primary-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-padding: 8px 16px 8px 16px;
+    -fx-cursor: hand;
+    -fx-font-weight: bold;
+}
+
+.primary-button:hover {
+    -fx-background-color: #2980b9;
+}
+
+.primary-button:pressed {
+    -fx-background-color: #21618c;
+}
+
+/* ── Danger button ───────────────────────────────────────────────────────── */
+.danger-button {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-padding: 8px 16px 8px 16px;
+    -fx-cursor: hand;
+    -fx-font-weight: bold;
+}
+
+.danger-button:hover {
+    -fx-background-color: #c0392b;
+}
+
+.danger-button:pressed {
+    -fx-background-color: #a93226;
+}
+
+/* ── Connection status labels ────────────────────────────────────────────── */
+.status-connected {
+    -fx-text-fill: #27ae60;
+    -fx-font-weight: bold;
+}
+
+.status-disconnected {
+    -fx-text-fill: #e74c3c;
+}
+
+/* ── Version label (bottom of sidebar) ──────────────────────────────────── */
+.version-label {
+    -fx-text-fill: #7f8c8d;
+    -fx-font-size: 11px;
+    -fx-padding: 10px 0px 10px 0px;
+}
+
+/* ── TableView ───────────────────────────────────────────────────────────── */
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 1px;
+    -fx-table-cell-border-color: transparent;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #ecf0f1;
+}
+
+.table-view .column-header,
+.table-view .filler {
+    -fx-background-color: #ecf0f1;
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 0 1px 1px 0;
+    -fx-size: 34px;
+}
+
+.table-view .column-header .label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+    -fx-font-size: 12px;
+}
+
+/* Alternating row colors */
+.table-row-cell:even {
+    -fx-background-color: #ffffff;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #f8f9fa;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #d0e8f7;
+    -fx-text-fill: #2c3e50;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: #e8f4fd;
+}
+
+.table-view .table-cell {
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 6px 8px;
+    -fx-border-color: transparent;
+}
+
+/* ── Queue Dashboard: stat cards ────────────────────────────────────────── */
+.stat-card {
+    -fx-background-color: #f8f9fa;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 1px;
+    -fx-padding: 15px;
+    -fx-min-width: 120px;
+    -fx-alignment: CENTER;
+}
+
+.stat-count {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+.stat-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #7f8c8d;
+}
+
+/* ── ProgressBar ─────────────────────────────────────────────────────────── */
+.progress-bar {
+    -fx-accent: #3498db;
+}
+
+.progress-bar .track {
+    -fx-background-color: #ecf0f1;
+    -fx-background-radius: 4px;
+}
+
+.progress-bar .bar {
+    -fx-background-color: #3498db;
+    -fx-background-radius: 4px;
+    -fx-background-insets: 0;
+}
+
+/* ── TitledPane (AccountSetup cards) ────────────────────────────────────── */
+.titled-pane > .title {
+    -fx-background-color: #ecf0f1;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+.titled-pane > .content {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 1px;
+}
+
+/* ── TextFields & TextAreas ──────────────────────────────────────────────── */
+.text-field,
+.text-area {
+    -fx-background-color: white;
+    -fx-border-color: #ced4da;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 6px 10px;
+}
+
+.text-field:focused,
+.text-area:focused {
+    -fx-border-color: #3498db;
+    -fx-effect: dropshadow(gaussian, rgba(52,152,219,0.25), 4, 0, 0, 0);
+}
+
+/* ── Spinners ────────────────────────────────────────────────────────────── */
+.spinner {
+    -fx-background-color: white;
+    -fx-border-color: #ced4da;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+}
+
+.spinner:focused {
+    -fx-border-color: #3498db;
+}
+
+/* ── Scrollbars ──────────────────────────────────────────────────────────── */
+.scroll-bar:vertical .track,
+.scroll-bar:horizontal .track {
+    -fx-background-color: #f1f3f5;
+}
+
+.scroll-bar:vertical .thumb,
+.scroll-bar:horizontal .thumb {
+    -fx-background-color: #adb5bd;
+    -fx-background-radius: 4px;
+}
+
+.scroll-bar:vertical .thumb:hover,
+.scroll-bar:horizontal .thumb:hover {
+    -fx-background-color: #6c757d;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 2px;
+}
+
+/* ── Separator ───────────────────────────────────────────────────────────── */
+.separator .line {
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 1px;
+}
+
+/* ── Alert dialogs ───────────────────────────────────────────────────────── */
+.dialog-pane {
+    -fx-background-color: white;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: #f8f9fa;
+}
+
+/* ── Generic default button styling ─────────────────────────────────────── */
+.button {
+    -fx-background-color: #e9ecef;
+    -fx-text-fill: #2c3e50;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-padding: 7px 14px;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #dee2e6;
+}
+
+.button:pressed {
+    -fx-background-color: #ced4da;
+}

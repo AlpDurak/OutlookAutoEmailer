@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.outlookautoemailier.ui.MainController">
+
+    <!-- ═══════════════════════════════ LEFT SIDEBAR ═══════════════════════════════ -->
+    <left>
+        <VBox prefWidth="180" styleClass="sidebar" spacing="4">
+            <padding>
+                <Insets top="0" right="0" bottom="10" left="0"/>
+            </padding>
+
+            <!-- App title -->
+            <Label text="OutlookAutoEmailer" styleClass="app-title" wrapText="true">
+                <VBox.margin>
+                    <Insets top="16" right="12" bottom="4" left="12"/>
+                </VBox.margin>
+            </Label>
+
+            <Separator>
+                <VBox.margin>
+                    <Insets bottom="8"/>
+                </VBox.margin>
+            </Separator>
+
+            <!-- Navigation toggle group -->
+            <fx:define>
+                <ToggleGroup fx:id="navGroup"/>
+            </fx:define>
+
+            <ToggleButton fx:id="btnAccounts"
+                          text="Accounts"
+                          toggleGroup="$navGroup"
+                          styleClass="nav-button"
+                          maxWidth="Infinity"/>
+
+            <ToggleButton fx:id="btnContacts"
+                          text="Contacts"
+                          toggleGroup="$navGroup"
+                          styleClass="nav-button"
+                          maxWidth="Infinity"/>
+
+            <ToggleButton fx:id="btnCompose"
+                          text="Compose"
+                          toggleGroup="$navGroup"
+                          styleClass="nav-button"
+                          maxWidth="Infinity"/>
+
+            <ToggleButton fx:id="btnQueue"
+                          text="Queue"
+                          toggleGroup="$navGroup"
+                          styleClass="nav-button"
+                          maxWidth="Infinity"/>
+
+            <ToggleButton fx:id="btnSettings"
+                          text="Settings"
+                          toggleGroup="$navGroup"
+                          styleClass="nav-button"
+                          maxWidth="Infinity"/>
+
+            <!-- Spacer — pushes version label to the bottom -->
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <Label text="v1.0.0" styleClass="version-label">
+                <VBox.margin>
+                    <Insets left="12"/>
+                </VBox.margin>
+            </Label>
+        </VBox>
+    </left>
+
+    <!-- ═══════════════════════════════ CENTER CONTENT ═════════════════════════════ -->
+    <center>
+        <StackPane styleClass="content-area">
+
+            <fx:include fx:id="accountSetupPane"  source="AccountSetup.fxml"    visible="true"/>
+            <fx:include fx:id="contactListPane"   source="ContactList.fxml"     visible="false"/>
+            <fx:include fx:id="composePane"       source="Compose.fxml"         visible="false"/>
+            <fx:include fx:id="queueDashboardPane" source="QueueDashboard.fxml" visible="false"/>
+            <fx:include fx:id="settingsPane"      source="Settings.fxml"        visible="false"/>
+
+        </StackPane>
+    </center>
+
+</BorderPane>

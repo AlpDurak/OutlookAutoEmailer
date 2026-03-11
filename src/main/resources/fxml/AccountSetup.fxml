@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="20"
+      xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.outlookautoemailier.ui.AccountSetupController">
+
+    <padding>
+        <Insets top="30" right="30" bottom="30" left="30"/>
+    </padding>
+
+    <!-- Page heading -->
+    <Label text="Account Setup" styleClass="page-title"/>
+    <Separator/>
+
+    <!-- ══ Two account cards side-by-side ══════════════════════════════════ -->
+    <HBox spacing="20" fillHeight="true">
+
+        <!-- ── Source Account ─────────────────────────────────────────────── -->
+        <TitledPane text="Source Account" collapsible="false" HBox.hgrow="ALWAYS">
+            <VBox spacing="12">
+                <padding>
+                    <Insets top="12" right="16" bottom="16" left="16"/>
+                </padding>
+
+                <Label text="Used to read Outlook contacts." wrapText="true"/>
+
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="Status:"/>
+                    <Label fx:id="sourceStatusLabel"
+                           text="Not connected"
+                           styleClass="status-disconnected"/>
+                </HBox>
+
+                <Button fx:id="btnConnectSource"
+                        text="Connect Source Account"
+                        onAction="#onConnectSource"
+                        maxWidth="Infinity"/>
+
+                <Label fx:id="sourceEmailLabel" text="" wrapText="true"/>
+            </VBox>
+        </TitledPane>
+
+        <!-- ── Sender Account ─────────────────────────────────────────────── -->
+        <TitledPane text="Sender Account" collapsible="false" HBox.hgrow="ALWAYS">
+            <VBox spacing="12">
+                <padding>
+                    <Insets top="12" right="16" bottom="16" left="16"/>
+                </padding>
+
+                <Label text="Used to send outgoing emails." wrapText="true"/>
+
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="Status:"/>
+                    <Label fx:id="senderStatusLabel"
+                           text="Not connected"
+                           styleClass="status-disconnected"/>
+                </HBox>
+
+                <Button fx:id="btnConnectSender"
+                        text="Connect Sender Account"
+                        onAction="#onConnectSender"
+                        maxWidth="Infinity"/>
+
+                <Label fx:id="senderEmailLabel" text="" wrapText="true"/>
+            </VBox>
+        </TitledPane>
+
+    </HBox>
+</VBox>

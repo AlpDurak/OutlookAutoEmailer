@@ -1,0 +1,30 @@
+15:00:07.112 [oauth-source] INFO  c.o.config.AppConfig - application.properties loaded from classpath.
+15:00:07.114 [oauth-source] WARN  c.o.config.AppConfig - Azure client ID is a placeholder value — update azure.client.id in application.properties.
+15:00:07.114 [oauth-source] WARN  c.o.config.AppConfig - Azure tenant ID is a placeholder value — update azure.tenant.id in application.properties.
+15:00:07.119 [JavaFX Application Thread] ERROR c.o.ui.AccountSetupController - Source account authentication failed
+java.lang.IllegalStateException: Required property 'oauth.clientId' is missing or empty in application.properties.
+	at com.outlookautoemailier.security.OAuth2Helper.requireProperty(OAuth2Helper.java:398)
+	at com.outlookautoemailier.security.OAuth2Helper.<init>(OAuth2Helper.java:130)
+	at com.outlookautoemailier.ui.AccountSetupController$1.call(AccountSetupController.java:66)
+	at com.outlookautoemailier.ui.AccountSetupController$1.call(AccountSetupController.java:62)
+	at javafx.graphics@21.0.2/javafx.concurrent.Task$TaskCallable.call(Task.java:1399)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+15:00:08.493 [JavaFX Application Thread] ERROR c.o.ui.AccountSetupController - Source account authentication failed
+java.lang.IllegalStateException: Required property 'oauth.clientId' is missing or empty in application.properties.
+	at com.outlookautoemailier.security.OAuth2Helper.requireProperty(OAuth2Helper.java:398)
+	at com.outlookautoemailier.security.OAuth2Helper.<init>(OAuth2Helper.java:130)
+	at com.outlookautoemailier.ui.AccountSetupController$1.call(AccountSetupController.java:66)
+	at com.outlookautoemailier.ui.AccountSetupController$1.call(AccountSetupController.java:62)
+	at javafx.graphics@21.0.2/javafx.concurrent.Task$TaskCallable.call(Task.java:1399)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+15:00:38.261 [JavaFX Application Thread] ERROR c.o.ui.AccountSetupController - Source account authentication failed
+java.lang.IllegalStateException: Required property 'oauth.clientId' is missing or empty in application.properties.
+	at com.outlookautoemailier.security.OAuth2Helper.requireProperty(OAuth2Helper.java:398)
+	at com.outlookautoemailier.security.OAuth2Helper.<init>(OAuth2Helper.java:130)
+	at com.outlookautoemailier.ui.AccountSetupController$1.call(AccountSetupController.java:66)
+	at com.outlookautoemailier.ui.AccountSetupController$1.call(AccountSetupController.java:62)
+	at javafx.graphics@21.0.2/javafx.concurrent.Task$TaskCallable.call(Task.java:1399)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
