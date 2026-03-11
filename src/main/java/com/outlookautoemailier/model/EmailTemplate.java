@@ -24,6 +24,7 @@ public final class EmailTemplate {
     private final String        body;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
+    private final boolean html;
 
     private EmailTemplate(Builder builder) {
         this.name      = builder.name;
@@ -31,6 +32,7 @@ public final class EmailTemplate {
         this.body      = builder.body;
         this.createdAt = builder.createdAt != null ? builder.createdAt : LocalDateTime.now();
         this.updatedAt = builder.updatedAt != null ? builder.updatedAt : LocalDateTime.now();
+        this.html      = builder.html;
     }
 
     // ------------------------------------------------------------------ //
@@ -112,6 +114,10 @@ public final class EmailTemplate {
         return updatedAt;
     }
 
+    public boolean isHtml() {
+        return html;
+    }
+
     // ------------------------------------------------------------------ //
     //  Object overrides                                                    //
     // ------------------------------------------------------------------ //
@@ -134,12 +140,13 @@ public final class EmailTemplate {
                 && Objects.equals(subject, other.subject)
                 && Objects.equals(body, other.body)
                 && Objects.equals(createdAt, other.createdAt)
-                && Objects.equals(updatedAt, other.updatedAt);
+                && Objects.equals(updatedAt, other.updatedAt)
+                && this.html == other.html;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, subject, body, createdAt, updatedAt);
+        return Objects.hash(name, subject, body, createdAt, updatedAt, html);
     }
 
     // ------------------------------------------------------------------ //
@@ -157,6 +164,7 @@ public final class EmailTemplate {
         private String        body;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
+        private boolean html = false;
 
         private Builder() {}
 
@@ -182,6 +190,11 @@ public final class EmailTemplate {
 
         public Builder updatedAt(LocalDateTime updatedAt) {
             this.updatedAt = updatedAt;
+            return this;
+        }
+
+        public Builder html(boolean html) {
+            this.html = html;
             return this;
         }
 

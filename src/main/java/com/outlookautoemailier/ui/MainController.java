@@ -18,6 +18,8 @@ public class MainController implements Initializable {
     @FXML private Pane composePane;
     @FXML private Pane queueDashboardPane;
     @FXML private Pane settingsPane;
+    @FXML private Pane templateStudioPane;
+    @FXML private Pane analyticsPane;
 
     // ── Sidebar nav buttons ──────────────────────────────────────────────────
     @FXML private ToggleButton btnAccounts;
@@ -25,6 +27,8 @@ public class MainController implements Initializable {
     @FXML private ToggleButton btnCompose;
     @FXML private ToggleButton btnQueue;
     @FXML private ToggleButton btnSettings;
+    @FXML private ToggleButton btnStudio;
+    @FXML private ToggleButton btnAnalytics;
 
     /** Ordered list used for bulk visibility toggling. */
     private List<Pane> allPanes;
@@ -33,12 +37,15 @@ public class MainController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        com.outlookautoemailier.AppContext.get().setMainController(this);
         allPanes = List.of(
                 accountSetupPane,
                 contactListPane,
                 composePane,
                 queueDashboardPane,
-                settingsPane
+                settingsPane,
+                templateStudioPane,
+                analyticsPane
         );
 
         // Wire nav buttons → pane visibility
@@ -47,6 +54,8 @@ public class MainController implements Initializable {
         btnCompose.setOnAction(e -> showPane(composePane));
         btnQueue.setOnAction(e -> showPane(queueDashboardPane));
         btnSettings.setOnAction(e -> showPane(settingsPane));
+        btnStudio.setOnAction(e -> showPane(templateStudioPane));
+        btnAnalytics.setOnAction(e -> showPane(analyticsPane));
 
         // Prevent the active toggle from being de-selected by a second click
         btnAccounts.getToggleGroup().selectedToggleProperty().addListener(
@@ -90,5 +99,10 @@ public class MainController implements Initializable {
     public void navigateToQueue() {
         btnQueue.setSelected(true);
         showPane(queueDashboardPane);
+    }
+
+    public void navigateToAnalytics() {
+        btnAnalytics.setSelected(true);
+        showPane(analyticsPane);
     }
 }

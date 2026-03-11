@@ -6,9 +6,11 @@
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.web.WebView?>
 
 <VBox spacing="15"
       xmlns="http://javafx.com/javafx/21"
@@ -48,12 +50,25 @@
     </HBox>
 
     <!-- ── Body area ───────────────────────────────────────────────────────── -->
-    <Label text="Message Body:"/>
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Message Body:"/>
+        <javafx.scene.layout.Region HBox.hgrow="ALWAYS"/>
+        <ToggleButton fx:id="htmlModeToggle"
+                      text="HTML Mode"
+                      onAction="#onToggleHtmlMode"/>
+    </HBox>
     <TextArea fx:id="bodyArea"
               prefRowCount="15"
               wrapText="true"
               promptText="Write your email body here. Use the buttons below to insert personalization variables."
               VBox.vgrow="ALWAYS"/>
+
+    <!-- ── HTML preview (shown only in HTML mode) ──────────────────────────── -->
+    <WebView fx:id="htmlPreview"
+             prefHeight="200"
+             visible="false"
+             managed="false"
+             VBox.vgrow="SOMETIMES"/>
 
     <!-- Variable-insertion buttons targeting the body area -->
     <HBox spacing="6">

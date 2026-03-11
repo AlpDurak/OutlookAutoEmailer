@@ -79,6 +79,13 @@ public class RateLimiter {
      */
     private final ReentrantLock lock = new ReentrantLock();
 
+    /**
+     * Tracks whether we have already emitted the "rate limit exhausted" warning
+     * for the current window so we don't flood the log every 1 second.
+     * Reset to {@code false} when the bucket is refilled.
+     */
+    private volatile boolean exhaustedWarningLogged = false;
+
     // ------------------------------------------------------------------
     //  Constructor
     // ------------------------------------------------------------------
@@ -148,12 +155,16 @@ public class RateLimiter {
 
         while (true) {
             if (tryAcquire()) {
+                exhaustedWarningLogged = false; // reset so next exhaustion logs once
                 return;
             }
-            // Log a warning only on the first poll to avoid log flooding.
-            log.warn("Rate limit exhausted; waiting for bucket refill at {}. "
-                     + "Sleeping {} ms before retry.",
-                     nextRefillTime, POLL_INTERVAL_MS);
+            // Log only the first time per exhaustion window to avoid log flooding.
+            if (!exhaustedWarningLogged) {
+                log.warn("Rate limit exhausted; waiting for bucket refill at {}. "
+                         + "Sleeping {} ms between retries.",
+                         nextRefillTime, POLL_INTERVAL_MS);
+                exhaustedWarningLogged = true;
+            }
             Thread.sleep(POLL_INTERVAL_MS);
         }
     }
@@ -209,6 +220,7 @@ public class RateLimiter {
         if (Instant.now().isAfter(nextRefillTime)) {
             int previousTokens = currentTokens.getAndSet(maxTokensPerHour);
             nextRefillTime = Instant.now().plus(WINDOW);
+            exhaustedWarningLogged = false;
             log.info("Token bucket refilled: {} -> {} tokens. Next refill at {}.",
                      previousTokens, maxTokensPerHour, nextRefillTime);
         }

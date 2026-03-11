@@ -19,10 +19,10 @@ import java.util.ResourceBundle;
 /**
  * Controller for {@code AccountSetup.fxml}.
  *
- * <p>Manages two Microsoft account connections:
+ * <p>Manages two Microsoft 365 account connections:
  * <ul>
- *   <li><b>Source</b> – used to read Outlook contacts via the Microsoft Graph API.</li>
- *   <li><b>Sender</b> – used to send emails (SMTP / Graph Mail.Send scope).</li>
+ *   <li><b>Source</b> – reads Outlook contacts via the Microsoft Graph API.</li>
+ *   <li><b>Sender</b> – sends emails via SMTP with XOAUTH2.</li>
  * </ul>
  */
 public class AccountSetupController implements Initializable {
@@ -85,6 +85,7 @@ public class AccountSetupController implements Initializable {
         task.setOnSucceeded(e -> {
             sourceAccount = task.getValue();
             markSourceConnected(sourceAccount.getEmailAddress());
+            AppContext.get().initGraphApi(sourceAccount);
             maybeInitBackend();
         });
         task.setOnFailed(e -> {
@@ -137,88 +138,59 @@ public class AccountSetupController implements Initializable {
         new Thread(task, "oauth-sender").start();
     }
 
-    // ── Public state helpers (called by OAuth callbacks) ─────────────────────
+    // ── Public state helpers ──────────────────────────────────────────────────
 
-    /**
-     * Updates source account UI to reflect a successful connection.
-     *
-     * @param email the authenticated account email address
-     */
     public void markSourceConnected(String email) {
         sourceStatusLabel.setText("Connected");
         sourceStatusLabel.getStyleClass().removeAll("status-disconnected");
-        if (!sourceStatusLabel.getStyleClass().contains("status-connected")) {
+        if (!sourceStatusLabel.getStyleClass().contains("status-connected"))
             sourceStatusLabel.getStyleClass().add("status-connected");
-        }
         sourceEmailLabel.setText(email);
         btnConnectSource.setText("Reconnect Source Account");
         btnConnectSource.setDisable(false);
     }
 
-    /**
-     * Resets source account UI after an authentication failure.
-     */
     public void markSourceFailed() {
         sourceStatusLabel.setText("Connection failed");
         sourceStatusLabel.getStyleClass().removeAll("status-connected");
-        if (!sourceStatusLabel.getStyleClass().contains("status-disconnected")) {
+        if (!sourceStatusLabel.getStyleClass().contains("status-disconnected"))
             sourceStatusLabel.getStyleClass().add("status-disconnected");
-        }
         btnConnectSource.setDisable(false);
     }
 
-    /**
-     * Updates sender account UI to reflect a successful connection.
-     *
-     * @param email the authenticated account email address
-     */
     public void markSenderConnected(String email) {
         senderStatusLabel.setText("Connected");
         senderStatusLabel.getStyleClass().removeAll("status-disconnected");
-        if (!senderStatusLabel.getStyleClass().contains("status-connected")) {
+        if (!senderStatusLabel.getStyleClass().contains("status-connected"))
             senderStatusLabel.getStyleClass().add("status-connected");
-        }
         senderEmailLabel.setText(email);
         btnConnectSender.setText("Reconnect Sender Account");
         btnConnectSender.setDisable(false);
     }
 
-    /**
-     * Resets sender account UI after an authentication failure.
-     */
     public void markSenderFailed() {
         senderStatusLabel.setText("Connection failed");
         senderStatusLabel.getStyleClass().removeAll("status-connected");
-        if (!senderStatusLabel.getStyleClass().contains("status-disconnected")) {
+        if (!senderStatusLabel.getStyleClass().contains("status-disconnected"))
             senderStatusLabel.getStyleClass().add("status-disconnected");
-        }
         btnConnectSender.setDisable(false);
     }
 
-    // ── State queries (used by other controllers for guard checks) ───────────
-
-    /** @return {@code true} if the source account has been successfully connected. */
     public boolean isSourceConnected() {
         return "Connected".equals(sourceStatusLabel.getText());
     }
 
-    /** @return {@code true} if the sender account has been successfully connected. */
     public boolean isSenderConnected() {
         return "Connected".equals(senderStatusLabel.getText());
     }
 
     // ── Private helpers ──────────────────────────────────────────────────────
 
-    /**
-     * Called after each successful auth. Initialises the backend as soon as both
-     * accounts are available. Safe to call multiple times — AppContext.initBackend()
-     * is idempotent if both accounts are the same object references.
-     */
     private void maybeInitBackend() {
         if (sourceAccount != null && senderAccount != null) {
             try {
                 AppContext.get().initBackend(sourceAccount, senderAccount);
-                log.info("Backend initialised successfully with source={} sender={}",
+                log.info("Backend initialised: source={} sender={}",
                         sourceAccount.getEmailAddress(), senderAccount.getEmailAddress());
             } catch (Exception ex) {
                 log.error("Backend initialisation failed", ex);

@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Jakarta Mail-based SMTP sender that delivers a single
@@ -181,6 +183,33 @@ public class SmtpSender {
         String resolvedSubject = job.getTemplate().resolveSubject(job.getContact());
         String resolvedBody    = job.getTemplate().resolveBody(job.getContact());
 
+        // Create a SentEmailRecord for every sent email (analytics).
+        // For HTML emails with the pixel server running, also inject the tracking pixel.
+        com.outlookautoemailier.analytics.SentEmailRecord trackingRecord =
+                new com.outlookautoemailier.analytics.SentEmailRecord(
+                        recipientEmail,
+                        job.getContact().getDisplayName(),
+                        resolvedSubject,
+                        java.time.LocalDateTime.now()
+                );
+        if (job.getTemplate().isHtml()) {
+            com.outlookautoemailier.analytics.TrackingPixelServer pixelServer =
+                    com.outlookautoemailier.AppContext.get().getTrackingPixelServer();
+            if (pixelServer != null && pixelServer.isRunning()) {
+                String pixelUrl = pixelServer.pixelUrl(trackingRecord.getTrackingId());
+                resolvedBody = resolvedBody + "\n<img src=\"" + pixelUrl
+                        + "\" width=\"1\" height=\"1\" alt=\"\" style=\"display:none;\"/>";
+            }
+        }
+
+        // Upload inline Base64 images to imgbb so email clients render them
+        if (job.getTemplate().isHtml()) {
+            String imgbbKey = com.outlookautoemailier.config.AppConfig.getInstance().getImgbbApiKey();
+            if (!imgbbKey.isBlank()) {
+                resolvedBody = replaceInlineImagesWithHosted(resolvedBody, imgbbKey);
+            }
+        }
+
         // 2. Construct the MIME message
         MimeMessage message = new MimeMessage(session);
 
@@ -190,12 +219,23 @@ public class SmtpSender {
         message.setSubject(resolvedSubject, "UTF-8");
         message.setSentDate(new Date());
 
-        // 3. Build multipart body — plain text part
-        MimeBodyPart textPart = new MimeBodyPart();
-        textPart.setText(resolvedBody, "UTF-8", "plain");
-
+        // 3. Build multipart body — plain text or HTML
         MimeMultipart multipart = new MimeMultipart("alternative");
-        multipart.addBodyPart(textPart);
+
+        if (job.getTemplate().isHtml()) {
+            // Plain-text fallback (strip tags for clients that prefer plain text)
+            MimeBodyPart plainPart = new MimeBodyPart();
+            plainPart.setText(resolvedBody.replaceAll("<[^>]+>", ""), "UTF-8", "plain");
+            multipart.addBodyPart(plainPart);
+            // HTML version — added last so email clients prefer it
+            MimeBodyPart htmlPart = new MimeBodyPart();
+            htmlPart.setContent(resolvedBody, "text/html; charset=UTF-8");
+            multipart.addBodyPart(htmlPart);
+        } else {
+            MimeBodyPart textPart = new MimeBodyPart();
+            textPart.setText(resolvedBody, "UTF-8", "plain");
+            multipart.addBodyPart(textPart);
+        }
 
         message.setContent(multipart);
 
@@ -213,6 +253,7 @@ public class SmtpSender {
             Transport.send(message);
             log.info("Delivered job {} to {} (subject: '{}')",
                     job.getId(), recipientEmail, resolvedSubject);
+            com.outlookautoemailier.analytics.SentEmailStore.getInstance().add(trackingRecord);
         } catch (MessagingException ex) {
             if (isPermanentFailure(ex)) {
                 log.warn("Permanent SMTP failure for job {} to {}: {}",
@@ -323,6 +364,33 @@ public class SmtpSender {
                 || lower.contains("address rejected")
                 || lower.contains("invalid address")
                 || lower.contains("mailbox not found");
+    }
+
+    /**
+     * Scans {@code html} for inline data-URI images, uploads each one to imgbb,
+     * and replaces the {@code src} attribute with the returned hosted URL.
+     * If an individual upload fails the original {@code src} is preserved.
+     *
+     * @param html   the HTML body to process
+     * @param apiKey imgbb API key
+     * @return the HTML with data URIs replaced by hosted URLs
+     */
+    private static String replaceInlineImagesWithHosted(String html, String apiKey) {
+        Pattern pat = Pattern.compile("src=\"data:image/[^;]+;base64,([^\"]+)\"");
+        Matcher mat = pat.matcher(html);
+        StringBuffer sb = new StringBuffer();
+        while (mat.find()) {
+            String base64Data = mat.group(1);
+            try {
+                String url = ImageHostingService.uploadBase64(base64Data, apiKey);
+                mat.appendReplacement(sb, Matcher.quoteReplacement("src=\"" + url + "\""));
+            } catch (Exception e) {
+                log.warn("Failed to upload inline image to imgbb: {}", e.getMessage());
+                mat.appendReplacement(sb, Matcher.quoteReplacement(mat.group(0)));
+            }
+        }
+        mat.appendTail(sb);
+        return sb.toString();
     }
 
     /**

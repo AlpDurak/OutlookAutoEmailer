@@ -28,9 +28,7 @@
     <GridPane hgap="16" vgap="14">
 
         <columnConstraints>
-            <!-- Label column: fixed reasonable width -->
             <ColumnConstraints minWidth="180" prefWidth="200" halignment="RIGHT"/>
-            <!-- Input column: grows with window -->
             <ColumnConstraints minWidth="200" prefWidth="260" hgrow="ALWAYS"/>
         </columnConstraints>
 
@@ -82,7 +80,18 @@
                  editable="true" prefWidth="120"
                  GridPane.columnIndex="1" GridPane.rowIndex="5"/>
 
+        <!-- Row 6: imgbb API key -->
+        <Label text="imgbb API Key:"
+               GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+        <TextField fx:id="imgbbApiKeyField"
+                   promptText="Paste your free key from imgbb.com/signup"
+                   prefWidth="280"
+                   GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+
     </GridPane>
+
+    <Label text="imgbb API key: required for images in HTML emails to display in recipients' email clients. Get a free key at imgbb.com/signup."
+           wrapText="true" styleClass="help-label"/>
 
     <Separator/>
 

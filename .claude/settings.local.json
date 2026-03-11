@@ -23,7 +23,9 @@
       "Read(//tmp/**)",
       "Bash(jar xf:*)",
       "Bash(javap com/microsoft/graph/http/BaseCollectionResponse.class)",
-      "Bash(mvn compile:*)"
+      "Bash(mvn compile:*)",
+      "Bash(javap com/microsoft/graph/requests/UserCollectionRequestBuilder.class)",
+      "Read(//c/Users/alpdu/AppData/Local/Temp/claude/c--Users-alpdu-Documents-OutlookAutoEmailer/tasks/**)"
     ]
   }
 }

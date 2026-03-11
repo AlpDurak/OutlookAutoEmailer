@@ -9,11 +9,14 @@ import com.outlookautoemailier.security.RateLimiter;
 import com.outlookautoemailier.security.SpamGuard;
 import com.outlookautoemailier.smtp.SmtpConfig;
 import com.outlookautoemailier.smtp.SmtpSender;
+import com.outlookautoemailier.analytics.TrackingPixelServer;
 import com.outlookautoemailier.ui.AccountSetupController;
+import com.outlookautoemailier.ui.AnalyticsController;
 import com.outlookautoemailier.ui.ComposeController;
 import com.outlookautoemailier.ui.ContactListController;
 import com.outlookautoemailier.ui.MainController;
 import com.outlookautoemailier.ui.QueueDashboardController;
+import com.outlookautoemailier.ui.TemplateStudioController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,6 +86,12 @@ public class AppContext {
     private ContactListController     contactListController;
     private ComposeController         composeController;
     private QueueDashboardController  queueDashboardController;
+    private TemplateStudioController  templateStudioController;
+    private AnalyticsController       analyticsController;
+
+    // ── Analytics / tracking ──────────────────────────────────────────────────
+
+    private TrackingPixelServer trackingPixelServer;
 
     // ── Status helpers ────────────────────────────────────────────────────────
 
@@ -109,6 +118,24 @@ public class AppContext {
     // ── Backend factory ───────────────────────────────────────────────────────
 
     /**
+     * Initialises just the Graph API client (contact reading) for the source account.
+     * Called as soon as the source account is authenticated — does not require the
+     * sender account. If contactListController is already registered, triggers an
+     * automatic contact refresh.
+     *
+     * @param sourceAccount the account used to read contacts via Microsoft Graph
+     */
+    public void initGraphApi(com.outlookautoemailier.model.EmailAccount sourceAccount) {
+        graphApiClient = new GraphApiClient(sourceAccount);
+        graphApiClient.connect();
+        contactFetcher = new ContactFetcher();
+        log.info("GraphApiClient initialized for source account: {}", sourceAccount.getEmailAddress());
+        if (contactListController != null) {
+            javafx.application.Platform.runLater(() -> contactListController.triggerRefresh());
+        }
+    }
+
+    /**
      * Initialises the backend with default components.
      * Called after both accounts are successfully authenticated.
      *
@@ -128,20 +155,23 @@ public class AppContext {
         // Create RateLimiter with 100 emails/hour
         RateLimiter rateLimiter = new RateLimiter(100);
 
-        // Create SmtpSender(SmtpConfig.office365(), senderAccount, spamGuard) and connect
-        smtpSender = new SmtpSender(SmtpConfig.office365(), senderAccount, spamGuard);
+        // Create SmtpSender with Office 365 XOAUTH2 config
+        SmtpConfig smtpConfig = SmtpConfig.office365();
+        smtpSender = new SmtpSender(smtpConfig, senderAccount, spamGuard);
         smtpSender.connect();
 
         // Create EmailDispatcher with 2 worker threads and start it
         emailDispatcher = new EmailDispatcher(emailQueue, smtpSender, rateLimiter, spamGuard, 2);
         emailDispatcher.start();
 
-        // Create GraphApiClient for the source account and connect
-        graphApiClient = new GraphApiClient(sourceAccount);
-        graphApiClient.connect();
+        if (graphApiClient == null) {
+            graphApiClient = new GraphApiClient(sourceAccount);
+            graphApiClient.connect();
+            contactFetcher = new ContactFetcher();
+        }
 
-        // Create ContactFetcher
-        contactFetcher = new ContactFetcher();
+        trackingPixelServer = new TrackingPixelServer();
+        trackingPixelServer.start();
 
         log.info("AppContext backend initialised.");
     }
@@ -236,5 +266,29 @@ public class AppContext {
 
     public void setQueueDashboardController(QueueDashboardController queueDashboardController) {
         this.queueDashboardController = queueDashboardController;
+    }
+
+    public TemplateStudioController getTemplateStudioController() {
+        return templateStudioController;
+    }
+
+    public void setTemplateStudioController(TemplateStudioController templateStudioController) {
+        this.templateStudioController = templateStudioController;
+    }
+
+    public AnalyticsController getAnalyticsController() {
+        return analyticsController;
+    }
+
+    public void setAnalyticsController(AnalyticsController analyticsController) {
+        this.analyticsController = analyticsController;
+    }
+
+    public TrackingPixelServer getTrackingPixelServer() {
+        return trackingPixelServer;
+    }
+
+    public void setTrackingPixelServer(TrackingPixelServer trackingPixelServer) {
+        this.trackingPixelServer = trackingPixelServer;
     }
 }

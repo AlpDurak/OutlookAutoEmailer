@@ -61,7 +61,7 @@ public class OAuth2Helper {
 
     /** Scopes required to read contacts via Microsoft Graph. */
     public static final String[] GRAPH_SCOPES = {
-            "https://graph.microsoft.com/Contacts.Read",
+            "https://graph.microsoft.com/User.ReadBasic.All",
             "https://graph.microsoft.com/User.Read"
     };
 

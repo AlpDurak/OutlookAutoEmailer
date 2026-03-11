@@ -70,6 +70,7 @@ public final class AppConfig {
     private final int retryMaxAttempts;
     private final double retryBackoffMultiplier;
     private final String loggingLevel;
+    private final String imgbbApiKey;
 
     // ---------------------------------------------------------------------------
     // Constructor (private — use getInstance())
@@ -87,6 +88,7 @@ public final class AppConfig {
         retryMaxAttempts       = parseIntProp(props,  "retry.max.attempts",           3);
         retryBackoffMultiplier = parseDoubleProp(props, "retry.backoff.multiplier",  2.0);
         loggingLevel           = props.getProperty("logging.level", "INFO");
+        imgbbApiKey            = props.getProperty("imgbb.api.key", "");
 
         validate();
     }
@@ -165,6 +167,7 @@ public final class AppConfig {
             merged.put("retry.max.attempts", envVars.getOrDefault("RETRY_MAX_ATTEMPTS", merged.getProperty("retry.max.attempts", "3")));
             merged.put("retry.backoff.multiplier", envVars.getOrDefault("RETRY_BACKOFF_MULTIPLIER", merged.getProperty("retry.backoff.multiplier", "2")));
             merged.put("logging.level", envVars.getOrDefault("LOGGING_LEVEL", merged.getProperty("logging.level", "INFO")));
+            merged.put("imgbb.api.key", envVars.getOrDefault("IMGBB_API_KEY", merged.getProperty("imgbb.api.key", "")));
         }
 
         return merged;
@@ -284,6 +287,10 @@ public final class AppConfig {
 
     public String getLoggingLevel() {
         return loggingLevel;
+    }
+
+    public String getImgbbApiKey() {
+        return imgbbApiKey;
     }
 
     // ---------------------------------------------------------------------------

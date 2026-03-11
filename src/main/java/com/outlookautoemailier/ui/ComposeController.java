@@ -7,11 +7,14 @@ import com.outlookautoemailier.model.EmailJob;
 import com.outlookautoemailier.model.EmailTemplate;
 import com.outlookautoemailier.queue.EmailQueue;
 import com.outlookautoemailier.security.SpamGuard;
+import com.outlookautoemailier.ui.MainController;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -49,16 +52,30 @@ public class ComposeController implements Initializable {
     // ── Footer ───────────────────────────────────────────────────────────────
     @FXML private Label recipientCountLabel;
 
+    // ── HTML mode controls ────────────────────────────────────────────────────
+    @FXML private ToggleButton htmlModeToggle;
+    @FXML private WebView      htmlPreview;
+
     // ── State ────────────────────────────────────────────────────────────────
 
     /** Contacts forwarded from the Contacts view. */
     private List<Contact> recipients = new ArrayList<>();
 
+    /** Whether the body area is in HTML mode. */
+    private boolean htmlMode = false;
+
     // ── Initializable ────────────────────────────────────────────────────────
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Nothing to wire on startup; recipient list arrives via setRecipients().
+        AppContext.get().setComposeController(this);
+
+        // Live HTML preview: update WebView whenever body text changes in HTML mode
+        bodyArea.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (htmlMode && htmlPreview != null && htmlPreview.isVisible()) {
+                htmlPreview.getEngine().loadContent(newVal != null ? newVal : "");
+            }
+        });
     }
 
     // ── Public API ───────────────────────────────────────────────────────────
@@ -81,6 +98,22 @@ public class ComposeController implements Initializable {
     /** @return an unmodifiable view of the current recipient list. */
     public List<Contact> getRecipients() {
         return Collections.unmodifiableList(recipients);
+    }
+
+    /**
+     * Sets the body area to the given HTML string and activates HTML mode.
+     * Called by {@link TemplateStudioController#onUseInCompose()} to transfer
+     * the designed template directly into the Compose pane.
+     *
+     * @param html the HTML content to place in the body area
+     */
+    public void setHtmlBody(String html) {
+        bodyArea.setText(html);
+        if (htmlModeToggle != null) {
+            htmlModeToggle.setSelected(true);
+            htmlMode = true;
+            onToggleHtmlMode();
+        }
     }
 
     // ── FXML action handlers ─────────────────────────────────────────────────
@@ -110,6 +143,22 @@ public class ComposeController implements Initializable {
         }
     }
 
+    @FXML
+    private void onToggleHtmlMode() {
+        htmlMode = htmlModeToggle.isSelected();
+        if (htmlPreview != null) {
+            htmlPreview.setVisible(htmlMode);
+            htmlPreview.setManaged(htmlMode);
+            if (htmlMode) {
+                htmlPreview.getEngine().loadContent(
+                        bodyArea.getText() != null ? bodyArea.getText() : "");
+            }
+        }
+        bodyArea.setPromptText(htmlMode
+                ? "Write HTML here. e.g. <h1>Hello {{firstName}}</h1><p>...</p>"
+                : "Write your email body here. Use the buttons below to insert personalization variables.");
+    }
+
     /**
      * Serialises the current subject + body to a JSON template file in the
      * user's home directory.
@@ -135,6 +184,7 @@ public class ComposeController implements Initializable {
             data.put("name", name);
             data.put("subject", subjectField.getText());
             data.put("body", bodyArea.getText());
+            data.put("html", String.valueOf(htmlMode));
             data.put("savedAt", LocalDateTime.now().toString());
 
             ObjectMapper mapper = new ObjectMapper();
@@ -179,6 +229,12 @@ public class ComposeController implements Initializable {
             templateNameField.setText(data.getOrDefault("name", ""));
             subjectField.setText(data.getOrDefault("subject", ""));
             bodyArea.setText(data.getOrDefault("body", ""));
+            boolean loadedHtml = Boolean.parseBoolean(data.getOrDefault("html", "false"));
+            if (htmlModeToggle != null) {
+                htmlModeToggle.setSelected(loadedHtml);
+                htmlMode = loadedHtml;
+                onToggleHtmlMode();
+            }
         } catch (Exception ex) {
             showAlert(Alert.AlertType.ERROR, "Load Failed",
                     "Could not read template: " + ex.getMessage());
@@ -246,6 +302,7 @@ public class ComposeController implements Initializable {
                 .name(templateNameField.getText().isBlank() ? "Untitled" : templateNameField.getText().trim())
                 .subject(subjectField.getText())
                 .body(bodyArea.getText())
+                .html(htmlMode)
                 .build();
 
         // Create one EmailJob per recipient
@@ -281,9 +338,11 @@ public class ComposeController implements Initializable {
         }
         queue.enqueueAll(jobs);
 
-        // Confirm to the user and advise them to switch to the Queue tab
-        showAlert(Alert.AlertType.INFORMATION, "Queued",
-                jobs.size() + " job(s) added to queue. Switch to the Queue tab to monitor progress.");
+        // Navigate to the Queue tab automatically
+        MainController mainCtrl = AppContext.get().getMainController();
+        if (mainCtrl != null) {
+            mainCtrl.navigateToQueue();
+        }
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────

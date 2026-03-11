@@ -1,112 +1,85 @@
 package com.outlookautoemailier.api;
 
-import com.microsoft.graph.models.EmailAddress;
+import com.microsoft.graph.models.User;
 import com.outlookautoemailier.model.Contact;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * Converts raw {@link com.microsoft.graph.models.Contact} objects returned by
- * the Microsoft Graph SDK into the application's own {@link Contact} domain
- * model.
+ * Converts raw Microsoft Graph {@link User} objects (from the /users endpoint)
+ * into the application's domain {@link Contact} model.
  *
- * <p>All field mappings are null-safe: missing Graph values produce empty
- * strings or empty lists rather than {@code NullPointerException}.</p>
+ * <p>Email priority: userPrincipalName is used as the primary address because
+ * university student accounts follow the pattern 25comp1019@isik.edu.tr.
+ * The SMTP mail address (if present and different) is added as a secondary address.
  */
 public class ContactFetcher {
 
     private static final Logger log = LoggerFactory.getLogger(ContactFetcher.class);
 
-    // ------------------------------------------------------------------ //
-    //  Public API                                                          //
-    // ------------------------------------------------------------------ //
-
     /**
-     * Converts a list of raw Graph contacts to a list of domain
-     * {@link Contact} objects.
-     *
-     * @param raw list of Graph SDK contact objects; may be {@code null}
-     * @return non-null, possibly empty list of domain contacts
-     */
-    public List<Contact> convert(List<com.microsoft.graph.models.Contact> raw) {
-        if (raw == null || raw.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        List<Contact> result = new ArrayList<>(raw.size());
-        for (com.microsoft.graph.models.Contact graphContact : raw) {
-            if (graphContact == null) {
-                continue;
-            }
-            try {
-                result.add(mapToModel(graphContact));
-            } catch (Exception e) {
-                log.warn("Skipping contact '{}' due to mapping error: {}",
-                        graphContact.id, e.getMessage(), e);
-            }
-        }
-        return Collections.unmodifiableList(result);
-    }
-
-    /**
-     * Convenience method that fetches raw contacts from the given
-     * {@link GraphApiClient} and converts them in one step.
+     * Fetches all organisation users from Graph API and converts them to
+     * domain Contact objects.
      *
      * @param client a connected {@link GraphApiClient}
-     * @return non-null, possibly empty list of domain contacts
+     * @return unmodifiable list of domain Contact objects
      */
     public List<Contact> fetchAll(GraphApiClient client) {
-        List<com.microsoft.graph.models.Contact> raw = client.fetchRawContacts();
-        List<Contact> contacts = convert(raw);
-        log.info("ContactFetcher: converted {} contacts.", contacts.size());
-        return contacts;
+        return convert(client.fetchRawUsers());
     }
 
-    // ------------------------------------------------------------------ //
-    //  Mapping logic                                                       //
-    // ------------------------------------------------------------------ //
-
     /**
-     * Maps a single Graph {@link com.microsoft.graph.models.Contact} to the
-     * application's domain {@link Contact}.
+     * Converts a list of raw Graph User objects to domain Contact objects,
+     * skipping any entries that cause mapping errors.
      */
-    private Contact mapToModel(com.microsoft.graph.models.Contact g) {
-        Contact.Builder builder = Contact.builder()
-                .id(nullSafe(g.id))
-                .displayName(nullSafe(g.displayName))
-                .firstName(nullSafe(g.givenName))
-                .lastName(nullSafe(g.surname))
-                .company(nullSafe(g.companyName))
-                .jobTitle(nullSafe(g.jobTitle))
-                .phone(extractPrimaryPhone(g.businessPhones));
+    public List<Contact> convert(List<User> users) {
+        if (users == null) return Collections.emptyList();
 
-        // Email addresses
-        List<EmailAddress> graphEmails = g.emailAddresses;
-        if (graphEmails != null) {
-            for (EmailAddress ea : graphEmails) {
-                if (ea != null && ea.address != null && !ea.address.isBlank()) {
-                    builder.addEmailAddress(ea.address);
-                }
+        return users.stream()
+                .map(this::mapToModel)
+                .filter(c -> c != null && !c.getPrimaryEmail().isBlank())
+                .collect(Collectors.toUnmodifiableList());
+    }
+
+    // ── Private helpers ───────────────────────────────────────────────────────
+
+    private Contact mapToModel(User u) {
+        try {
+            Contact.Builder builder = Contact.builder()
+                    .id(nullSafe(u.id))
+                    .displayName(nullSafe(u.displayName))
+                    .firstName(nullSafe(u.givenName))
+                    .lastName(nullSafe(u.surname))
+                    .company(nullSafe(u.companyName != null ? u.companyName : u.department))
+                    .jobTitle(nullSafe(u.jobTitle))
+                    .phone(extractPrimaryPhone(u.businessPhones));
+
+            // userPrincipalName is the student email (e.g. 25comp1019@isik.edu.tr) — always present
+            String upn = nullSafe(u.userPrincipalName);
+            if (!upn.isBlank()) {
+                builder.addEmailAddress(upn);
             }
-        }
 
-        return builder.build();
+            // Add SMTP mail address as a secondary address if different from UPN
+            String mail = nullSafe(u.mail);
+            if (!mail.isBlank() && !mail.equalsIgnoreCase(upn)) {
+                builder.addEmailAddress(mail);
+            }
+
+            return builder.build();
+        } catch (Exception e) {
+            log.warn("Skipping user '{}' due to mapping error: {}", u.id, e.getMessage(), e);
+            return null;
+        }
     }
 
-    /**
-     * Extracts the first business phone number from the list, or returns an
-     * empty string when the list is null or empty.
-     */
     private String extractPrimaryPhone(List<String> phones) {
-        if (phones == null || phones.isEmpty()) {
-            return "";
-        }
-        String first = phones.get(0);
-        return first != null ? first : "";
+        if (phones == null || phones.isEmpty()) return "";
+        return phones.get(0);
     }
 
     private static String nullSafe(String value) {

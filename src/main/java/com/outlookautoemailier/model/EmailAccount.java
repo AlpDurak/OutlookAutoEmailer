@@ -21,6 +21,15 @@ public final class EmailAccount {
         SENDER
     }
 
+    /**
+     * Identifies which email service provider the account belongs to.
+     * Controls which SMTP configuration and authentication mechanism is used.
+     */
+    public enum EmailProvider {
+        MICROSOFT,
+        GMAIL
+    }
+
     private final String        tenantId;
     private final String        clientId;
     private final String        accessToken;
@@ -28,6 +37,7 @@ public final class EmailAccount {
     private final String        emailAddress;
     private final AccountType   accountType;
     private final LocalDateTime tokenExpiresAt;
+    private final EmailProvider provider;
 
     private EmailAccount(Builder builder) {
         this.tenantId       = builder.tenantId;
@@ -37,6 +47,7 @@ public final class EmailAccount {
         this.emailAddress   = builder.emailAddress;
         this.accountType    = builder.accountType;
         this.tokenExpiresAt = builder.tokenExpiresAt;
+        this.provider       = builder.provider != null ? builder.provider : EmailProvider.MICROSOFT;
     }
 
     // ------------------------------------------------------------------ //
@@ -84,6 +95,10 @@ public final class EmailAccount {
 
     public LocalDateTime getTokenExpiresAt() {
         return tokenExpiresAt;
+    }
+
+    public EmailProvider getProvider() {
+        return provider;
     }
 
     // ------------------------------------------------------------------ //
@@ -136,6 +151,7 @@ public final class EmailAccount {
         private String        emailAddress;
         private AccountType   accountType;
         private LocalDateTime tokenExpiresAt;
+        private EmailProvider provider;
 
         private Builder() {}
 
@@ -171,6 +187,11 @@ public final class EmailAccount {
 
         public Builder tokenExpiresAt(LocalDateTime tokenExpiresAt) {
             this.tokenExpiresAt = tokenExpiresAt;
+            return this;
+        }
+
+        public Builder provider(EmailProvider provider) {
+            this.provider = provider;
             return this;
         }
 

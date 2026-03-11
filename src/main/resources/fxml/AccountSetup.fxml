@@ -56,8 +56,9 @@
                     <Insets top="12" right="16" bottom="16" left="16"/>
                 </padding>
 
-                <Label text="Used to send outgoing emails." wrapText="true"/>
+                <Label text="Used to send outgoing emails via Microsoft 365 (XOAUTH2)." wrapText="true"/>
 
+                <!-- Status row -->
                 <HBox spacing="8" alignment="CENTER_LEFT">
                     <Label text="Status:"/>
                     <Label fx:id="senderStatusLabel"

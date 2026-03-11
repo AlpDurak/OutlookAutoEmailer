@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ColorPicker?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.web.WebView?>
+
+<VBox spacing="8"
+      xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.outlookautoemailier.ui.TemplateStudioController">
+
+    <padding>
+        <Insets top="16" right="16" bottom="16" left="16"/>
+    </padding>
+
+    <Label text="Template Studio" styleClass="page-title"/>
+
+    <!-- Template name + save/load -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Template Name:"/>
+        <TextField fx:id="templateNameField" promptText="My Template" prefWidth="180"/>
+        <Button text="&#128190; Save" onAction="#onSaveTemplate">
+            <tooltip><Tooltip text="Save template to disk"/></tooltip>
+        </Button>
+        <Button text="&#128193; Load" onAction="#onLoadTemplate">
+            <tooltip><Tooltip text="Load a saved template"/></tooltip>
+        </Button>
+    </HBox>
+
+    <Separator/>
+
+    <!-- Toolbar row 1: text formatting + headings + lists + insert -->
+    <HBox spacing="4" alignment="CENTER_LEFT">
+        <Button onAction="#onBold" prefWidth="32" style="-fx-font-weight:bold;">
+            <text>B</text><tooltip><Tooltip text="Bold"/></tooltip>
+        </Button>
+        <Button onAction="#onItalic" prefWidth="32" style="-fx-font-style:italic;">
+            <text>I</text><tooltip><Tooltip text="Italic"/></tooltip>
+        </Button>
+        <Button onAction="#onUnderline" prefWidth="32" style="-fx-underline:true;">
+            <text>U</text><tooltip><Tooltip text="Underline"/></tooltip>
+        </Button>
+        <Separator orientation="VERTICAL"/>
+        <Button text="H1" onAction="#onH1" prefWidth="34"><tooltip><Tooltip text="Heading 1"/></tooltip></Button>
+        <Button text="H2" onAction="#onH2" prefWidth="34"><tooltip><Tooltip text="Heading 2"/></tooltip></Button>
+        <Button text="H3" onAction="#onH3" prefWidth="34"><tooltip><Tooltip text="Heading 3"/></tooltip></Button>
+        <Separator orientation="VERTICAL"/>
+        <Button text="&#8226; List" onAction="#onInsertUl"><tooltip><Tooltip text="Bullet list"/></tooltip></Button>
+        <Button text="&#8213; Line" onAction="#onInsertDivider"><tooltip><Tooltip text="Horizontal divider"/></tooltip></Button>
+        <Separator orientation="VERTICAL"/>
+        <Button text="&#128247; Image" onAction="#onInsertImage"><tooltip><Tooltip text="Insert image (resizable)"/></tooltip></Button>
+        <Button text="&#128279; Button" onAction="#onInsertButton"><tooltip><Tooltip text="Insert link button"/></tooltip></Button>
+        <Separator orientation="VERTICAL"/>
+        <Button text="&#8617; Undo" onAction="#onUndo"><tooltip><Tooltip text="Undo"/></tooltip></Button>
+        <Button text="&#8618; Redo" onAction="#onRedo"><tooltip><Tooltip text="Redo"/></tooltip></Button>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="&#128465; Clear" onAction="#onClear"><tooltip><Tooltip text="Clear all content"/></tooltip></Button>
+    </HBox>
+
+    <!-- Toolbar row 2: font family, size, color -->
+    <HBox spacing="8" alignment="CENTER_LEFT">
+        <Label text="Font:"/>
+        <ComboBox fx:id="fontFamilyBox" prefWidth="160">
+            <tooltip><Tooltip text="Select font family — applies to selected text"/></tooltip>
+        </ComboBox>
+        <Label text="Size:"/>
+        <TextField fx:id="fontSizeField" promptText="px" prefWidth="52"
+                   onAction="#onApplyFontSize">
+            <tooltip><Tooltip text="Enter size in px and press Enter — applies to selected text"/></tooltip>
+        </TextField>
+        <Button text="Apply Size" onAction="#onApplyFontSize">
+            <tooltip><Tooltip text="Apply font size to selected text"/></tooltip>
+        </Button>
+        <Label text="Color:"/>
+        <ColorPicker fx:id="textColorPicker" prefWidth="90">
+            <tooltip><Tooltip text="Text color — applies to selected text"/></tooltip>
+        </ColorPicker>
+    </HBox>
+
+    <!-- Variable insertion -->
+    <HBox spacing="6" alignment="CENTER_LEFT">
+        <Label text="Insert:"/>
+        <Button text="{{firstName}}" onAction="#onInsertVar" userData="{{firstName}}"/>
+        <Button text="{{lastName}}"  onAction="#onInsertVar" userData="{{lastName}}"/>
+        <Button text="{{email}}"     onAction="#onInsertVar" userData="{{email}}"/>
+        <Button text="{{company}}"   onAction="#onInsertVar" userData="{{company}}"/>
+        <Button text="{{jobTitle}}"  onAction="#onInsertVar" userData="{{jobTitle}}"/>
+    </HBox>
+
+    <!-- WebView editor -->
+    <WebView fx:id="editorView" VBox.vgrow="ALWAYS" prefHeight="380"/>
+
+    <Separator/>
+
+    <!-- Footer -->
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="&lt;/&gt; View HTML" onAction="#onGetHtml">
+            <tooltip><Tooltip text="Show the raw HTML source"/></tooltip>
+        </Button>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="&#9658; Use in Compose" styleClass="primary-button" onAction="#onUseInCompose">
+            <tooltip><Tooltip text="Send this template to the Compose pane"/></tooltip>
+        </Button>
+    </HBox>
+
+</VBox>

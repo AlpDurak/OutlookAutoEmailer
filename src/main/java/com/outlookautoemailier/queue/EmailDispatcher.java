@@ -260,27 +260,30 @@ public class EmailDispatcher {
                 continue;
             }
 
-            // 2. Acquire a rate-limit token (blocking call).
+            // 2. Non-blocking poll from the queue first.
+            //    Rate-limit tokens must NOT be consumed when the queue is empty;
+            //    doing so would drain the hour budget on idle workers and trigger
+            //    the "Rate limit exhausted" warning flood.
+            EmailJob job = emailQueue.poll();
+
+            if (job == null) {
+                sleepQuietly(IDLE_SLEEP_MS);
+                continue;
+            }
+
+            // 3. Acquire a rate-limit token — only when we actually have a job.
             try {
                 rateLimiter.acquire();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                emailQueue.markJobFailed(job, "Worker interrupted before rate-limit token acquired");
                 log.info("Worker [{}] interrupted during rate-limit acquire; exiting.",
                         Thread.currentThread().getName());
                 break;
             } catch (Exception e) {
                 log.error("RateLimiter.acquire() threw an unexpected exception; pausing 1 s.", e);
+                emailQueue.markJobFailed(job, "Rate limiter error: " + e.getMessage());
                 sleepQuietly(1_000L);
-                continue;
-            }
-
-            // 3. Non-blocking poll from the queue.
-            EmailJob job = emailQueue.poll();
-
-            if (job == null) {
-                // Queue is empty — yield the rate-limit token logically by
-                // sleeping briefly before trying again.
-                sleepQuietly(IDLE_SLEEP_MS);
                 continue;
             }
 
