@@ -5,19 +5,16 @@ import com.microsoft.aad.msal4j.IAuthenticationResult;
 import com.microsoft.aad.msal4j.InteractiveRequestParameters;
 import com.microsoft.aad.msal4j.PublicClientApplication;
 import com.microsoft.aad.msal4j.SilentParameters;
+import com.outlookautoemailier.config.AppConfig;
 import com.outlookautoemailier.model.EmailAccount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -118,17 +115,16 @@ public class OAuth2Helper {
     // ------------------------------------------------------------------
 
     /**
-     * Constructs an {@code OAuth2Helper}, reading {@code oauth.clientId} and
-     * {@code oauth.tenantId} from {@code application.properties} in the class-path.
+     * Constructs an {@code OAuth2Helper}, reading {@code azure.client.id} and
+     * {@code azure.tenant.id} from {@link AppConfig} (which applies .env overrides).
      *
      * @param credentialStore the encrypted store used to persist and restore tokens
-     * @throws IOException    if {@code application.properties} cannot be found or read
      */
-    public OAuth2Helper(CredentialStore credentialStore) throws IOException {
+    public OAuth2Helper(CredentialStore credentialStore) {
         this.credentialStore = credentialStore;
-        Properties appProps = loadApplicationProperties();
-        this.clientId = requireProperty(appProps, "oauth.clientId");
-        this.tenantId = requireProperty(appProps, "oauth.tenantId");
+        AppConfig cfg = AppConfig.getInstance();
+        this.clientId = cfg.getAzureClientId();
+        this.tenantId = cfg.getAzureTenantId();
         log.debug("OAuth2Helper initialised for tenantId={} clientId={}",
                   tenantId, clientId);
     }
@@ -362,42 +358,4 @@ public class OAuth2Helper {
         log.debug("Token persisted to CredentialStore for account type: {}", type);
     }
 
-    /**
-     * Loads {@code application.properties} from the class-path.
-     *
-     * @return the loaded {@link Properties}
-     * @throws IOException if the file is absent or cannot be read
-     */
-    private Properties loadApplicationProperties() throws IOException {
-        InputStream is = getClass().getClassLoader()
-                                   .getResourceAsStream("application.properties");
-        if (is == null) {
-            throw new IOException(
-                    "application.properties not found on classpath. "
-                    + "Ensure src/main/resources/application.properties exists "
-                    + "and contains oauth.clientId and oauth.tenantId.");
-        }
-        Properties props = new Properties();
-        try (is) {
-            props.load(is);
-        }
-        return props;
-    }
-
-    /**
-     * Retrieves a mandatory property, throwing a clear exception if absent or blank.
-     *
-     * @param props the property set to query
-     * @param key   the property key
-     * @return      the trimmed property value
-     * @throws IllegalStateException if the property is missing or empty
-     */
-    private String requireProperty(Properties props, String key) {
-        String value = props.getProperty(key);
-        if (value == null || value.isBlank()) {
-            throw new IllegalStateException(
-                    "Required property '" + key + "' is missing or empty in application.properties.");
-        }
-        return value.trim();
-    }
 }

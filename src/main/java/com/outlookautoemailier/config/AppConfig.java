@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -99,16 +100,17 @@ public final class AppConfig {
     }
 
     /**
-     * Builds a merged {@link Properties} by layering two sources:
+     * Builds a merged {@link Properties} by layering three sources:
      * <ol>
-     *   <li><b>Classpath defaults</b> ({@code /application.properties}) — lowest priority.</li>
+     *   <li><b>.env file</b> ({@code .env} in project root) — highest priority.</li>
      *   <li><b>User-home override</b>
-     *       ({@code $HOME/.outlookautoemailier/application.properties}) — highest priority;
+     *       ({@code $HOME/.outlookautoemailier/application.properties}) — medium priority;
      *       any key present here silently overrides the classpath value.</li>
+     *   <li><b>Classpath defaults</b> ({@code /application.properties}) — lowest priority.</li>
      * </ol>
      *
      * <p>Missing sources are tolerated with a WARN log; a completely empty
-     * {@code Properties} object is returned when both sources fail so that
+     * {@code Properties} object is returned when all sources fail so that
      * callers fall back to hard-coded defaults.</p>
      *
      * @return the merged properties; never {@code null}
@@ -130,7 +132,7 @@ public final class AppConfig {
                     .warn("Failed to load classpath properties: {}", e.getMessage());
         }
 
-        // 2. Override with user home settings (highest priority)
+        // 2. Override with user home settings (medium priority)
         Path userProps = Paths.get(System.getProperty("user.home"),
                 ".outlookautoemailier", "application.properties");
         if (Files.exists(userProps)) {
@@ -144,6 +146,25 @@ public final class AppConfig {
                 LoggerFactory.getLogger(AppConfig.class)
                         .warn("Failed to load user properties override: {}", e.getMessage());
             }
+        }
+
+        // 3. Override with .env file (highest priority)
+        Path envFile = Paths.get(System.getProperty("user.dir"), ".env");
+        Map<String, String> envVars = EnvLoader.load(envFile);
+        
+        if (!envVars.isEmpty()) {
+            // Map environment variables to properties
+            merged.put("azure.client.id", envVars.getOrDefault("AZURE_CLIENT_ID", merged.getProperty("azure.client.id", "")));
+            merged.put("azure.tenant.id", envVars.getOrDefault("AZURE_TENANT_ID", merged.getProperty("azure.tenant.id", "")));
+            merged.put("smtp.host", envVars.getOrDefault("SMTP_HOST", merged.getProperty("smtp.host", "smtp.office365.com")));
+            merged.put("smtp.port", envVars.getOrDefault("SMTP_PORT", merged.getProperty("smtp.port", "587")));
+            merged.put("smtp.starttls.enabled", envVars.getOrDefault("SMTP_STARTTLS_ENABLED", merged.getProperty("smtp.starttls.enabled", "true")));
+            merged.put("rate.limit.emails.per.hour", envVars.getOrDefault("RATE_LIMIT_EMAILS_PER_HOUR", merged.getProperty("rate.limit.emails.per.hour", "100")));
+            merged.put("rate.limit.delay.min.ms", envVars.getOrDefault("RATE_LIMIT_DELAY_MIN_MS", merged.getProperty("rate.limit.delay.min.ms", "3000")));
+            merged.put("rate.limit.delay.max.ms", envVars.getOrDefault("RATE_LIMIT_DELAY_MAX_MS", merged.getProperty("rate.limit.delay.max.ms", "8000")));
+            merged.put("retry.max.attempts", envVars.getOrDefault("RETRY_MAX_ATTEMPTS", merged.getProperty("retry.max.attempts", "3")));
+            merged.put("retry.backoff.multiplier", envVars.getOrDefault("RETRY_BACKOFF_MULTIPLIER", merged.getProperty("retry.backoff.multiplier", "2")));
+            merged.put("logging.level", envVars.getOrDefault("LOGGING_LEVEL", merged.getProperty("logging.level", "INFO")));
         }
 
         return merged;

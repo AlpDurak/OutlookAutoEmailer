@@ -28,3 +28,247 @@ java.lang.IllegalStateException: Required property 'oauth.clientId' is missing o
 	at javafx.graphics@21.0.2/javafx.concurrent.Task$TaskCallable.call(Task.java:1399)
 	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328)
 	at java.base/java.lang.Thread.run(Thread.java:1474)
+18:16:14.709 [oauth-source] INFO  c.o.config.AppConfig - application.properties loaded from classpath.
+18:16:14.712 [oauth-source] INFO  c.o.config.EnvLoader - Loaded 11 variables from .env file: C:\Users\alpdu\Documents\OutlookAutoEmailer\.env
+18:16:14.773 [oauth-source] INFO  c.o.security.OAuth2Helper - Starting interactive OAuth2 authentication for account type: SOURCE
+18:16:21.540 [ForkJoinPool.commonPool-worker-1] WARN  c.m.a.msal4j.PublicClientApplication - [Correlation ID: eac9db87-5a55-4a6d-9524-25ba4b27c944] Execution of class com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier failed: AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'. Trace ID: 263b4a91-6442-4720-9191-5e1c6e9d1100 Correlation ID: 9437794d-2309-4d4e-a5e5-66fd2a4295c5 Timestamp: 2026-03-11 15:16:20Z
+18:16:21.543 [JavaFX Application Thread] ERROR c.o.ui.AccountSetupController - Source account authentication failed
+java.util.concurrent.ExecutionException: com.microsoft.aad.msal4j.MsalServiceException: AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'. Trace ID: 263b4a91-6442-4720-9191-5e1c6e9d1100 Correlation ID: 9437794d-2309-4d4e-a5e5-66fd2a4295c5 Timestamp: 2026-03-11 15:16:20Z
+	at java.base/java.util.concurrent.CompletableFuture.wrapInExecutionException(CompletableFuture.java:345)
+	at java.base/java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:440)
+	at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:2094)
+	at com.outlookautoemailier.security.OAuth2Helper.authenticate(OAuth2Helper.java:162)
+	at com.outlookautoemailier.ui.AccountSetupController$1.call(AccountSetupController.java:70)
+	at com.outlookautoemailier.ui.AccountSetupController$1.call(AccountSetupController.java:62)
+	at javafx.graphics@21.0.2/javafx.concurrent.Task$TaskCallable.call(Task.java:1399)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+Caused by: com.microsoft.aad.msal4j.MsalServiceException: AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'. Trace ID: 263b4a91-6442-4720-9191-5e1c6e9d1100 Correlation ID: 9437794d-2309-4d4e-a5e5-66fd2a4295c5 Timestamp: 2026-03-11 15:16:20Z
+	at com.microsoft.aad.msal4j.MsalServiceExceptionFactory.fromHttpResponse(MsalServiceExceptionFactory.java:45)
+	at com.microsoft.aad.msal4j.TokenRequestExecutor.createAuthenticationResultFromOauthHttpResponse(TokenRequestExecutor.java:113)
+	at com.microsoft.aad.msal4j.TokenRequestExecutor.executeTokenRequest(TokenRequestExecutor.java:36)
+	at com.microsoft.aad.msal4j.AbstractApplicationBase.acquireTokenCommon(AbstractApplicationBase.java:57)
+	at com.microsoft.aad.msal4j.AcquireTokenByAuthorizationGrantSupplier.execute(AcquireTokenByAuthorizationGrantSupplier.java:63)
+	at com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier.acquireTokenWithAuthorizationCode(AcquireTokenByInteractiveFlowSupplier.java:270)
+	at com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier.execute(AcquireTokenByInteractiveFlowSupplier.java:48)
+	at com.microsoft.aad.msal4j.AuthenticationResultSupplier.get(AuthenticationResultSupplier.java:69)
+	at com.microsoft.aad.msal4j.AuthenticationResultSupplier.get(AuthenticationResultSupplier.java:18)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1789)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1781)
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:511)
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1450)
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:2019)
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:187)
+18:20:33.213 [oauth-source] INFO  c.o.config.AppConfig - application.properties loaded from classpath.
+18:20:33.217 [oauth-source] INFO  c.o.config.EnvLoader - Loaded 11 variables from .env file: C:\Users\alpdu\Documents\OutlookAutoEmailer\.env
+18:20:33.223 [oauth-source] INFO  c.o.security.OAuth2Helper - Starting interactive OAuth2 authentication for account type: SOURCE
+18:20:36.288 [ForkJoinPool.commonPool-worker-1] WARN  c.m.a.msal4j.PublicClientApplication - [Correlation ID: 40c0759a-c18d-40f8-84f0-53d281789cb1] Execution of class com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier failed: AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'. Trace ID: f07d1c9e-ec5c-4179-9024-3bd228831100 Correlation ID: b27d57e8-d4e7-4367-9ea7-326fdf71baab Timestamp: 2026-03-11 15:20:35Z
+18:20:36.291 [JavaFX Application Thread] ERROR c.o.ui.AccountSetupController - Source account authentication failed
+java.util.concurrent.ExecutionException: com.microsoft.aad.msal4j.MsalServiceException: AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'. Trace ID: f07d1c9e-ec5c-4179-9024-3bd228831100 Correlation ID: b27d57e8-d4e7-4367-9ea7-326fdf71baab Timestamp: 2026-03-11 15:20:35Z
+	at java.base/java.util.concurrent.CompletableFuture.wrapInExecutionException(CompletableFuture.java:345)
+	at java.base/java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:440)
+	at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:2094)
+	at com.outlookautoemailier.security.OAuth2Helper.authenticate(OAuth2Helper.java:162)
+	at com.outlookautoemailier.ui.AccountSetupController$1.call(AccountSetupController.java:70)
+	at com.outlookautoemailier.ui.AccountSetupController$1.call(AccountSetupController.java:62)
+	at javafx.graphics@21.0.2/javafx.concurrent.Task$TaskCallable.call(Task.java:1399)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+Caused by: com.microsoft.aad.msal4j.MsalServiceException: AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'. Trace ID: f07d1c9e-ec5c-4179-9024-3bd228831100 Correlation ID: b27d57e8-d4e7-4367-9ea7-326fdf71baab Timestamp: 2026-03-11 15:20:35Z
+	at com.microsoft.aad.msal4j.MsalServiceExceptionFactory.fromHttpResponse(MsalServiceExceptionFactory.java:45)
+	at com.microsoft.aad.msal4j.TokenRequestExecutor.createAuthenticationResultFromOauthHttpResponse(TokenRequestExecutor.java:113)
+	at com.microsoft.aad.msal4j.TokenRequestExecutor.executeTokenRequest(TokenRequestExecutor.java:36)
+	at com.microsoft.aad.msal4j.AbstractApplicationBase.acquireTokenCommon(AbstractApplicationBase.java:57)
+	at com.microsoft.aad.msal4j.AcquireTokenByAuthorizationGrantSupplier.execute(AcquireTokenByAuthorizationGrantSupplier.java:63)
+	at com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier.acquireTokenWithAuthorizationCode(AcquireTokenByInteractiveFlowSupplier.java:270)
+	at com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier.execute(AcquireTokenByInteractiveFlowSupplier.java:48)
+	at com.microsoft.aad.msal4j.AuthenticationResultSupplier.get(AuthenticationResultSupplier.java:69)
+	at com.microsoft.aad.msal4j.AuthenticationResultSupplier.get(AuthenticationResultSupplier.java:18)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1789)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1781)
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:511)
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1450)
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:2019)
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:187)
+18:21:55.438 [oauth-source] INFO  c.o.security.OAuth2Helper - Starting interactive OAuth2 authentication for account type: SOURCE
+18:21:56.692 [ForkJoinPool.commonPool-worker-2] WARN  c.m.a.msal4j.PublicClientApplication - [Correlation ID: 4f1631e9-6014-48e8-b9be-269b72cc7f44] Execution of class com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier failed: AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'. Trace ID: 5694d275-e78a-44ac-b15c-5f0c2fdb1200 Correlation ID: b1f2aab2-2b25-498a-85ed-d110de7fd858 Timestamp: 2026-03-11 15:21:55Z
+18:21:56.692 [JavaFX Application Thread] ERROR c.o.ui.AccountSetupController - Source account authentication failed
+java.util.concurrent.ExecutionException: com.microsoft.aad.msal4j.MsalServiceException: AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'. Trace ID: 5694d275-e78a-44ac-b15c-5f0c2fdb1200 Correlation ID: b1f2aab2-2b25-498a-85ed-d110de7fd858 Timestamp: 2026-03-11 15:21:55Z
+	at java.base/java.util.concurrent.CompletableFuture.wrapInExecutionException(CompletableFuture.java:345)
+	at java.base/java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:440)
+	at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:2094)
+	at com.outlookautoemailier.security.OAuth2Helper.authenticate(OAuth2Helper.java:162)
+	at com.outlookautoemailier.ui.AccountSetupController$1.call(AccountSetupController.java:70)
+	at com.outlookautoemailier.ui.AccountSetupController$1.call(AccountSetupController.java:62)
+	at javafx.graphics@21.0.2/javafx.concurrent.Task$TaskCallable.call(Task.java:1399)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+Caused by: com.microsoft.aad.msal4j.MsalServiceException: AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'. Trace ID: 5694d275-e78a-44ac-b15c-5f0c2fdb1200 Correlation ID: b1f2aab2-2b25-498a-85ed-d110de7fd858 Timestamp: 2026-03-11 15:21:55Z
+	at com.microsoft.aad.msal4j.MsalServiceExceptionFactory.fromHttpResponse(MsalServiceExceptionFactory.java:45)
+	at com.microsoft.aad.msal4j.TokenRequestExecutor.createAuthenticationResultFromOauthHttpResponse(TokenRequestExecutor.java:113)
+	at com.microsoft.aad.msal4j.TokenRequestExecutor.executeTokenRequest(TokenRequestExecutor.java:36)
+	at com.microsoft.aad.msal4j.AbstractApplicationBase.acquireTokenCommon(AbstractApplicationBase.java:57)
+	at com.microsoft.aad.msal4j.AcquireTokenByAuthorizationGrantSupplier.execute(AcquireTokenByAuthorizationGrantSupplier.java:63)
+	at com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier.acquireTokenWithAuthorizationCode(AcquireTokenByInteractiveFlowSupplier.java:270)
+	at com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier.execute(AcquireTokenByInteractiveFlowSupplier.java:48)
+	at com.microsoft.aad.msal4j.AuthenticationResultSupplier.get(AuthenticationResultSupplier.java:69)
+	at com.microsoft.aad.msal4j.AuthenticationResultSupplier.get(AuthenticationResultSupplier.java:18)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1789)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1781)
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:511)
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1450)
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:2019)
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:187)
+18:22:10.814 [oauth-source] INFO  c.o.config.AppConfig - application.properties loaded from classpath.
+18:22:10.817 [oauth-source] INFO  c.o.config.EnvLoader - Loaded 11 variables from .env file: C:\Users\alpdu\Documents\OutlookAutoEmailer\.env
+18:22:10.821 [oauth-source] INFO  c.o.security.OAuth2Helper - Starting interactive OAuth2 authentication for account type: SOURCE
+18:22:13.448 [ForkJoinPool.commonPool-worker-1] WARN  c.m.a.msal4j.PublicClientApplication - [Correlation ID: ac9526cb-80dd-4e34-8235-66bdeb41a643] Execution of class com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier failed: AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'. Trace ID: e3819175-cb29-4565-bb35-aa9ac8341100 Correlation ID: 740e7968-b138-43ef-9c0c-8d21645bedc2 Timestamp: 2026-03-11 15:22:12Z
+18:22:13.448 [JavaFX Application Thread] ERROR c.o.ui.AccountSetupController - Source account authentication failed
+java.util.concurrent.ExecutionException: com.microsoft.aad.msal4j.MsalServiceException: AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'. Trace ID: e3819175-cb29-4565-bb35-aa9ac8341100 Correlation ID: 740e7968-b138-43ef-9c0c-8d21645bedc2 Timestamp: 2026-03-11 15:22:12Z
+	at java.base/java.util.concurrent.CompletableFuture.wrapInExecutionException(CompletableFuture.java:345)
+	at java.base/java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:440)
+	at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:2094)
+	at com.outlookautoemailier.security.OAuth2Helper.authenticate(OAuth2Helper.java:162)
+	at com.outlookautoemailier.ui.AccountSetupController$1.call(AccountSetupController.java:70)
+	at com.outlookautoemailier.ui.AccountSetupController$1.call(AccountSetupController.java:62)
+	at javafx.graphics@21.0.2/javafx.concurrent.Task$TaskCallable.call(Task.java:1399)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+Caused by: com.microsoft.aad.msal4j.MsalServiceException: AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'. Trace ID: e3819175-cb29-4565-bb35-aa9ac8341100 Correlation ID: 740e7968-b138-43ef-9c0c-8d21645bedc2 Timestamp: 2026-03-11 15:22:12Z
+	at com.microsoft.aad.msal4j.MsalServiceExceptionFactory.fromHttpResponse(MsalServiceExceptionFactory.java:45)
+	at com.microsoft.aad.msal4j.TokenRequestExecutor.createAuthenticationResultFromOauthHttpResponse(TokenRequestExecutor.java:113)
+	at com.microsoft.aad.msal4j.TokenRequestExecutor.executeTokenRequest(TokenRequestExecutor.java:36)
+	at com.microsoft.aad.msal4j.AbstractApplicationBase.acquireTokenCommon(AbstractApplicationBase.java:57)
+	at com.microsoft.aad.msal4j.AcquireTokenByAuthorizationGrantSupplier.execute(AcquireTokenByAuthorizationGrantSupplier.java:63)
+	at com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier.acquireTokenWithAuthorizationCode(AcquireTokenByInteractiveFlowSupplier.java:270)
+	at com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier.execute(AcquireTokenByInteractiveFlowSupplier.java:48)
+	at com.microsoft.aad.msal4j.AuthenticationResultSupplier.get(AuthenticationResultSupplier.java:69)
+	at com.microsoft.aad.msal4j.AuthenticationResultSupplier.get(AuthenticationResultSupplier.java:18)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1789)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1781)
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:511)
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1450)
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:2019)
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:187)
+18:23:56.141 [oauth-source] INFO  c.o.security.OAuth2Helper - Starting interactive OAuth2 authentication for account type: SOURCE
+18:23:57.483 [ForkJoinPool.commonPool-worker-2] WARN  c.m.a.msal4j.PublicClientApplication - [Correlation ID: 9cec786e-b6ab-4408-be27-903968fb90a5] Execution of class com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier failed: AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'. Trace ID: 51608dd6-d733-470d-9e7e-6725ba191000 Correlation ID: 8926c412-dcc0-40eb-b2f0-befd57bb602a Timestamp: 2026-03-11 15:23:56Z
+18:23:57.484 [JavaFX Application Thread] ERROR c.o.ui.AccountSetupController - Source account authentication failed
+java.util.concurrent.ExecutionException: com.microsoft.aad.msal4j.MsalServiceException: AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'. Trace ID: 51608dd6-d733-470d-9e7e-6725ba191000 Correlation ID: 8926c412-dcc0-40eb-b2f0-befd57bb602a Timestamp: 2026-03-11 15:23:56Z
+	at java.base/java.util.concurrent.CompletableFuture.wrapInExecutionException(CompletableFuture.java:345)
+	at java.base/java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:440)
+	at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:2094)
+	at com.outlookautoemailier.security.OAuth2Helper.authenticate(OAuth2Helper.java:162)
+	at com.outlookautoemailier.ui.AccountSetupController$1.call(AccountSetupController.java:70)
+	at com.outlookautoemailier.ui.AccountSetupController$1.call(AccountSetupController.java:62)
+	at javafx.graphics@21.0.2/javafx.concurrent.Task$TaskCallable.call(Task.java:1399)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+Caused by: com.microsoft.aad.msal4j.MsalServiceException: AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'. Trace ID: 51608dd6-d733-470d-9e7e-6725ba191000 Correlation ID: 8926c412-dcc0-40eb-b2f0-befd57bb602a Timestamp: 2026-03-11 15:23:56Z
+	at com.microsoft.aad.msal4j.MsalServiceExceptionFactory.fromHttpResponse(MsalServiceExceptionFactory.java:45)
+	at com.microsoft.aad.msal4j.TokenRequestExecutor.createAuthenticationResultFromOauthHttpResponse(TokenRequestExecutor.java:113)
+	at com.microsoft.aad.msal4j.TokenRequestExecutor.executeTokenRequest(TokenRequestExecutor.java:36)
+	at com.microsoft.aad.msal4j.AbstractApplicationBase.acquireTokenCommon(AbstractApplicationBase.java:57)
+	at com.microsoft.aad.msal4j.AcquireTokenByAuthorizationGrantSupplier.execute(AcquireTokenByAuthorizationGrantSupplier.java:63)
+	at com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier.acquireTokenWithAuthorizationCode(AcquireTokenByInteractiveFlowSupplier.java:270)
+	at com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier.execute(AcquireTokenByInteractiveFlowSupplier.java:48)
+	at com.microsoft.aad.msal4j.AuthenticationResultSupplier.get(AuthenticationResultSupplier.java:69)
+	at com.microsoft.aad.msal4j.AuthenticationResultSupplier.get(AuthenticationResultSupplier.java:18)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1789)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1781)
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:511)
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1450)
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:2019)
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:187)
+18:24:30.303 [oauth-source] INFO  c.o.config.AppConfig - application.properties loaded from classpath.
+18:24:30.306 [oauth-source] INFO  c.o.config.EnvLoader - Loaded 11 variables from .env file: C:\Users\alpdu\Documents\OutlookAutoEmailer\.env
+18:24:30.310 [oauth-source] INFO  c.o.security.OAuth2Helper - Starting interactive OAuth2 authentication for account type: SOURCE
+18:24:32.611 [ForkJoinPool.commonPool-worker-1] WARN  c.m.a.msal4j.PublicClientApplication - [Correlation ID: 639e3378-a1a1-412d-8540-e25134fa965b] Execution of class com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier failed: AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'. Trace ID: 11cd87aa-83c8-41d3-a044-f5ec46431300 Correlation ID: 98fda4c0-8a3c-4cb0-b431-c9a8aad3373a Timestamp: 2026-03-11 15:24:31Z
+18:24:32.612 [JavaFX Application Thread] ERROR c.o.ui.AccountSetupController - Source account authentication failed
+java.util.concurrent.ExecutionException: com.microsoft.aad.msal4j.MsalServiceException: AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'. Trace ID: 11cd87aa-83c8-41d3-a044-f5ec46431300 Correlation ID: 98fda4c0-8a3c-4cb0-b431-c9a8aad3373a Timestamp: 2026-03-11 15:24:31Z
+	at java.base/java.util.concurrent.CompletableFuture.wrapInExecutionException(CompletableFuture.java:345)
+	at java.base/java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:440)
+	at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:2094)
+	at com.outlookautoemailier.security.OAuth2Helper.authenticate(OAuth2Helper.java:162)
+	at com.outlookautoemailier.ui.AccountSetupController$1.call(AccountSetupController.java:70)
+	at com.outlookautoemailier.ui.AccountSetupController$1.call(AccountSetupController.java:62)
+	at javafx.graphics@21.0.2/javafx.concurrent.Task$TaskCallable.call(Task.java:1399)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+Caused by: com.microsoft.aad.msal4j.MsalServiceException: AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'. Trace ID: 11cd87aa-83c8-41d3-a044-f5ec46431300 Correlation ID: 98fda4c0-8a3c-4cb0-b431-c9a8aad3373a Timestamp: 2026-03-11 15:24:31Z
+	at com.microsoft.aad.msal4j.MsalServiceExceptionFactory.fromHttpResponse(MsalServiceExceptionFactory.java:45)
+	at com.microsoft.aad.msal4j.TokenRequestExecutor.createAuthenticationResultFromOauthHttpResponse(TokenRequestExecutor.java:113)
+	at com.microsoft.aad.msal4j.TokenRequestExecutor.executeTokenRequest(TokenRequestExecutor.java:36)
+	at com.microsoft.aad.msal4j.AbstractApplicationBase.acquireTokenCommon(AbstractApplicationBase.java:57)
+	at com.microsoft.aad.msal4j.AcquireTokenByAuthorizationGrantSupplier.execute(AcquireTokenByAuthorizationGrantSupplier.java:63)
+	at com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier.acquireTokenWithAuthorizationCode(AcquireTokenByInteractiveFlowSupplier.java:270)
+	at com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier.execute(AcquireTokenByInteractiveFlowSupplier.java:48)
+	at com.microsoft.aad.msal4j.AuthenticationResultSupplier.get(AuthenticationResultSupplier.java:69)
+	at com.microsoft.aad.msal4j.AuthenticationResultSupplier.get(AuthenticationResultSupplier.java:18)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1789)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1781)
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:511)
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1450)
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:2019)
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:187)
+18:27:48.400 [oauth-source] INFO  c.o.config.AppConfig - application.properties loaded from classpath.
+18:27:48.408 [oauth-source] INFO  c.o.config.EnvLoader - Loaded 11 variables from .env file: C:\Users\alpdu\Documents\OutlookAutoEmailer\.env
+18:27:48.414 [oauth-source] INFO  c.o.security.OAuth2Helper - Starting interactive OAuth2 authentication for account type: SOURCE
+18:27:51.249 [ForkJoinPool.commonPool-worker-1] WARN  c.m.a.msal4j.PublicClientApplication - [Correlation ID: e38f01a8-fb6d-4d6f-8235-ef78f1460d95] Execution of class com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier failed: AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'. Trace ID: 16a562df-2cd0-4047-b72a-fb66fbd11100 Correlation ID: 26c0a747-745d-4ea4-ab06-7e1a70d5d05a Timestamp: 2026-03-11 15:27:50Z
+18:27:51.250 [JavaFX Application Thread] ERROR c.o.ui.AccountSetupController - Source account authentication failed
+java.util.concurrent.ExecutionException: com.microsoft.aad.msal4j.MsalServiceException: AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'. Trace ID: 16a562df-2cd0-4047-b72a-fb66fbd11100 Correlation ID: 26c0a747-745d-4ea4-ab06-7e1a70d5d05a Timestamp: 2026-03-11 15:27:50Z
+	at java.base/java.util.concurrent.CompletableFuture.wrapInExecutionException(CompletableFuture.java:345)
+	at java.base/java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:440)
+	at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:2094)
+	at com.outlookautoemailier.security.OAuth2Helper.authenticate(OAuth2Helper.java:162)
+	at com.outlookautoemailier.ui.AccountSetupController$1.call(AccountSetupController.java:70)
+	at com.outlookautoemailier.ui.AccountSetupController$1.call(AccountSetupController.java:62)
+	at javafx.graphics@21.0.2/javafx.concurrent.Task$TaskCallable.call(Task.java:1399)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+Caused by: com.microsoft.aad.msal4j.MsalServiceException: AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret'. Trace ID: 16a562df-2cd0-4047-b72a-fb66fbd11100 Correlation ID: 26c0a747-745d-4ea4-ab06-7e1a70d5d05a Timestamp: 2026-03-11 15:27:50Z
+	at com.microsoft.aad.msal4j.MsalServiceExceptionFactory.fromHttpResponse(MsalServiceExceptionFactory.java:45)
+	at com.microsoft.aad.msal4j.TokenRequestExecutor.createAuthenticationResultFromOauthHttpResponse(TokenRequestExecutor.java:113)
+	at com.microsoft.aad.msal4j.TokenRequestExecutor.executeTokenRequest(TokenRequestExecutor.java:36)
+	at com.microsoft.aad.msal4j.AbstractApplicationBase.acquireTokenCommon(AbstractApplicationBase.java:57)
+	at com.microsoft.aad.msal4j.AcquireTokenByAuthorizationGrantSupplier.execute(AcquireTokenByAuthorizationGrantSupplier.java:63)
+	at com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier.acquireTokenWithAuthorizationCode(AcquireTokenByInteractiveFlowSupplier.java:270)
+	at com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier.execute(AcquireTokenByInteractiveFlowSupplier.java:48)
+	at com.microsoft.aad.msal4j.AuthenticationResultSupplier.get(AuthenticationResultSupplier.java:69)
+	at com.microsoft.aad.msal4j.AuthenticationResultSupplier.get(AuthenticationResultSupplier.java:18)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1789)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1781)
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:511)
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1450)
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:2019)
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:187)
+18:31:33.502 [oauth-source] INFO  c.o.security.OAuth2Helper - Starting interactive OAuth2 authentication for account type: SOURCE
+18:32:00.919 [oauth-source] INFO  c.o.config.AppConfig - application.properties loaded from classpath.
+18:32:00.923 [oauth-source] INFO  c.o.config.EnvLoader - Loaded 11 variables from .env file: C:\Users\alpdu\Documents\OutlookAutoEmailer\.env
+18:32:00.930 [oauth-source] INFO  c.o.security.OAuth2Helper - Starting interactive OAuth2 authentication for account type: SOURCE
+18:32:00.993 [ForkJoinPool.commonPool-worker-1] WARN  c.m.a.msal4j.PublicClientApplication - [Correlation ID: c2cf7a36-9f78-40c7-bfb7-7477f2bf7931] Execution of class com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier failed: Address already in use: bind
+18:32:00.994 [JavaFX Application Thread] ERROR c.o.ui.AccountSetupController - Source account authentication failed
+java.util.concurrent.ExecutionException: com.microsoft.aad.msal4j.MsalClientException: Address already in use: bind
+	at java.base/java.util.concurrent.CompletableFuture.wrapInExecutionException(CompletableFuture.java:345)
+	at java.base/java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:440)
+	at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:2094)
+	at com.outlookautoemailier.security.OAuth2Helper.authenticate(OAuth2Helper.java:162)
+	at com.outlookautoemailier.ui.AccountSetupController$1.call(AccountSetupController.java:70)
+	at com.outlookautoemailier.ui.AccountSetupController$1.call(AccountSetupController.java:62)
+	at javafx.graphics@21.0.2/javafx.concurrent.Task$TaskCallable.call(Task.java:1399)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+Caused by: com.microsoft.aad.msal4j.MsalClientException: Address already in use: bind
+	at com.microsoft.aad.msal4j.HttpListener.startListener(HttpListener.java:29)
+	at com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier.startHttpListener(AcquireTokenByInteractiveFlowSupplier.java:99)
+	at com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier.getAuthorizationResult(AcquireTokenByInteractiveFlowSupplier.java:64)
+	at com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier.execute(AcquireTokenByInteractiveFlowSupplier.java:46)
+	at com.microsoft.aad.msal4j.AuthenticationResultSupplier.get(AuthenticationResultSupplier.java:69)
+	at com.microsoft.aad.msal4j.AuthenticationResultSupplier.get(AuthenticationResultSupplier.java:18)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1789)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1781)
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:511)
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1450)
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:2019)
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:187)
+18:33:34.049 [ForkJoinPool.commonPool-worker-2] WARN  c.m.a.m.AcquireTokenByInteractiveFlowSupplier - Listener timed out after 120 seconds, no authorization code was returned from the server during that time.
+18:33:34.050 [ForkJoinPool.commonPool-worker-2] WARN  c.m.a.msal4j.PublicClientApplication - [Correlation ID: 6f6b12b1-f7e7-4cce-b8ef-a99c4bf30587] Execution of class com.microsoft.aad.msal4j.AcquireTokenByInteractiveFlowSupplier failed: No Authorization code was returned from the server
