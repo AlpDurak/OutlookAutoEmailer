@@ -1,59 +1,69 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   OutlookAutoEmailer — Global Stylesheet
-   Theme: dark sidebar + light content area
+   OutlookAutoEmailer — Modern UI Theme
+   Design: Clean, professional, dark sidebar + bright content
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Root / global defaults ──────────────────────────────────────────────── */
+/* ── Design tokens ───────────────────────────────────────────────────────── */
+/* Primary blue:   #2563eb  (#1d4ed8 dark, #3b82f6 light)
+   Sidebar dark:  #0f172a  (#1e293b mid)
+   Success green: #16a34a
+   Danger red:    #dc2626
+   Neutral:       #f8fafc surface / #e2e8f0 border / #64748b muted text */
+
+/* ── Root / global ───────────────────────────────────────────────────────── */
 .root {
-    -fx-background-color: #f4f4f4;
-    -fx-font-family: "Segoe UI", "Helvetica Neue", "Arial", sans-serif;
+    -fx-background-color: #f8fafc;
+    -fx-font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
     -fx-font-size: 13px;
+    -fx-text-fill: #1e293b;
 }
 
 /* ── Sidebar ─────────────────────────────────────────────────────────────── */
 .sidebar {
-    -fx-background-color: #2c3e50;
-    -fx-text-fill: white;
+    -fx-background-color: #0f172a;
 }
 
-/* ── App title inside sidebar ────────────────────────────────────────────── */
+/* ── App title ───────────────────────────────────────────────────────────── */
 .app-title {
-    -fx-font-size: 14px;
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
-    -fx-text-fill: #ecf0f1;
-    -fx-padding: 15px 12px 15px 12px;
+    -fx-text-fill: #94a3b8;
+    -fx-padding: 18 14 10 14;
     -fx-wrap-text: true;
+    -fx-letter-spacing: 0.05em;
 }
 
 /* ── Sidebar separator ───────────────────────────────────────────────────── */
 .sidebar .separator .line {
-    -fx-border-color: #3d5166;
-    -fx-border-width: 1px;
+    -fx-border-color: #1e293b;
+    -fx-border-width: 1;
 }
 
 /* ── Navigation toggle buttons ───────────────────────────────────────────── */
 .nav-button {
     -fx-background-color: transparent;
-    -fx-text-fill: #bdc3c7;
+    -fx-text-fill: #94a3b8;
     -fx-border-color: transparent;
     -fx-border-width: 0;
-    -fx-padding: 12px 20px 12px 20px;
+    -fx-padding: 11 18 11 18;
     -fx-alignment: CENTER_LEFT;
     -fx-cursor: hand;
     -fx-background-radius: 0;
     -fx-font-size: 13px;
     -fx-max-width: Infinity;
+    -fx-graphic-text-gap: 10;
 }
 
 .nav-button:hover {
-    -fx-background-color: #34495e;
-    -fx-text-fill: #ecf0f1;
+    -fx-background-color: #1e293b;
+    -fx-text-fill: #e2e8f0;
 }
 
 .nav-button:selected {
-    -fx-background-color: #3498db;
-    -fx-text-fill: white;
+    -fx-background-color: #1e40af;
+    -fx-text-fill: #ffffff;
     -fx-font-weight: bold;
+    -fx-effect: innershadow(gaussian, rgba(59,130,246,0.4), 0, 0, -3, 0);
 }
 
 .nav-button:focused {
@@ -63,254 +73,459 @@
 
 /* ── Main content area ───────────────────────────────────────────────────── */
 .content-area {
-    -fx-background-color: white;
+    -fx-background-color: #f8fafc;
 }
 
 /* ── Page titles ─────────────────────────────────────────────────────────── */
 .page-title {
-    -fx-font-size: 20px;
+    -fx-font-size: 22px;
     -fx-font-weight: bold;
-    -fx-text-fill: #2c3e50;
+    -fx-text-fill: #0f172a;
+    -fx-padding: 0 0 2 0;
 }
 
-/* ── Primary action button ───────────────────────────────────────────────── */
+/* ── Buttons — base ──────────────────────────────────────────────────────── */
+.button {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #374151;
+    -fx-background-radius: 6;
+    -fx-border-color: #d1d5db;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-padding: 7 14 7 14;
+    -fx-cursor: hand;
+    -fx-font-size: 12px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 2, 0, 0, 1);
+}
+
+.button:hover {
+    -fx-background-color: #f9fafb;
+    -fx-border-color: #9ca3af;
+}
+
+.button:pressed {
+    -fx-background-color: #f3f4f6;
+    -fx-effect: none;
+}
+
+.button:focused {
+    -fx-border-color: #2563eb;
+    -fx-effect: dropshadow(gaussian, rgba(37,99,235,0.3), 4, 0, 0, 0);
+}
+
+/* ── Primary button ──────────────────────────────────────────────────────── */
 .primary-button {
-    -fx-background-color: #3498db;
-    -fx-text-fill: white;
-    -fx-background-radius: 4px;
-    -fx-border-radius: 4px;
-    -fx-padding: 8px 16px 8px 16px;
+    -fx-background-color: #2563eb;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 6;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-border-radius: 6;
+    -fx-padding: 8 18 8 18;
     -fx-cursor: hand;
     -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-effect: dropshadow(gaussian, rgba(37,99,235,0.35), 6, 0, 0, 2);
 }
 
 .primary-button:hover {
-    -fx-background-color: #2980b9;
+    -fx-background-color: #1d4ed8;
+    -fx-effect: dropshadow(gaussian, rgba(29,78,216,0.45), 8, 0, 0, 3);
 }
 
 .primary-button:pressed {
-    -fx-background-color: #21618c;
+    -fx-background-color: #1e40af;
+    -fx-effect: none;
 }
 
 /* ── Danger button ───────────────────────────────────────────────────────── */
 .danger-button {
-    -fx-background-color: #e74c3c;
-    -fx-text-fill: white;
-    -fx-background-radius: 4px;
-    -fx-border-radius: 4px;
-    -fx-padding: 8px 16px 8px 16px;
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #dc2626;
+    -fx-background-radius: 6;
+    -fx-border-color: #fca5a5;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-padding: 7 14 7 14;
     -fx-cursor: hand;
-    -fx-font-weight: bold;
 }
 
 .danger-button:hover {
-    -fx-background-color: #c0392b;
+    -fx-background-color: #fef2f2;
+    -fx-border-color: #f87171;
 }
 
 .danger-button:pressed {
-    -fx-background-color: #a93226;
+    -fx-background-color: #fee2e2;
 }
 
-/* ── Connection status labels ────────────────────────────────────────────── */
+/* ── Status labels ───────────────────────────────────────────────────────── */
 .status-connected {
-    -fx-text-fill: #27ae60;
+    -fx-text-fill: #16a34a;
     -fx-font-weight: bold;
 }
 
 .status-disconnected {
-    -fx-text-fill: #e74c3c;
+    -fx-text-fill: #dc2626;
 }
 
-/* ── Version label (bottom of sidebar) ──────────────────────────────────── */
+/* ── Version label ───────────────────────────────────────────────────────── */
 .version-label {
-    -fx-text-fill: #7f8c8d;
+    -fx-text-fill: #334155;
     -fx-font-size: 11px;
-    -fx-padding: 10px 0px 10px 0px;
+    -fx-padding: 10 0 10 0;
+    -fx-opacity: 0.6;
 }
 
 /* ── TableView ───────────────────────────────────────────────────────────── */
 .table-view {
-    -fx-background-color: white;
-    -fx-border-color: #dee2e6;
-    -fx-border-width: 1px;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
     -fx-table-cell-border-color: transparent;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 8, 0, 0, 2);
 }
 
 .table-view .column-header-background {
-    -fx-background-color: #ecf0f1;
+    -fx-background-color: #f1f5f9;
+    -fx-background-radius: 8 8 0 0;
 }
 
 .table-view .column-header,
 .table-view .filler {
-    -fx-background-color: #ecf0f1;
-    -fx-border-color: #dee2e6;
-    -fx-border-width: 0 1px 1px 0;
-    -fx-size: 34px;
+    -fx-background-color: #f1f5f9;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 0 0 1 0;
+    -fx-size: 38px;
 }
 
 .table-view .column-header .label {
     -fx-font-weight: bold;
-    -fx-text-fill: #2c3e50;
-    -fx-font-size: 12px;
+    -fx-text-fill: #475569;
+    -fx-font-size: 11px;
+    -fx-text-transform: uppercase;
 }
 
-/* Alternating row colors */
+.table-row-cell {
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+
 .table-row-cell:even {
     -fx-background-color: #ffffff;
 }
 
 .table-row-cell:odd {
-    -fx-background-color: #f8f9fa;
+    -fx-background-color: #f8fafc;
 }
 
 .table-row-cell:selected {
-    -fx-background-color: #d0e8f7;
-    -fx-text-fill: #2c3e50;
+    -fx-background-color: #eff6ff;
+    -fx-text-fill: #1e40af;
+}
+
+.table-row-cell:selected .table-cell {
+    -fx-text-fill: #1e40af;
 }
 
 .table-row-cell:hover {
-    -fx-background-color: #e8f4fd;
+    -fx-background-color: #f0f9ff;
 }
 
 .table-view .table-cell {
-    -fx-text-fill: #2c3e50;
-    -fx-padding: 6px 8px;
+    -fx-text-fill: #374151;
+    -fx-padding: 8 10 8 10;
     -fx-border-color: transparent;
+    -fx-font-size: 12px;
 }
 
-/* ── Queue Dashboard: stat cards ────────────────────────────────────────── */
+/* ── Stat cards (Queue Dashboard + Analytics) ────────────────────────────── */
 .stat-card {
-    -fx-background-color: #f8f9fa;
-    -fx-background-radius: 8px;
-    -fx-border-radius: 8px;
-    -fx-border-color: #dee2e6;
-    -fx-border-width: 1px;
-    -fx-padding: 15px;
-    -fx-min-width: 120px;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1;
+    -fx-padding: 20 24 20 24;
+    -fx-min-width: 130px;
     -fx-alignment: CENTER;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 8, 0, 0, 2);
 }
 
 .stat-count {
-    -fx-font-size: 28px;
+    -fx-font-size: 32px;
     -fx-font-weight: bold;
-    -fx-text-fill: #2c3e50;
+    -fx-text-fill: #0f172a;
 }
 
 .stat-label {
-    -fx-font-size: 12px;
-    -fx-text-fill: #7f8c8d;
+    -fx-font-size: 11px;
+    -fx-text-fill: #64748b;
+    -fx-font-weight: bold;
+    -fx-text-transform: uppercase;
+    -fx-letter-spacing: 0.05em;
+    -fx-padding: 4 0 0 0;
 }
 
 /* ── ProgressBar ─────────────────────────────────────────────────────────── */
 .progress-bar {
-    -fx-accent: #3498db;
+    -fx-accent: #2563eb;
+    -fx-background-radius: 6;
 }
 
 .progress-bar .track {
-    -fx-background-color: #ecf0f1;
-    -fx-background-radius: 4px;
+    -fx-background-color: #e2e8f0;
+    -fx-background-radius: 6;
 }
 
 .progress-bar .bar {
-    -fx-background-color: #3498db;
-    -fx-background-radius: 4px;
+    -fx-background-color: linear-gradient(to right, #2563eb, #3b82f6);
+    -fx-background-radius: 6;
     -fx-background-insets: 0;
 }
 
-/* ── TitledPane (AccountSetup cards) ────────────────────────────────────── */
+/* ── ProgressIndicator ───────────────────────────────────────────────────── */
+.progress-indicator {
+    -fx-progress-color: #2563eb;
+}
+
+/* ── TitledPane ──────────────────────────────────────────────────────────── */
 .titled-pane > .title {
-    -fx-background-color: #ecf0f1;
+    -fx-background-color: #f1f5f9;
     -fx-font-weight: bold;
-    -fx-text-fill: #2c3e50;
+    -fx-text-fill: #374151;
+    -fx-background-radius: 8 8 0 0;
+    -fx-border-radius: 8 8 0 0;
+    -fx-padding: 10 14 10 14;
+}
+
+.titled-pane > .title:hover {
+    -fx-background-color: #e2e8f0;
 }
 
 .titled-pane > .content {
     -fx-background-color: #ffffff;
-    -fx-border-color: #dee2e6;
-    -fx-border-width: 1px;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 0 1 1 1;
+    -fx-border-radius: 0 0 8 8;
+    -fx-padding: 2;
 }
 
 /* ── TextFields & TextAreas ──────────────────────────────────────────────── */
 .text-field,
 .text-area {
-    -fx-background-color: white;
-    -fx-border-color: #ced4da;
-    -fx-border-width: 1px;
-    -fx-border-radius: 4px;
-    -fx-background-radius: 4px;
-    -fx-padding: 6px 10px;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d1d5db;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 8 12 8 12;
+    -fx-font-size: 13px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 2, 0, 0, 1);
 }
 
 .text-field:focused,
 .text-area:focused {
-    -fx-border-color: #3498db;
-    -fx-effect: dropshadow(gaussian, rgba(52,152,219,0.25), 4, 0, 0, 0);
+    -fx-border-color: #2563eb;
+    -fx-effect: dropshadow(gaussian, rgba(37,99,235,0.2), 6, 0, 0, 0);
+}
+
+.text-field:hover,
+.text-area:hover {
+    -fx-border-color: #9ca3af;
 }
 
 /* ── Spinners ────────────────────────────────────────────────────────────── */
 .spinner {
-    -fx-background-color: white;
-    -fx-border-color: #ced4da;
-    -fx-border-width: 1px;
-    -fx-border-radius: 4px;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d1d5db;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
 }
 
 .spinner:focused {
-    -fx-border-color: #3498db;
+    -fx-border-color: #2563eb;
+    -fx-effect: dropshadow(gaussian, rgba(37,99,235,0.2), 4, 0, 0, 0);
+}
+
+.spinner .increment-arrow-button,
+.spinner .decrement-arrow-button {
+    -fx-background-color: #f3f4f6;
+    -fx-border-color: #d1d5db;
+}
+
+.spinner .increment-arrow-button:hover,
+.spinner .decrement-arrow-button:hover {
+    -fx-background-color: #e5e7eb;
+}
+
+/* ── ComboBox / ChoiceBox ────────────────────────────────────────────────── */
+.combo-box,
+.choice-box {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d1d5db;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 4 8 4 8;
+    -fx-cursor: hand;
+}
+
+.combo-box:focused,
+.choice-box:focused {
+    -fx-border-color: #2563eb;
+    -fx-effect: dropshadow(gaussian, rgba(37,99,235,0.2), 4, 0, 0, 0);
+}
+
+.combo-box .list-cell,
+.choice-box .label {
+    -fx-text-fill: #374151;
+    -fx-font-size: 13px;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 12, 0, 0, 4);
+}
+
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: #eff6ff;
+}
+
+.combo-box-popup .list-cell:selected {
+    -fx-background-color: #dbeafe;
+    -fx-text-fill: #1e40af;
+}
+
+/* ── ColorPicker ─────────────────────────────────────────────────────────── */
+.color-picker {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d1d5db;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
 }
 
 /* ── Scrollbars ──────────────────────────────────────────────────────────── */
 .scroll-bar:vertical .track,
 .scroll-bar:horizontal .track {
-    -fx-background-color: #f1f3f5;
+    -fx-background-color: #f1f5f9;
+    -fx-border-color: transparent;
+    -fx-background-radius: 4;
 }
 
 .scroll-bar:vertical .thumb,
 .scroll-bar:horizontal .thumb {
-    -fx-background-color: #adb5bd;
-    -fx-background-radius: 4px;
+    -fx-background-color: #cbd5e1;
+    -fx-background-radius: 4;
 }
 
 .scroll-bar:vertical .thumb:hover,
 .scroll-bar:horizontal .thumb:hover {
-    -fx-background-color: #6c757d;
+    -fx-background-color: #94a3b8;
 }
 
 .scroll-bar .increment-button,
 .scroll-bar .decrement-button {
     -fx-background-color: transparent;
-    -fx-padding: 2px;
+    -fx-padding: 2;
+}
+
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-background-color: #94a3b8;
+    -fx-shape: " ";
+    -fx-padding: 0;
 }
 
 /* ── Separator ───────────────────────────────────────────────────────────── */
 .separator .line {
-    -fx-border-color: #dee2e6;
-    -fx-border-width: 1px;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1;
 }
 
-/* ── Alert dialogs ───────────────────────────────────────────────────────── */
+/* ── Alert / Dialog pane ─────────────────────────────────────────────────── */
 .dialog-pane {
-    -fx-background-color: white;
+    -fx-background-color: #ffffff;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 24, 0, 0, 8);
 }
 
 .dialog-pane .header-panel {
-    -fx-background-color: #f8f9fa;
+    -fx-background-color: #f8fafc;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 0 0 1 0;
 }
 
-/* ── Generic default button styling ─────────────────────────────────────── */
-.button {
-    -fx-background-color: #e9ecef;
-    -fx-text-fill: #2c3e50;
-    -fx-background-radius: 4px;
-    -fx-border-radius: 4px;
-    -fx-padding: 7px 14px;
+.dialog-pane .content {
+    -fx-padding: 16;
+}
+
+/* ── Tooltip ─────────────────────────────────────────────────────────────── */
+.tooltip {
+    -fx-background-color: #1e293b;
+    -fx-text-fill: #f8fafc;
+    -fx-background-radius: 6;
+    -fx-font-size: 12px;
+    -fx-padding: 6 10 6 10;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0, 0, 2);
+}
+
+/* ── CheckBox ────────────────────────────────────────────────────────────── */
+.check-box .box {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-border-width: 2;
+}
+
+.check-box:selected .box {
+    -fx-background-color: #2563eb;
+    -fx-border-color: #2563eb;
+}
+
+.check-box:selected .mark {
+    -fx-background-color: #ffffff;
+}
+
+.check-box:hover .box {
+    -fx-border-color: #2563eb;
+}
+
+/* ── Help / info labels ──────────────────────────────────────────────────── */
+.help-label {
+    -fx-text-fill: #64748b;
+    -fx-font-size: 12px;
+    -fx-wrap-text: true;
+    -fx-padding: 4 0 4 0;
+}
+
+/* ── Secondary button ────────────────────────────────────────────────────── */
+.secondary-button {
+    -fx-background-color: #f1f5f9;
+    -fx-text-fill: #374151;
+    -fx-background-radius: 6;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-padding: 7 14 7 14;
     -fx-cursor: hand;
 }
 
-.button:hover {
-    -fx-background-color: #dee2e6;
+.secondary-button:hover {
+    -fx-background-color: #e2e8f0;
 }
 
-.button:pressed {
-    -fx-background-color: #ced4da;
+/* ── Label (generic) ─────────────────────────────────────────────────────── */
+.label {
+    -fx-text-fill: #374151;
 }

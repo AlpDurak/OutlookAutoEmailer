@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.Map;
@@ -305,6 +306,32 @@ public class OAuth2Helper {
     }
 
     // ------------------------------------------------------------------
+    //  Public session-restore helper
+    // ------------------------------------------------------------------
+
+    /**
+     * Attempts to silently acquire a token using accounts cached from a previous session.
+     * Returns {@code null} if no cached account is available or silent auth fails.
+     */
+    public IAuthenticationResult tryRestoreSession(EmailAccount.AccountType type, String[] scopes) {
+        try {
+            PublicClientApplication app = getOrCreatePca(type);
+            java.util.Optional<IAccount> account = app.getAccounts().join().stream().findFirst();
+            if (account.isEmpty()) return null;
+            SilentParameters silentParams = SilentParameters
+                    .builder(Set.of(scopes), account.get())
+                    .build();
+            IAuthenticationResult result = app.acquireTokenSilently(silentParams).get();
+            tokenCache.put(type, result);
+            log.info("Session restored silently for type: {} ({})", type, result.account().username());
+            return result;
+        } catch (Exception e) {
+            log.debug("Silent session restore failed for type {}: {}", type, e.getMessage());
+            return null;
+        }
+    }
+
+    // ------------------------------------------------------------------
     //  Private helpers
     // ------------------------------------------------------------------
 
@@ -324,11 +351,41 @@ public class OAuth2Helper {
             PublicClientApplication app = PublicClientApplication
                     .builder(clientId)
                     .authority(authority)
+                    .setTokenCacheAccessAspect(new PersistentTokenCache(type))
                     .build();
 
             pca.put(type, app);
         }
         return pca.get(type);
+    }
+
+    /** Persists MSAL's internal token cache to disk so sessions survive restarts. */
+    private static class PersistentTokenCache implements com.microsoft.aad.msal4j.ITokenCacheAccessAspect {
+        private final Path cacheFile;
+
+        PersistentTokenCache(EmailAccount.AccountType type) {
+            cacheFile = Path.of(System.getProperty("user.home"),
+                    ".outlookautoemailier", "msal-cache-" + type.name().toLowerCase() + ".json");
+        }
+
+        @Override
+        public void beforeCacheAccess(com.microsoft.aad.msal4j.ITokenCacheAccessContext ctx) {
+            if (java.nio.file.Files.exists(cacheFile)) {
+                try {
+                    ctx.tokenCache().deserialize(java.nio.file.Files.readString(cacheFile));
+                } catch (Exception e) { /* ignore corrupt cache */ }
+            }
+        }
+
+        @Override
+        public void afterCacheAccess(com.microsoft.aad.msal4j.ITokenCacheAccessContext ctx) {
+            if (ctx.hasCacheChanged()) {
+                try {
+                    java.nio.file.Files.createDirectories(cacheFile.getParent());
+                    java.nio.file.Files.writeString(cacheFile, ctx.tokenCache().serialize());
+                } catch (Exception e) { /* ignore */ }
+            }
+        }
     }
 
     /**

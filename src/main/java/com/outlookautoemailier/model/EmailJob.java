@@ -43,6 +43,7 @@ public final class EmailJob implements Comparable<EmailJob> {
     // ------------------------------------------------------------------ //
 
     private final UUID          id;
+    private final String        batchId;      // groups jobs from the same compose-and-send action
     private final Contact       contact;
     private final EmailTemplate template;
     private final int           priority;
@@ -57,6 +58,7 @@ public final class EmailJob implements Comparable<EmailJob> {
 
     private EmailJob(Builder builder) {
         this.id           = builder.id != null ? builder.id : UUID.randomUUID();
+        this.batchId      = builder.batchId;
         this.contact      = Objects.requireNonNull(builder.contact,  "contact must not be null");
         this.template     = Objects.requireNonNull(builder.template, "template must not be null");
         this.priority     = builder.priority;
@@ -131,6 +133,10 @@ public final class EmailJob implements Comparable<EmailJob> {
 
     public UUID getId() {
         return id;
+    }
+
+    public String getBatchId() {
+        return batchId;
     }
 
     public Contact getContact() {
@@ -211,6 +217,7 @@ public final class EmailJob implements Comparable<EmailJob> {
     public static final class Builder {
 
         private UUID          id;
+        private String        batchId;
         private Contact       contact;
         private EmailTemplate template;
         private int           priority     = 5;
@@ -225,6 +232,11 @@ public final class EmailJob implements Comparable<EmailJob> {
 
         public Builder id(UUID id) {
             this.id = id;
+            return this;
+        }
+
+        public Builder batchId(String batchId) {
+            this.batchId = batchId;
             return this;
         }
 

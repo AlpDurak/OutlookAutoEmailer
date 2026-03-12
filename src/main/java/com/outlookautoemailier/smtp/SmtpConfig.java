@@ -117,6 +117,26 @@ public class SmtpConfig {
                 .build();
     }
 
+    /**
+     * Returns a pre-configured {@code SmtpConfig} for Gmail with OAuth2 (XOAUTH2).
+     *
+     * <ul>
+     *   <li>Host: {@code smtp.gmail.com}</li>
+     *   <li>Port: 587 (STARTTLS)</li>
+     *   <li>OAuth2: enabled (XOAUTH2 with Google access token)</li>
+     * </ul>
+     */
+    public static SmtpConfig gmailOAuth2() {
+        return new Builder()
+                .host("smtp.gmail.com")
+                .port(587)
+                .startTlsEnabled(true)
+                .useOAuth2(true)
+                .connectionTimeoutMs(10_000)
+                .readTimeoutMs(30_000)
+                .build();
+    }
+
     // ------------------------------------------------------------------
     //  Getters
     // ------------------------------------------------------------------

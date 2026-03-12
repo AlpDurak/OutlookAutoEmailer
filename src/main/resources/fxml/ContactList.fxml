@@ -7,6 +7,7 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -74,6 +75,16 @@
             </VBox>
         </TitledPane>
 
+        <!-- ── Groups bar ────────────────────────────────────────────────── -->
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <Label text="Group:" minWidth="50"/>
+            <ComboBox fx:id="groupComboBox" promptText="All contacts" prefWidth="160"/>
+            <Button text="+ New Group" onAction="#onCreateGroup"/>
+            <Button text="Add to Group" onAction="#onAddToGroup"/>
+            <Button text="Remove from Group" onAction="#onRemoveFromGroup"/>
+            <Button text="Delete Group" onAction="#onDeleteGroup" styleClass="danger-button"/>
+        </HBox>
+
         <!-- ── Row 2: count + bulk-select actions ───────────────────────── -->
         <HBox spacing="8" alignment="CENTER_LEFT">
             <Label fx:id="contactCountLabel" text="0 contacts"/>
@@ -93,6 +104,7 @@
                 <TableColumn fx:id="emailColumn"    text="Email"     prefWidth="220"/>
                 <TableColumn fx:id="companyColumn"  text="Company"   prefWidth="160"/>
                 <TableColumn fx:id="jobTitleColumn" text="Job Title" prefWidth="150"/>
+                <TableColumn fx:id="unsubColumn" text="Status" prefWidth="100"/>
             </columns>
             <placeholder>
                 <Label text="No contacts loaded. Click Refresh to fetch from Outlook."/>

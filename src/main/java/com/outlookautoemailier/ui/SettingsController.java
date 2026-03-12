@@ -43,6 +43,8 @@ public class SettingsController implements Initializable {
     @FXML private Spinner<Integer> smtpPortSpinner;
     @FXML private Spinner<Integer> maxRetrySpinner;
     @FXML private TextField        imgbbApiKeyField;
+    @FXML private TextField        googleClientIdField;
+    @FXML private TextField        googleClientSecretField;
     @FXML private Label            saveStatusLabel;
 
     // ── Defaults ─────────────────────────────────────────────────────────────
@@ -126,6 +128,8 @@ public class SettingsController implements Initializable {
         props.setProperty("smtp.port",                  String.valueOf(spinnerValue(smtpPortSpinner, DEFAULT_SMTP_PORT)));
         props.setProperty("retry.max.attempts",         String.valueOf(spinnerValue(maxRetrySpinner, DEFAULT_MAX_RETRY)));
         props.setProperty("imgbb.api.key",               imgbbApiKeyField.getText().trim());
+        props.setProperty("google.client.id",            googleClientIdField.getText().trim());
+        props.setProperty("google.client.secret",        googleClientSecretField.getText().trim());
 
         try {
             Files.createDirectories(PROPS_PATH.getParent());
@@ -161,6 +165,8 @@ public class SettingsController implements Initializable {
         smtpPortSpinner.getValueFactory().setValue(DEFAULT_SMTP_PORT);
         maxRetrySpinner.getValueFactory().setValue(DEFAULT_MAX_RETRY);
         imgbbApiKeyField.setText("");
+        googleClientIdField.setText("");
+        googleClientSecretField.setText("");
         saveStatusLabel.setText("Defaults restored. Click Save to persist.");
         saveStatusLabel.getStyleClass().removeAll("status-connected", "status-disconnected");
     }
@@ -192,6 +198,8 @@ public class SettingsController implements Initializable {
         smtpHostField.setText(host.isBlank() ? DEFAULT_SMTP_HOST : host);
 
         imgbbApiKeyField.setText(props.getProperty("imgbb.api.key", ""));
+        googleClientIdField.setText(props.getProperty("google.client.id", ""));
+        googleClientSecretField.setText(props.getProperty("google.client.secret", ""));
     }
 
     private static void setSpinner(Spinner<Integer> spinner, Properties props,

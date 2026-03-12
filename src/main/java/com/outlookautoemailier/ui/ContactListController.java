@@ -3,6 +3,8 @@ package com.outlookautoemailier.ui;
 import com.outlookautoemailier.AppContext;
 import com.outlookautoemailier.api.ContactFetcher;
 import com.outlookautoemailier.model.Contact;
+import com.outlookautoemailier.model.ContactGroup;
+import com.outlookautoemailier.model.ContactGroupStore;
 import com.outlookautoemailier.util.StudentEmailParser;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -15,10 +17,12 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.FlowPane;
 import org.slf4j.Logger;
@@ -91,6 +95,10 @@ public class ContactListController implements Initializable {
     @FXML private TableColumn<ContactRow, String>  emailColumn;
     @FXML private TableColumn<ContactRow, String>  companyColumn;
     @FXML private TableColumn<ContactRow, String>  jobTitleColumn;
+    @FXML private TableColumn<ContactRow, String>  unsubColumn;
+
+    // ── FXML — groups bar ─────────────────────────────────────────────────────
+    @FXML private ComboBox<ContactGroup> groupComboBox;
 
     // ── Data ──────────────────────────────────────────────────────────────────
     private final ObservableList<ContactRow> allContacts = FXCollections.observableArrayList();
@@ -130,6 +138,38 @@ public class ContactListController implements Initializable {
         bindSearchFilter();
         updateContactCount();
         AppContext.get().setContactListController(this);
+
+        // Groups
+        refreshGroupCombo();
+        groupComboBox.getSelectionModel().selectedItemProperty().addListener(
+            (obs, old, sel) -> applyGroupFilter(sel));
+
+        // Right-click context menu for unsubscribe/resubscribe
+        contactTable.setRowFactory(tv -> {
+            javafx.scene.control.TableRow<ContactRow> row = new javafx.scene.control.TableRow<>();
+            javafx.scene.control.ContextMenu menu = new javafx.scene.control.ContextMenu();
+            javafx.scene.control.MenuItem unsubItem = new javafx.scene.control.MenuItem("Unsubscribe");
+            javafx.scene.control.MenuItem resubItem = new javafx.scene.control.MenuItem("Remove from suppression list");
+            unsubItem.setOnAction(e -> {
+                ContactRow cr = row.getItem();
+                if (cr == null) return;
+                String email = cr.getContact().getPrimaryEmail();
+                com.outlookautoemailier.security.UnsubscribeManager.getInstance().addUnsubscribe(email);
+                contactTable.refresh();
+            });
+            resubItem.setOnAction(e -> {
+                ContactRow cr = row.getItem();
+                if (cr == null) return;
+                String email = cr.getContact().getPrimaryEmail();
+                com.outlookautoemailier.security.UnsubscribeManager.getInstance().removeSuppression(email);
+                contactTable.refresh();
+            });
+            menu.getItems().addAll(unsubItem, resubItem);
+            row.setOnContextMenuRequested(event -> {
+                if (!row.isEmpty()) menu.show(row, event.getScreenX(), event.getScreenY());
+            });
+            return row;
+        });
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -139,8 +179,25 @@ public class ContactListController implements Initializable {
     private void configureCellValueFactories() {
         contactTable.setEditable(true);
         selectColumn.setCellValueFactory(cd -> cd.getValue().selectedProperty());
-        selectColumn.setCellFactory(
-                javafx.scene.control.cell.CheckBoxTableCell.forTableColumn(selectColumn));
+        selectColumn.setCellFactory(col ->
+                new javafx.scene.control.cell.CheckBoxTableCell<ContactRow, Boolean>() {
+                    @Override
+                    public void updateItem(Boolean item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                            setDisable(false);
+                            setStyle("");
+                            return;
+                        }
+                        ContactRow row = getTableRow().getItem();
+                        String email = row.getContact().getPrimaryEmail();
+                        boolean suppressed = com.outlookautoemailier.security.UnsubscribeManager
+                                .getInstance().isSuppressed(email);
+                        setDisable(suppressed);
+                        setStyle(suppressed ? "-fx-opacity:0.35;" : "");
+                        if (suppressed) row.setSelected(false);
+                    }
+                });
         selectColumn.setEditable(true);
 
         nameColumn.setCellValueFactory(cd ->
@@ -151,6 +208,24 @@ public class ContactListController implements Initializable {
                 new SimpleStringProperty(cd.getValue().getContact().getCompany()));
         jobTitleColumn.setCellValueFactory(cd ->
                 new SimpleStringProperty(cd.getValue().getContact().getJobTitle()));
+
+        unsubColumn.setCellValueFactory(cd -> {
+            String email = cd.getValue().getContact().getPrimaryEmail();
+            boolean suppressed = com.outlookautoemailier.security.UnsubscribeManager
+                .getInstance().isSuppressed(email);
+            return new SimpleStringProperty(suppressed ? "Unsubscribed" : "Active");
+        });
+        unsubColumn.setCellFactory(col -> new javafx.scene.control.TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item);
+                setStyle("Unsubscribed".equals(item)
+                    ? "-fx-text-fill:#ef4444;-fx-font-weight:bold;"
+                    : "-fx-text-fill:#16a34a;");
+            }
+        });
     }
 
     private void bindSearchFilter() {
@@ -361,7 +436,12 @@ public class ContactListController implements Initializable {
 
     @FXML
     private void onSelectAll() {
-        filteredContacts.forEach(row -> row.setSelected(true));
+        filteredContacts.forEach(row -> {
+            String email = row.getContact().getPrimaryEmail();
+            if (!com.outlookautoemailier.security.UnsubscribeManager.getInstance().isSuppressed(email)) {
+                row.setSelected(true);
+            }
+        });
         selectColumn.setVisible(false);
         selectColumn.setVisible(true);
     }
@@ -394,6 +474,8 @@ public class ContactListController implements Initializable {
     private void onSendToSelected() {
         List<Contact> selected = allContacts.stream()
                 .filter(ContactRow::isSelected)
+                .filter(row -> !com.outlookautoemailier.security.UnsubscribeManager
+                        .getInstance().isSuppressed(row.getContact().getPrimaryEmail()))
                 .map(ContactRow::getContact)
                 .collect(Collectors.toList());
 
@@ -454,6 +536,25 @@ public class ContactListController implements Initializable {
         onRefresh();
     }
 
+    /**
+     * Returns the subset of loaded contacts whose primary email is in {@code emails}.
+     * Used by ComposeController to resolve a ContactGroup's email set into Contact objects.
+     */
+    public java.util.List<com.outlookautoemailier.model.Contact> getContactsByEmails(java.util.Set<String> emails) {
+        if (emails == null || emails.isEmpty()) return java.util.Collections.emptyList();
+        java.util.Set<String> lower = emails.stream()
+            .map(String::toLowerCase)
+            .collect(java.util.stream.Collectors.toSet());
+        java.util.List<com.outlookautoemailier.model.Contact> result = new java.util.ArrayList<>();
+        for (ContactRow row : allContacts) {
+            String email = row.getContact().getPrimaryEmail();
+            if (email != null && lower.contains(email.toLowerCase())) {
+                result.add(row.getContact());
+            }
+        }
+        return result;
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     //  Helpers
     // ─────────────────────────────────────────────────────────────────────────
@@ -470,5 +571,91 @@ public class ContactListController implements Initializable {
             contactCountLabel.setText(visible + " of " + total + " shown"
                     + (selected > 0 ? "  \u00b7  " + selected + " selected" : ""));
         }
+    }
+
+    // ── Group management ─────────────────────────────────────────────────────
+
+    private void refreshGroupCombo() {
+        ContactGroup selected = groupComboBox.getValue();
+        groupComboBox.getItems().clear();
+        groupComboBox.getItems().addAll(ContactGroupStore.getInstance().getAll());
+        // Restore selection if still present
+        if (selected != null) {
+            groupComboBox.getItems().stream()
+                .filter(g -> g.getId().equals(selected.getId()))
+                .findFirst()
+                .ifPresent(groupComboBox::setValue);
+        }
+    }
+
+    private void applyGroupFilter(ContactGroup group) {
+        // Re-run existing filter logic with group constraint
+        applyFilters();
+    }
+
+    @FXML
+    private void onCreateGroup() {
+        TextInputDialog dlg = new TextInputDialog();
+        dlg.setTitle("New Group");
+        dlg.setHeaderText(null);
+        dlg.setContentText("Group name:");
+        dlg.showAndWait().ifPresent(name -> {
+            if (!name.isBlank()) {
+                ContactGroupStore.getInstance().addGroup(new ContactGroup(name.trim()));
+                refreshGroupCombo();
+            }
+        });
+    }
+
+    @FXML
+    private void onAddToGroup() {
+        ContactGroup group = groupComboBox.getValue();
+        if (group == null) {
+            showInfo("Select a group first.");
+            return;
+        }
+        // Use checkbox selection, not table row-click selection
+        List<ContactRow> checked = allContacts.stream()
+                .filter(ContactRow::isSelected)
+                .collect(Collectors.toList());
+        if (checked.isEmpty()) {
+            showInfo("Tick the checkboxes next to contacts you want to add, then click Add to Group.");
+            return;
+        }
+        checked.forEach(row -> group.addEmail(row.getContact().getPrimaryEmail()));
+        ContactGroupStore.getInstance().updateGroup(group);
+        showInfo("Added " + checked.size() + " contact(s) to \"" + group.getName() + "\".");
+    }
+
+    @FXML
+    private void onRemoveFromGroup() {
+        ContactGroup group = groupComboBox.getValue();
+        if (group == null) { showInfo("Select a group first."); return; }
+        List<ContactRow> checked = allContacts.stream()
+                .filter(ContactRow::isSelected)
+                .collect(Collectors.toList());
+        if (checked.isEmpty()) { showInfo("Tick checkboxes to select contacts, then click Remove from Group."); return; }
+        checked.forEach(row -> group.removeEmail(row.getContact().getPrimaryEmail()));
+        ContactGroupStore.getInstance().updateGroup(group);
+        showInfo("Removed " + checked.size() + " contact(s) from \"" + group.getName() + "\".");
+    }
+
+    @FXML
+    private void onDeleteGroup() {
+        ContactGroup group = groupComboBox.getValue();
+        if (group == null) { showInfo("Select a group to delete."); return; }
+        ContactGroupStore.getInstance().removeGroup(group.getId());
+        groupComboBox.setValue(null);
+        refreshGroupCombo();
+        showInfo("Group \"" + group.getName() + "\" deleted.");
+    }
+
+    private void showInfo(String msg) {
+        javafx.scene.control.Alert a = new javafx.scene.control.Alert(
+            javafx.scene.control.Alert.AlertType.INFORMATION);
+        a.setTitle("Groups");
+        a.setHeaderText(null);
+        a.setContentText(msg);
+        a.showAndWait();
     }
 }

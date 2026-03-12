@@ -3,6 +3,8 @@ package com.outlookautoemailier.ui;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.outlookautoemailier.AppContext;
 import com.outlookautoemailier.model.Contact;
+import com.outlookautoemailier.model.ContactGroup;
+import com.outlookautoemailier.model.ContactGroupStore;
 import com.outlookautoemailier.model.EmailJob;
 import com.outlookautoemailier.model.EmailTemplate;
 import com.outlookautoemailier.queue.EmailQueue;
@@ -43,6 +45,9 @@ public class ComposeController implements Initializable {
     // ── Template controls ────────────────────────────────────────────────────
     @FXML private TextField templateNameField;
 
+    // ── Campaign name ─────────────────────────────────────────────────────────
+    @FXML private TextField campaignNameField;
+
     // ── Subject row ──────────────────────────────────────────────────────────
     @FXML private TextField subjectField;
 
@@ -55,6 +60,9 @@ public class ComposeController implements Initializable {
     // ── HTML mode controls ────────────────────────────────────────────────────
     @FXML private ToggleButton htmlModeToggle;
     @FXML private WebView      htmlPreview;
+
+    // ── Group selector ────────────────────────────────────────────────────────
+    @FXML private ComboBox<ContactGroup> groupComboBox;
 
     // ── State ────────────────────────────────────────────────────────────────
 
@@ -76,6 +84,9 @@ public class ComposeController implements Initializable {
                 htmlPreview.getEngine().loadContent(newVal != null ? newVal : "");
             }
         });
+
+        // Populate group ComboBox
+        refreshGroupCombo();
     }
 
     // ── Public API ───────────────────────────────────────────────────────────
@@ -305,9 +316,28 @@ public class ComposeController implements Initializable {
                 .html(htmlMode)
                 .build();
 
-        // Create one EmailJob per recipient
+        // Resolve campaign name (campaignNameField takes priority over template name)
+        String campaignName = (campaignNameField != null && !campaignNameField.getText().isBlank())
+                ? campaignNameField.getText().trim()
+                : template.getName();
+
+        // Create a batch record to group all jobs from this compose action
+        String batchId = java.util.UUID.randomUUID().toString();
+        com.outlookautoemailier.analytics.EmailBatch batch =
+                new com.outlookautoemailier.analytics.EmailBatch(
+                        batchId,
+                        campaignName,
+                        template.getSubject(),
+                        java.time.LocalDateTime.now(),
+                        recipients.size()
+                );
+        com.outlookautoemailier.analytics.BatchStore.getInstance().addBatch(batch);
+        com.outlookautoemailier.integration.SupabaseAnalyticsSync.pushBatchAsync(batch);
+
+        // Create one EmailJob per recipient, all sharing the same batchId
         List<EmailJob> jobs = recipients.stream()
                 .map(contact -> EmailJob.builder()
+                        .batchId(batchId)
                         .contact(contact)
                         .template(template)
                         .priority(5)
@@ -343,6 +373,44 @@ public class ComposeController implements Initializable {
         if (mainCtrl != null) {
             mainCtrl.navigateToQueue();
         }
+    }
+
+    // ── Group selector helpers ────────────────────────────────────────────────
+
+    private void refreshGroupCombo() {
+        if (groupComboBox == null) return;
+        java.util.List<ContactGroup> groups = ContactGroupStore.getInstance().getAll();
+        groupComboBox.setItems(javafx.collections.FXCollections.observableArrayList(groups));
+        // Display only the group name
+        groupComboBox.setConverter(new javafx.util.StringConverter<>() {
+            @Override public String toString(ContactGroup g) { return g == null ? "" : g.getName(); }
+            @Override public ContactGroup fromString(String s) { return null; }
+        });
+    }
+
+    @FXML
+    private void onGroupSelected() {
+        if (groupComboBox == null) return;
+        ContactGroup selected = groupComboBox.getValue();
+        if (selected == null) return;
+        // Get full Contact objects by email
+        ContactListController clc = AppContext.get().getContactListController();
+        if (clc == null) {
+            showAlert(Alert.AlertType.WARNING, "Contacts Not Loaded",
+                    "Please load contacts first before selecting a group.");
+            return;
+        }
+        java.util.Set<String> emails = new java.util.HashSet<>(selected.getContactEmails());
+        java.util.List<com.outlookautoemailier.model.Contact> contacts = clc.getContactsByEmails(emails);
+        if (contacts.isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "Empty Group",
+                    "No loaded contacts match the emails in group \"" + selected.getName() + "\".\n"
+                  + "Make sure contacts are loaded first.");
+            return;
+        }
+        setRecipients(contacts);
+        showAlert(Alert.AlertType.INFORMATION, "Group Selected",
+                selected.getName() + ": " + contacts.size() + " recipient(s) selected.");
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────

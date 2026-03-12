@@ -183,31 +183,39 @@ public class SmtpSender {
         String resolvedSubject = job.getTemplate().resolveSubject(job.getContact());
         String resolvedBody    = job.getTemplate().resolveBody(job.getContact());
 
-        // Create a SentEmailRecord for every sent email (analytics).
-        // For HTML emails with the pixel server running, also inject the tracking pixel.
+        // Create a SentEmailRecord for analytics (includes batchId for grouping)
         com.outlookautoemailier.analytics.SentEmailRecord trackingRecord =
                 new com.outlookautoemailier.analytics.SentEmailRecord(
+                        job.getBatchId(),
                         recipientEmail,
                         job.getContact().getDisplayName(),
                         resolvedSubject,
                         java.time.LocalDateTime.now()
                 );
-        if (job.getTemplate().isHtml()) {
-            com.outlookautoemailier.analytics.TrackingPixelServer pixelServer =
-                    com.outlookautoemailier.AppContext.get().getTrackingPixelServer();
-            if (pixelServer != null && pixelServer.isRunning()) {
-                String pixelUrl = pixelServer.pixelUrl(trackingRecord.getTrackingId());
-                resolvedBody = resolvedBody + "\n<img src=\"" + pixelUrl
-                        + "\" width=\"1\" height=\"1\" alt=\"\" style=\"display:none;\"/>";
-            }
-        }
 
-        // Upload inline Base64 images to imgbb so email clients render them
         if (job.getTemplate().isHtml()) {
+            // Upload inline Base64 images to imgbb (cached per unique image)
             String imgbbKey = com.outlookautoemailier.config.AppConfig.getInstance().getImgbbApiKey();
             if (!imgbbKey.isBlank()) {
                 resolvedBody = replaceInlineImagesWithHosted(resolvedBody, imgbbKey);
             }
+            // Append branded footer before normalizing
+            resolvedBody = resolvedBody + "\n" + EmailFooter.generate(
+                senderAccount.getEmailAddress(), recipientEmail);
+            // Inject click-tracking redirect links (skips unsubscribe / mailto / tel)
+            resolvedBody = LinkTracker.injectTrackingLinks(
+                    resolvedBody, trackingRecord.getTrackingId(), job.getBatchId());
+            // Embed 1×1 tracking pixel so open events can be recorded in Supabase
+            String anonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+                    + ".eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnYmhnd2RncWlueHd4ZWRobm1jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyOTI2NjEsImV4cCI6MjA4ODg2ODY2MX0"
+                    + ".wwlqMBYKU53gv2mG15MM70allTNevZut8Mkg5mOu4Mw";
+            resolvedBody = resolvedBody
+                    + "<img src=\"https://tgbhgwdgqinxwxedhnmc.supabase.co/functions/v1/track-open"
+                    + "?apikey=" + anonKey
+                    + "&id=" + trackingRecord.getTrackingId()
+                    + "\" width=\"1\" height=\"1\" border=\"0\" alt=\"\">";
+            // Normalise HTML for cross-client compatibility (Outlook, Gmail, Apple Mail)
+            resolvedBody = HtmlEmailNormalizer.normalize(resolvedBody);
         }
 
         // 2. Construct the MIME message
@@ -254,7 +262,35 @@ public class SmtpSender {
             log.info("Delivered job {} to {} (subject: '{}')",
                     job.getId(), recipientEmail, resolvedSubject);
             com.outlookautoemailier.analytics.SentEmailStore.getInstance().add(trackingRecord);
+            // Update batch counters and push to Supabase
+            if (job.getBatchId() != null) {
+                com.outlookautoemailier.analytics.BatchStore.getInstance().incrementSent(job.getBatchId());
+            }
+            com.outlookautoemailier.integration.SupabaseAnalyticsSync.pushSendAsync(trackingRecord);
         } catch (MessagingException ex) {
+            // Record the failure in analytics
+            String truncated = ex.getMessage() != null
+                    ? ex.getMessage().substring(0, Math.min(ex.getMessage().length(), 200))
+                    : "Unknown error";
+            com.outlookautoemailier.analytics.SentEmailRecord failRecord =
+                new com.outlookautoemailier.analytics.SentEmailRecord(
+                    java.util.UUID.randomUUID().toString(),
+                    job.getBatchId(),
+                    recipientEmail,
+                    job.getContact().getDisplayName(),
+                    resolvedSubject,
+                    java.time.LocalDateTime.now(),
+                    "FAILED",
+                    truncated,
+                    null
+                );
+            com.outlookautoemailier.analytics.SentEmailStore.getInstance().add(failRecord);
+            // Update batch failure counter and push to Supabase
+            if (job.getBatchId() != null) {
+                com.outlookautoemailier.analytics.BatchStore.getInstance().incrementFailed(job.getBatchId());
+            }
+            com.outlookautoemailier.integration.SupabaseAnalyticsSync.pushSendAsync(failRecord);
+
             if (isPermanentFailure(ex)) {
                 log.warn("Permanent SMTP failure for job {} to {}: {}",
                         job.getId(), recipientEmail, ex.getMessage());
@@ -379,10 +415,18 @@ public class SmtpSender {
         Pattern pat = Pattern.compile("src=\"data:image/[^;]+;base64,([^\"]+)\"");
         Matcher mat = pat.matcher(html);
         StringBuffer sb = new StringBuffer();
+        ImageCache cache = ImageCache.getInstance();
         while (mat.find()) {
             String base64Data = mat.group(1);
             try {
-                String url = ImageHostingService.uploadBase64(base64Data, apiKey);
+                String url = cache.get(base64Data);
+                if (url == null) {
+                    url = ImageHostingService.uploadBase64(base64Data, apiKey);
+                    cache.put(base64Data, url);
+                    log.info("Uploaded image to imgbb: {}", url);
+                } else {
+                    log.debug("Using cached imgbb URL for image");
+                }
                 mat.appendReplacement(sb, Matcher.quoteReplacement("src=\"" + url + "\""));
             } catch (Exception e) {
                 log.warn("Failed to upload inline image to imgbb: {}", e.getMessage());

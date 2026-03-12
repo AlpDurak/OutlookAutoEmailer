@@ -70,7 +70,6 @@ public final class AppConfig {
     private final int retryMaxAttempts;
     private final double retryBackoffMultiplier;
     private final String loggingLevel;
-    private final String imgbbApiKey;
 
     // ---------------------------------------------------------------------------
     // Constructor (private — use getInstance())
@@ -88,7 +87,6 @@ public final class AppConfig {
         retryMaxAttempts       = parseIntProp(props,  "retry.max.attempts",           3);
         retryBackoffMultiplier = parseDoubleProp(props, "retry.backoff.multiplier",  2.0);
         loggingLevel           = props.getProperty("logging.level", "INFO");
-        imgbbApiKey            = props.getProperty("imgbb.api.key", "");
 
         validate();
     }
@@ -289,9 +287,9 @@ public final class AppConfig {
         return loggingLevel;
     }
 
-    public String getImgbbApiKey() {
-        return imgbbApiKey;
-    }
+    public String getImgbbApiKey()       { return DotEnvLoader.get("IMGBB_API_KEY"); }
+    public String getGoogleClientId()    { return DotEnvLoader.get("GOOGLE_CLIENT_ID"); }
+    public String getGoogleClientSecret(){ return DotEnvLoader.get("GOOGLE_CLIENT_SECRET"); }
 
     // ---------------------------------------------------------------------------
     // Diagnostics

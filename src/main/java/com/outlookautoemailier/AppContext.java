@@ -9,7 +9,6 @@ import com.outlookautoemailier.security.RateLimiter;
 import com.outlookautoemailier.security.SpamGuard;
 import com.outlookautoemailier.smtp.SmtpConfig;
 import com.outlookautoemailier.smtp.SmtpSender;
-import com.outlookautoemailier.analytics.TrackingPixelServer;
 import com.outlookautoemailier.ui.AccountSetupController;
 import com.outlookautoemailier.ui.AnalyticsController;
 import com.outlookautoemailier.ui.ComposeController;
@@ -78,6 +77,8 @@ public class AppContext {
     private ContactFetcher        contactFetcher;
     private OAuth2Helper          oauth2Helper;
     private SmtpSender            smtpSender;
+    /** Set by AccountSetupController before initBackend() to select the sender's SMTP provider. */
+    private SmtpConfig            senderSmtpConfig;
 
     // ── UI controller fields ──────────────────────────────────────────────────
 
@@ -88,10 +89,6 @@ public class AppContext {
     private QueueDashboardController  queueDashboardController;
     private TemplateStudioController  templateStudioController;
     private AnalyticsController       analyticsController;
-
-    // ── Analytics / tracking ──────────────────────────────────────────────────
-
-    private TrackingPixelServer trackingPixelServer;
 
     // ── Status helpers ────────────────────────────────────────────────────────
 
@@ -155,8 +152,8 @@ public class AppContext {
         // Create RateLimiter with 100 emails/hour
         RateLimiter rateLimiter = new RateLimiter(100);
 
-        // Create SmtpSender with Office 365 XOAUTH2 config
-        SmtpConfig smtpConfig = SmtpConfig.office365();
+        // Create SmtpSender — use caller-specified config or default to Office 365
+        SmtpConfig smtpConfig = (senderSmtpConfig != null) ? senderSmtpConfig : SmtpConfig.office365();
         smtpSender = new SmtpSender(smtpConfig, senderAccount, spamGuard);
         smtpSender.connect();
 
@@ -170,8 +167,8 @@ public class AppContext {
             contactFetcher = new ContactFetcher();
         }
 
-        trackingPixelServer = new TrackingPixelServer();
-        trackingPixelServer.start();
+        // Sync unsubscribes with Supabase in the background
+        com.outlookautoemailier.integration.SupabaseUnsubscribeSync.syncAsync();
 
         log.info("AppContext backend initialised.");
     }
@@ -284,11 +281,7 @@ public class AppContext {
         this.analyticsController = analyticsController;
     }
 
-    public TrackingPixelServer getTrackingPixelServer() {
-        return trackingPixelServer;
-    }
+    public SmtpConfig getSenderSmtpConfig() { return senderSmtpConfig; }
+    public void setSenderSmtpConfig(SmtpConfig cfg) { this.senderSmtpConfig = cfg; }
 
-    public void setTrackingPixelServer(TrackingPixelServer trackingPixelServer) {
-        this.trackingPixelServer = trackingPixelServer;
-    }
 }

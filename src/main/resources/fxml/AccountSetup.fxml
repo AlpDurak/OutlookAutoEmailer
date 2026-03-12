@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TitledPane?>
@@ -56,7 +57,15 @@
                     <Insets top="12" right="16" bottom="16" left="16"/>
                 </padding>
 
-                <Label text="Used to send outgoing emails via Microsoft 365 (XOAUTH2)." wrapText="true"/>
+                <!-- Provider selector -->
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="Provider:"/>
+                    <ChoiceBox fx:id="senderProviderChoice" prefWidth="180"/>
+                </HBox>
+
+                <Label fx:id="gmailHintLabel"
+                       text="Gmail: enter your Google Client ID &amp; Secret in Settings first."
+                       wrapText="true" styleClass="help-label" managed="false" visible="false"/>
 
                 <!-- Status row -->
                 <HBox spacing="8" alignment="CENTER_LEFT">

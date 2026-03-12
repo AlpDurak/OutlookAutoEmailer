@@ -10,22 +10,18 @@ import java.io.*;
 import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Stores and retrieves sent-email tracking records.
- * Thread-safe singleton.
+ * Stores and retrieves sent-email records.
+ * Thread-safe singleton; records are appended to a JSONL file on disk.
  */
 public class SentEmailStore {
 
-    private static final Logger log = LoggerFactory.getLogger(SentEmailStore.class);
+    private static final Logger      log      = LoggerFactory.getLogger(SentEmailStore.class);
     private static final SentEmailStore INSTANCE = new SentEmailStore();
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final ObjectMapper MAPPER   = new ObjectMapper();
 
     private final Path storePath;
-    // trackingId → record (in-memory index for fast lookup by tracking pixel server)
-    private final Map<String, SentEmailRecord> byTrackingId = new ConcurrentHashMap<>();
-    // ordered list for the UI table
     private final List<SentEmailRecord> records = Collections.synchronizedList(new ArrayList<>());
 
     private SentEmailStore() {
@@ -44,16 +40,10 @@ public class SentEmailStore {
     /** Adds a new record and appends it to disk immediately. */
     public void add(SentEmailRecord record) {
         records.add(record);
-        byTrackingId.put(record.getTrackingId(), record);
         appendToDisk(record);
     }
 
-    /** Looks up a record by tracking ID (called by TrackingPixelServer on opens). */
-    public SentEmailRecord findByTrackingId(String id) {
-        return byTrackingId.get(id);
-    }
-
-    /** Returns an unmodifiable snapshot for the UI. Newest first. */
+    /** Returns an unmodifiable snapshot for the UI, newest first. */
     public List<SentEmailRecord> getAll() {
         List<SentEmailRecord> copy;
         synchronized (records) { copy = new ArrayList<>(records); }
@@ -61,21 +51,20 @@ public class SentEmailStore {
         return Collections.unmodifiableList(copy);
     }
 
-    /** Re-writes the whole file after an open is recorded (to update open counts). */
-    public void flush() {
-        try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(storePath,
-                StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING))) {
-            synchronized (records) {
-                for (SentEmailRecord r : records) {
-                    pw.println(toJson(r));
-                }
-            }
-        } catch (Exception e) {
-            log.error("SentEmailStore flush failed", e);
+    /** Returns all records belonging to the given batch, newest first. */
+    public List<SentEmailRecord> getByBatchId(String batchId) {
+        if (batchId == null) return Collections.emptyList();
+        List<SentEmailRecord> copy;
+        synchronized (records) { copy = new ArrayList<>(records); }
+        List<SentEmailRecord> result = new ArrayList<>();
+        for (SentEmailRecord r : copy) {
+            if (batchId.equals(r.getBatchId())) result.add(r);
         }
+        Collections.reverse(result);
+        return Collections.unmodifiableList(result);
     }
 
-    // ── Private helpers ───────────────────────────────────────────────────────
+    // ── Private helpers ────────────────────────────────────────────────────────
 
     private void appendToDisk(SentEmailRecord r) {
         try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(storePath,
@@ -93,9 +82,7 @@ public class SentEmailStore {
             while ((line = br.readLine()) != null) {
                 if (line.isBlank()) continue;
                 try {
-                    SentEmailRecord r = fromJson(line);
-                    records.add(r);
-                    byTrackingId.put(r.getTrackingId(), r);
+                    records.add(fromJson(line));
                 } catch (Exception e) {
                     log.warn("Skipping malformed record: {}", line);
                 }
@@ -106,30 +93,37 @@ public class SentEmailStore {
 
     private static String toJson(SentEmailRecord r) throws Exception {
         ObjectNode n = MAPPER.createObjectNode();
-        n.put("trackingId",    r.getTrackingId());
-        n.put("recipientEmail",r.getRecipientEmail());
-        n.put("recipientName", r.getRecipientName());
-        n.put("subject",       r.getSubject());
-        n.put("sentAt",        r.getSentAt() != null ? r.getSentAt().toString() : "");
-        n.put("openCount",     r.getOpenCount());
-        n.put("lastOpenedAt",  r.getLastOpenedAt() != null ? r.getLastOpenedAt().toString() : "");
+        n.put("trackingId",     r.getTrackingId());
+        n.put("batchId",        r.getBatchId()       != null ? r.getBatchId()       : "");
+        n.put("recipientEmail", r.getRecipientEmail());
+        n.put("recipientName",  r.getRecipientName());
+        n.put("subject",        r.getSubject());
+        n.put("sentAt",         r.getSentAt()        != null ? r.getSentAt().toString()    : "");
+        n.put("status",         r.getStatus()        != null ? r.getStatus()               : "SENT");
+        n.put("failureReason",  r.getFailureReason() != null ? r.getFailureReason()        : "");
+        n.put("openedAt",       r.getOpenedAt()      != null ? r.getOpenedAt().toString()  : "");
         return MAPPER.writeValueAsString(n);
     }
 
     private static SentEmailRecord fromJson(String line) throws Exception {
-        JsonNode n = MAPPER.readTree(line);
-        String lastOpenStr = n.path("lastOpenedAt").asText("");
-        LocalDateTime lastOpened = lastOpenStr.isBlank() ? null : LocalDateTime.parse(lastOpenStr);
-        String sentAtStr = n.path("sentAt").asText("");
-        LocalDateTime sentAt = sentAtStr.isBlank() ? null : LocalDateTime.parse(sentAtStr);
+        JsonNode n           = MAPPER.readTree(line);
+        String sentAtStr     = n.path("sentAt").asText("");
+        String openedAtStr   = n.path("openedAt").asText("");
+        LocalDateTime sentAt   = sentAtStr.isBlank()   ? null : LocalDateTime.parse(sentAtStr);
+        LocalDateTime openedAt = openedAtStr.isBlank() ? null : LocalDateTime.parse(openedAtStr);
+        String status          = n.path("status").asText("SENT");
+        String failureReason   = n.path("failureReason").asText("");
+        String batchId         = n.path("batchId").asText("");
         return new SentEmailRecord(
                 n.path("trackingId").asText(),
+                batchId.isBlank() ? null : batchId,
                 n.path("recipientEmail").asText(),
                 n.path("recipientName").asText(),
                 n.path("subject").asText(),
                 sentAt,
-                n.path("openCount").asInt(0),
-                lastOpened
+                status,
+                failureReason.isBlank() ? null : failureReason,
+                openedAt
         );
     }
 }
