@@ -113,7 +113,7 @@
             <!-- Spacer — pushes version label to the bottom -->
             <Region VBox.vgrow="ALWAYS"/>
 
-            <Label text="v1.0.0" styleClass="version-label">
+            <Label text="v1.2.0" styleClass="version-label">
                 <VBox.margin>
                     <Insets left="12"/>
                 </VBox.margin>

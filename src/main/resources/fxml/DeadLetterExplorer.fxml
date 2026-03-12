@@ -46,7 +46,7 @@
     </HBox>
 
     <!-- Job table -->
-    <TableView fx:id="deadLetterTable" VBox.vgrow="ALWAYS">
+    <TableView fx:id="deadLetterTable" prefHeight="320">
         <columns>
             <TableColumn fx:id="recipientColumn"    text="Recipient"      prefWidth="200"/>
             <TableColumn fx:id="domainColumn"       text="Domain"         prefWidth="130"/>

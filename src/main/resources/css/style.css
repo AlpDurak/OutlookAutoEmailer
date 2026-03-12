@@ -94,6 +94,23 @@
     -fx-background-color: #eef2f7;
 }
 
+/* ── Content scroll wrappers (wrapping each page in a ScrollPane) ────────── */
+.content-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background: #eef2f7;
+    -fx-padding: 0;
+}
+
+.content-scroll > .viewport {
+    -fx-background-color: #eef2f7;
+}
+
+.content-scroll:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
 /* ── Page titles ─────────────────────────────────────────────────────────── */
 .page-title {
     -fx-font-size: 20px;
@@ -550,14 +567,14 @@
     -fx-border-radius: 12;
     -fx-border-color: #dde3ec;
     -fx-border-width: 1;
-    -fx-padding: 20 24 20 24;
-    -fx-min-width: 130px;
+    -fx-padding: 14 18 14 18;
+    -fx-min-width: 110px;
     -fx-alignment: CENTER;
     -fx-effect: dropshadow(gaussian, rgba(13,21,38,0.07), 10, 0, 0, 3);
 }
 
 .stat-count {
-    -fx-font-size: 30px;
+    -fx-font-size: 24px;
     -fx-font-weight: bold;
     -fx-text-fill: #0d1526;
 }
@@ -566,7 +583,7 @@
     -fx-font-size: 10px;
     -fx-text-fill: #6b7280;
     -fx-font-weight: bold;
-    -fx-padding: 4 0 0 0;
+    -fx-padding: 3 0 0 0;
     -fx-letter-spacing: 0.06em;
 }
 
@@ -841,21 +858,27 @@
 
 /* ── AI Insights panel (Analytics screen) ──────────────────────────────── */
 .ai-insights-panel {
-    -fx-padding: 0 0 4 0;
+    -fx-padding: 12 16 12 16;
+    -fx-background-color: linear-gradient(to bottom right, #f5f3ff, #eff6ff);
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #c4b5fd;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(124,58,237,0.1), 8, 0, 0, 2);
 }
 
 .ai-insights-panel .text-area {
-    -fx-font-size: 12px;
+    -fx-font-size: 13px;
     -fx-text-fill: #1a2233;
-    -fx-background-color: #f8fafc;
-    -fx-border-color: #dde3ec;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #c4b5fd;
     -fx-border-width: 1;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
 }
 
 .ai-insights-panel .text-area .content {
-    -fx-background-color: #f8fafc;
+    -fx-background-color: #ffffff;
     -fx-background-radius: 8;
 }
 

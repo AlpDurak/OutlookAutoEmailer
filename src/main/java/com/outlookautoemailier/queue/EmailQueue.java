@@ -311,6 +311,22 @@ public class EmailQueue {
     }
 
     /**
+     * Returns a previously polled job back to the live queue without
+     * re-registering it in allJobs. Properly reverses the counter
+     * changes made by poll().
+     *
+     * @param job the job to requeue; must not be null
+     */
+    public void requeue(EmailJob job) {
+        Objects.requireNonNull(job, "job must not be null");
+        inFlightIds.remove(job.getId());
+        sendingCount.decrementAndGet();
+        queue.offer(job);
+        pendingCount.incrementAndGet();
+        log.debug("Requeued job {} (scheduled for later)", job.getId());
+    }
+
+    /**
      * Drains all PENDING jobs from the live queue without processing them.
      * In-flight jobs (currently being sent) are unaffected.
      * The drained jobs remain in the master list with their existing status.

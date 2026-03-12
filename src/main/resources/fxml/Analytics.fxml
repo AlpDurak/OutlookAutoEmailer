@@ -82,12 +82,12 @@
 
     <!-- ── AI Insights panel ───────────────────────────────────────────────── -->
     <VBox fx:id="aiInsightsPanel" styleClass="ai-insights-panel" spacing="8">
-        <TextArea fx:id="aiInsightsArea" prefRowCount="6" editable="false"
+        <TextArea fx:id="aiInsightsArea" prefRowCount="14" editable="false"
                   wrapText="true" promptText="AI-generated campaign insights will appear here..."/>
     </VBox>
 
     <!-- ── Campaign batch table ────────────────────────────────────────────── -->
-    <TableView fx:id="batchTable" VBox.vgrow="ALWAYS">
+    <TableView fx:id="batchTable" prefHeight="280">
         <columns>
             <TableColumn fx:id="batchNameColumn"     text="Campaign"    prefWidth="150"/>
             <TableColumn fx:id="batchSubjectColumn"  text="Subject"     prefWidth="180"/>

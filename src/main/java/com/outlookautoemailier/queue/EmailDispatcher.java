@@ -276,7 +276,7 @@ public class EmailDispatcher {
             if (job.getScheduledAt() != null
                     && job.getScheduledAt().isAfter(java.time.LocalDateTime.now())) {
                 // Not yet time — re-enqueue and sleep briefly to avoid busy-spinning.
-                emailQueue.enqueue(job);
+                emailQueue.requeue(job);
                 sleepQuietly(2_000L);
                 continue;
             }

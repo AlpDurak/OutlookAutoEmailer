@@ -3,13 +3,18 @@ package com.outlookautoemailier.ui;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
@@ -38,23 +43,30 @@ public class MainController implements Initializable {
     @FXML private Label queueBadge;
     @FXML private Label contactsBadge;
 
-    /** Ordered list used for bulk visibility toggling. */
-    private List<Pane> allPanes;
+    /** Ordered list used for bulk visibility toggling (holds ScrollPane wrappers). */
+    private List<Node> allNodes;
+
+    /** Maps each original pane to its ScrollPane wrapper (or to itself if not wrapped). */
+    private final Map<Pane, Node> paneToWrapper = new HashMap<>();
 
     // ── Initializable ────────────────────────────────────────────────────────
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         com.outlookautoemailier.AppContext.get().setMainController(this);
-        allPanes = List.of(
-                accountSetupPane,
-                contactListPane,
-                composePane,
-                queueDashboardPane,
-                settingsPane,
-                templateStudioPane,
-                analyticsPane,
-                deadLetterPane
+
+        // Wrap content-heavy panes in ScrollPanes for vertical scrolling
+        wrapAllPanesInScrollPanes();
+
+        allNodes = List.of(
+                paneToWrapper.get(accountSetupPane),
+                paneToWrapper.get(contactListPane),
+                paneToWrapper.get(composePane),
+                paneToWrapper.get(queueDashboardPane),
+                paneToWrapper.get(settingsPane),
+                paneToWrapper.get(templateStudioPane),
+                paneToWrapper.get(analyticsPane),
+                paneToWrapper.get(deadLetterPane)
         );
 
         // Wire nav buttons → pane visibility
@@ -80,17 +92,55 @@ public class MainController implements Initializable {
         showPane(accountSetupPane);
     }
 
+    /**
+     * Replaces each content pane in the StackPane with a ScrollPane wrapper.
+     * The ScrollPane provides vertical scrolling for content-heavy pages.
+     */
+    private void wrapAllPanesInScrollPanes() {
+        List<Pane> panesToWrap = List.of(
+                accountSetupPane, contactListPane, composePane,
+                queueDashboardPane, settingsPane, templateStudioPane,
+                analyticsPane, deadLetterPane
+        );
+
+        for (Pane pane : panesToWrap) {
+            if (pane.getParent() instanceof StackPane parent) {
+                int index = parent.getChildren().indexOf(pane);
+                if (index < 0) continue;
+
+                ScrollPane scroll = new ScrollPane(pane);
+                scroll.setFitToWidth(true);
+                scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+                scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+                scroll.getStyleClass().add("content-scroll");
+                scroll.setVisible(pane.isVisible());
+
+                parent.getChildren().set(index, scroll);
+                paneToWrapper.put(pane, scroll);
+            } else {
+                paneToWrapper.put(pane, pane);
+            }
+        }
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     /**
-     * Hides every managed pane and makes {@code target} visible.
+     * Hides every managed pane/ScrollPane and makes {@code target}'s wrapper visible.
      *
-     * @param target the pane to reveal
+     * @param target the original pane to reveal
      */
     private void showPane(Pane target) {
-        allPanes.forEach(p -> p.setVisible(false));
-        target.setVisible(true);
-        target.toFront();
+        allNodes.forEach(n -> n.setVisible(false));
+        Node wrapper = paneToWrapper.get(target);
+        if (wrapper != null) {
+            wrapper.setVisible(true);
+            wrapper.toFront();
+            // Reset scroll position to top when navigating
+            if (wrapper instanceof ScrollPane sp) {
+                sp.setVvalue(0);
+            }
+        }
     }
 
     /**
