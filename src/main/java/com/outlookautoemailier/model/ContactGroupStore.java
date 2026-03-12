@@ -25,8 +25,8 @@ import java.util.Map;
 public class ContactGroupStore {
 
     private static final Logger log = LoggerFactory.getLogger(ContactGroupStore.class);
-    private static final ContactGroupStore INSTANCE = new ContactGroupStore();
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final ContactGroupStore INSTANCE = new ContactGroupStore();
 
     private final Path storePath;
     /** Ordered map: id → group */

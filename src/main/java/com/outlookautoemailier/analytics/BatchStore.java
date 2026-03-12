@@ -20,8 +20,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class BatchStore {
 
     private static final Logger      log      = LoggerFactory.getLogger(BatchStore.class);
-    private static final BatchStore  INSTANCE = new BatchStore();
     private static final ObjectMapper MAPPER  = new ObjectMapper();
+    private static final BatchStore  INSTANCE = new BatchStore();
 
     private final Path storePath;
     private final List<EmailBatch> batches = new CopyOnWriteArrayList<>();

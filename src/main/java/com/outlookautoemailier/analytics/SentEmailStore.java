@@ -18,8 +18,8 @@ import java.util.*;
 public class SentEmailStore {
 
     private static final Logger      log      = LoggerFactory.getLogger(SentEmailStore.class);
-    private static final SentEmailStore INSTANCE = new SentEmailStore();
     private static final ObjectMapper MAPPER   = new ObjectMapper();
+    private static final SentEmailStore INSTANCE = new SentEmailStore();
 
     private final Path storePath;
     private final List<SentEmailRecord> records = Collections.synchronizedList(new ArrayList<>());
