@@ -2,9 +2,12 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleButton?>
@@ -100,12 +103,27 @@
 
     <Separator/>
 
+    <!-- ── Schedule controls ───────────────────────────────────────────────── -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <CheckBox fx:id="scheduleCheckbox" text="Schedule for later" onAction="#onScheduleToggle"/>
+    </HBox>
+    <HBox fx:id="scheduleControls" spacing="10" alignment="CENTER_LEFT"
+          visible="false" managed="false">
+        <Label text="Date:"/>
+        <DatePicker fx:id="scheduleDatePicker" prefWidth="150"/>
+        <Label text="Hour:"/>
+        <Spinner fx:id="scheduleHourSpinner" prefWidth="75"/>
+        <Label text="Min:"/>
+        <Spinner fx:id="scheduleMinuteSpinner" prefWidth="75"/>
+        <Label fx:id="schedulePreviewLabel" styleClass="help-label"/>
+    </HBox>
+
     <!-- ── Footer: recipient count + actions ───────────────────────────────── -->
     <HBox spacing="10" alignment="CENTER_LEFT">
         <Label fx:id="recipientCountLabel" text="0 recipients selected"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Button text="Preview"      onAction="#onPreview"/>
-        <Button text="Send Emails"
+        <Button fx:id="sendButton" text="Send Emails"
                 styleClass="primary-button"
                 onAction="#onSendEmails"/>
     </HBox>

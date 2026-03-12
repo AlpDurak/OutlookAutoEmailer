@@ -18,6 +18,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.layout.HBox;
 import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
@@ -27,7 +29,10 @@ import java.io.File;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.ResourceBundle;
@@ -64,6 +69,15 @@ public class ComposeController implements Initializable {
     @FXML private ToggleButton htmlModeToggle;
     @FXML private WebView      htmlPreview;
 
+    // ── Schedule controls ────────────────────────────────────────────────────
+    @FXML private CheckBox scheduleCheckbox;
+    @FXML private HBox scheduleControls;
+    @FXML private DatePicker scheduleDatePicker;
+    @FXML private Spinner<Integer> scheduleHourSpinner;
+    @FXML private Spinner<Integer> scheduleMinuteSpinner;
+    @FXML private Label schedulePreviewLabel;
+    @FXML private Button sendButton;
+
     // ── Group selector ────────────────────────────────────────────────────────
     @FXML private ComboBox<ContactGroup> groupComboBox;
 
@@ -90,6 +104,20 @@ public class ComposeController implements Initializable {
 
         // Populate group ComboBox
         refreshGroupCombo();
+
+        // Schedule controls setup
+        if (scheduleHourSpinner != null) {
+            scheduleHourSpinner.setValueFactory(
+                    new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 23, 9));
+            scheduleMinuteSpinner.setValueFactory(
+                    new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 59, 0, 5));
+            scheduleDatePicker.setValue(LocalDate.now().plusDays(1));
+
+            // Update preview label when any schedule value changes
+            scheduleHourSpinner.valueProperty().addListener((obs, o, n) -> updateSchedulePreview());
+            scheduleMinuteSpinner.valueProperty().addListener((obs, o, n) -> updateSchedulePreview());
+            scheduleDatePicker.valueProperty().addListener((obs, o, n) -> updateSchedulePreview());
+        }
     }
 
     // ── Public API ───────────────────────────────────────────────────────────
@@ -161,6 +189,42 @@ public class ComposeController implements Initializable {
         } else {
             insertIntoTextArea(bodyArea, token);
         }
+    }
+
+    @FXML
+    private void onScheduleToggle() {
+        boolean scheduled = scheduleCheckbox.isSelected();
+        scheduleControls.setVisible(scheduled);
+        scheduleControls.setManaged(scheduled);
+        if (sendButton != null) {
+            sendButton.setText(scheduled ? "Schedule Campaign" : "Send Emails");
+        }
+        if (scheduled) {
+            updateSchedulePreview();
+        }
+    }
+
+    private void updateSchedulePreview() {
+        if (scheduleDatePicker == null || schedulePreviewLabel == null) return;
+        LocalDate date = scheduleDatePicker.getValue();
+        if (date == null) {
+            schedulePreviewLabel.setText("");
+            return;
+        }
+        int hour = scheduleHourSpinner.getValue();
+        int minute = scheduleMinuteSpinner.getValue();
+        LocalDateTime scheduled = LocalDateTime.of(date, LocalTime.of(hour, minute));
+        schedulePreviewLabel.setText("Scheduled: " + scheduled.format(
+                DateTimeFormatter.ofPattern("MMM d, yyyy 'at' HH:mm")));
+    }
+
+    private LocalDateTime getScheduledDateTime() {
+        if (scheduleCheckbox == null || !scheduleCheckbox.isSelected()) return null;
+        LocalDate date = scheduleDatePicker.getValue();
+        if (date == null) return null;
+        int hour = scheduleHourSpinner.getValue();
+        int minute = scheduleMinuteSpinner.getValue();
+        return LocalDateTime.of(date, LocalTime.of(hour, minute));
     }
 
     @FXML
@@ -360,6 +424,14 @@ public class ComposeController implements Initializable {
         com.outlookautoemailier.analytics.BatchStore.getInstance().addBatch(batch);
         com.outlookautoemailier.integration.SupabaseAnalyticsSync.pushBatchAsync(batch);
 
+        // Resolve scheduled date/time if scheduling is enabled
+        LocalDateTime scheduledAt = getScheduledDateTime();
+        if (scheduledAt != null && scheduledAt.isBefore(LocalDateTime.now())) {
+            showAlert(Alert.AlertType.WARNING, "Invalid Schedule",
+                    "The scheduled date/time must be in the future.");
+            return;
+        }
+
         // Create one EmailJob per recipient, all sharing the same batchId
         List<EmailJob> jobs = recipients.stream()
                 .map(contact -> EmailJob.builder()
@@ -368,6 +440,7 @@ public class ComposeController implements Initializable {
                         .template(template)
                         .priority(5)
                         .maxAttempts(3)
+                        .scheduledAt(scheduledAt)
                         .build())
                 .collect(Collectors.toList());
 

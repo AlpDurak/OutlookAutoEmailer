@@ -35,7 +35,9 @@ public final class EmailJob implements Comparable<EmailJob> {
         /** Delivery failed; may be retried. */
         FAILED,
         /** Exhausted all retry attempts; no further action will be taken. */
-        DEAD_LETTER
+        DEAD_LETTER,
+        /** Waiting for a scheduled date/time before dispatching. */
+        SCHEDULED
     }
 
     // ------------------------------------------------------------------ //
@@ -49,6 +51,7 @@ public final class EmailJob implements Comparable<EmailJob> {
     private final int           priority;
     private final int           maxAttempts;
     private final LocalDateTime createdAt;
+    private final LocalDateTime scheduledAt;
 
     // Mutable state — updated during the job lifecycle
     private volatile int          attemptCount;
@@ -64,7 +67,9 @@ public final class EmailJob implements Comparable<EmailJob> {
         this.priority     = builder.priority;
         this.maxAttempts  = builder.maxAttempts;
         this.createdAt    = builder.createdAt != null ? builder.createdAt : LocalDateTime.now();
-        this.status       = builder.status != null ? builder.status : JobStatus.PENDING;
+        this.scheduledAt  = builder.scheduledAt;
+        this.status       = builder.status != null ? builder.status
+                          : (builder.scheduledAt != null ? JobStatus.SCHEDULED : JobStatus.PENDING);
         this.attemptCount = builder.attemptCount;
         this.lastAttemptAt = builder.lastAttemptAt;
         this.errorMessage = builder.errorMessage;
@@ -81,6 +86,13 @@ public final class EmailJob implements Comparable<EmailJob> {
     public synchronized void incrementAttempt() {
         this.attemptCount++;
         this.lastAttemptAt = LocalDateTime.now();
+    }
+
+    /**
+     * Transitions a SCHEDULED job to PENDING once its scheduled time arrives.
+     */
+    public synchronized void markPending() {
+        this.status = JobStatus.PENDING;
     }
 
     /**
@@ -167,6 +179,10 @@ public final class EmailJob implements Comparable<EmailJob> {
         return createdAt;
     }
 
+    public LocalDateTime getScheduledAt() {
+        return scheduledAt;
+    }
+
     public LocalDateTime getLastAttemptAt() {
         return lastAttemptAt;
     }
@@ -189,6 +205,7 @@ public final class EmailJob implements Comparable<EmailJob> {
                 + ", attemptCount=" + attemptCount
                 + ", maxAttempts=" + maxAttempts
                 + ", createdAt=" + createdAt
+                + ", scheduledAt=" + scheduledAt
                 + ", lastAttemptAt=" + lastAttemptAt
                 + ", errorMessage='" + errorMessage + '\''
                 + '}';
@@ -226,6 +243,7 @@ public final class EmailJob implements Comparable<EmailJob> {
         private JobStatus     status;
         private LocalDateTime createdAt;
         private LocalDateTime lastAttemptAt;
+        private LocalDateTime scheduledAt;
         private String        errorMessage;
 
         private Builder() {}
@@ -277,6 +295,11 @@ public final class EmailJob implements Comparable<EmailJob> {
 
         public Builder lastAttemptAt(LocalDateTime lastAttemptAt) {
             this.lastAttemptAt = lastAttemptAt;
+            return this;
+        }
+
+        public Builder scheduledAt(LocalDateTime scheduledAt) {
+            this.scheduledAt = scheduledAt;
             return this;
         }
 

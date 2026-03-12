@@ -35,6 +35,7 @@ public class QueueDashboardController implements Initializable {
     @FXML private Label pendingCount;
     @FXML private Label sendingCount;
     @FXML private Label sentCount;
+    @FXML private Label scheduledCount;
     @FXML private Label failedCount;
 
     // ── Progress indicators ──────────────────────────────────────────────────
@@ -47,6 +48,7 @@ public class QueueDashboardController implements Initializable {
     @FXML private TableColumn<JobRow, String>     contactNameColumn;
     @FXML private TableColumn<JobRow, String>     statusColumn;
     @FXML private TableColumn<JobRow, String>     attemptsColumn;
+    @FXML private TableColumn<JobRow, String>     scheduledAtColumn;
     @FXML private TableColumn<JobRow, String>     lastUpdatedColumn;
 
     // ── Control buttons ──────────────────────────────────────────────────────
@@ -60,6 +62,8 @@ public class QueueDashboardController implements Initializable {
 
     private static final DateTimeFormatter TIME_FMT =
             DateTimeFormatter.ofPattern("HH:mm:ss");
+    private static final DateTimeFormatter DATETIME_FMT =
+            DateTimeFormatter.ofPattern("MMM d HH:mm");
 
     // ── Lightweight display model ────────────────────────────────────────────
 
@@ -71,14 +75,16 @@ public class QueueDashboardController implements Initializable {
         private final String contactName;
         private final String status;
         private final String attempts;
+        private final String scheduledAt;
         private final String lastUpdated;
 
         public JobRow(String jobId, String contactName, String status,
-                      int attempts, String lastUpdated) {
+                      int attempts, String scheduledAt, String lastUpdated) {
             this.jobId       = jobId;
             this.contactName = contactName;
             this.status      = status;
             this.attempts    = String.valueOf(attempts);
+            this.scheduledAt = scheduledAt;
             this.lastUpdated = lastUpdated;
         }
 
@@ -86,6 +92,7 @@ public class QueueDashboardController implements Initializable {
         public String getContactName() { return contactName; }
         public String getStatus()      { return status; }
         public String getAttempts()    { return attempts; }
+        public String getScheduledAt() { return scheduledAt; }
         public String getLastUpdated() { return lastUpdated; }
     }
 
@@ -108,8 +115,31 @@ public class QueueDashboardController implements Initializable {
                 cd -> new SimpleStringProperty(cd.getValue().getStatus()));
         attemptsColumn.setCellValueFactory(
                 cd -> new SimpleStringProperty(cd.getValue().getAttempts()));
+        scheduledAtColumn.setCellValueFactory(
+                cd -> new SimpleStringProperty(cd.getValue().getScheduledAt()));
         lastUpdatedColumn.setCellValueFactory(
                 cd -> new SimpleStringProperty(cd.getValue().getLastUpdated()));
+
+        // Purple text for SCHEDULED status cells
+        statusColumn.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    getStyleClass().removeAll("schedule-badge");
+                } else {
+                    setText(item);
+                    if ("SCHEDULED".equals(item)) {
+                        if (!getStyleClass().contains("schedule-badge")) {
+                            getStyleClass().add("schedule-badge");
+                        }
+                    } else {
+                        getStyleClass().removeAll("schedule-badge");
+                    }
+                }
+            }
+        });
     }
 
     // ── Polling ──────────────────────────────────────────────────────────────
@@ -156,9 +186,17 @@ public class QueueDashboardController implements Initializable {
         int failed   = q.failedCount() + q.deadLetterCount();
         int total    = q.totalCount();
 
+        // Count scheduled jobs from the snapshot
+        long scheduled = q.getAllJobsSnapshot().stream()
+                .filter(j -> j.getStatus() == com.outlookautoemailier.model.EmailJob.JobStatus.SCHEDULED)
+                .count();
+
         pendingCount.setText(String.valueOf(pending));
         sendingCount.setText(String.valueOf(sending));
         sentCount.setText(String.valueOf(sent));
+        if (scheduledCount != null) {
+            scheduledCount.setText(String.valueOf(scheduled));
+        }
         failedCount.setText(String.valueOf(failed));
 
         double progress = (total == 0) ? 0.0 : (double)(sent + failed) / total;
@@ -179,6 +217,9 @@ public class QueueDashboardController implements Initializable {
                         job.getContact().getDisplayName(),
                         job.getStatus().name(),
                         job.getAttemptCount(),
+                        job.getScheduledAt() != null
+                                ? job.getScheduledAt().format(DATETIME_FMT)
+                                : "—",
                         job.getLastAttemptAt() != null
                                 ? job.getLastAttemptAt().format(TIME_FMT)
                                 : "—"

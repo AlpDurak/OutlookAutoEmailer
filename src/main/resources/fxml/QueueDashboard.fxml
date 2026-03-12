@@ -44,6 +44,12 @@
             <Label text="Sent"          styleClass="stat-label"/>
         </VBox>
 
+        <!-- Scheduled -->
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="120">
+            <Label fx:id="scheduledCount" text="0" styleClass="stat-count, scheduled-stat"/>
+            <Label text="Scheduled"       styleClass="stat-label"/>
+        </VBox>
+
         <!-- Failed -->
         <VBox styleClass="stat-card" alignment="CENTER" minWidth="120">
             <Label fx:id="failedCount"  text="0" styleClass="stat-count"/>
@@ -66,6 +72,7 @@
             <TableColumn fx:id="contactNameColumn" text="Contact Name"  prefWidth="180"/>
             <TableColumn fx:id="statusColumn"      text="Status"        prefWidth="100"/>
             <TableColumn fx:id="attemptsColumn"    text="Attempts"      prefWidth="80"/>
+            <TableColumn fx:id="scheduledAtColumn"  text="Scheduled At"  prefWidth="140"/>
             <TableColumn fx:id="lastUpdatedColumn" text="Last Updated"  prefWidth="160"/>
         </columns>
         <placeholder>

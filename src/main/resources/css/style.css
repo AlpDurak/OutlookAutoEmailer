@@ -927,6 +927,17 @@
     -fx-font-style: italic;
 }
 
+/* ── Scheduled Send ─────────────────────────────────────────────────────── */
+.schedule-badge {
+    -fx-background-color: #ede9fe;
+    -fx-text-fill: #5b21b6;
+    -fx-font-weight: bold;
+}
+
+.scheduled-stat {
+    -fx-text-fill: #7c3aed;
+}
+
 /* ── Dead-Letter Explorer ───────────────────────────────────────────────── */
 
 .dl-top-reason-card {

@@ -1,6 +1,7 @@
 package com.outlookautoemailier.queue;
 
 import com.outlookautoemailier.model.EmailJob;
+import com.outlookautoemailier.model.EmailJob.JobStatus;
 import com.outlookautoemailier.security.RateLimiter;
 import com.outlookautoemailier.security.SpamGuard;
 import com.outlookautoemailier.smtp.SmtpSender;
@@ -269,6 +270,20 @@ public class EmailDispatcher {
             if (job == null) {
                 sleepQuietly(IDLE_SLEEP_MS);
                 continue;
+            }
+
+            // 2b. Check if the job is scheduled for a future time.
+            if (job.getScheduledAt() != null
+                    && job.getScheduledAt().isAfter(java.time.LocalDateTime.now())) {
+                // Not yet time — re-enqueue and sleep briefly to avoid busy-spinning.
+                emailQueue.enqueue(job);
+                sleepQuietly(2_000L);
+                continue;
+            }
+
+            // 2c. If the job was SCHEDULED but its time has arrived, transition to PENDING.
+            if (job.getStatus() == JobStatus.SCHEDULED) {
+                job.markPending();
             }
 
             // 3. Acquire a rate-limit token — only when we actually have a job.
