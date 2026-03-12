@@ -27,6 +27,7 @@ public class MainController implements Initializable {
     @FXML private Pane settingsPane;
     @FXML private Pane templateStudioPane;
     @FXML private Pane analyticsPane;
+    @FXML private Pane imageLibraryPane;
     @FXML private Pane deadLetterPane;
 
     // ── Sidebar nav buttons ──────────────────────────────────────────────────
@@ -37,6 +38,7 @@ public class MainController implements Initializable {
     @FXML private ToggleButton btnSettings;
     @FXML private ToggleButton btnStudio;
     @FXML private ToggleButton btnAnalytics;
+    @FXML private ToggleButton btnImageLibrary;
     @FXML private ToggleButton btnDeadLetters;
 
     // ── Sidebar badges ────────────────────────────────────────────────────
@@ -65,6 +67,7 @@ public class MainController implements Initializable {
                 paneToWrapper.get(queueDashboardPane),
                 paneToWrapper.get(settingsPane),
                 paneToWrapper.get(templateStudioPane),
+                paneToWrapper.get(imageLibraryPane),
                 paneToWrapper.get(analyticsPane),
                 paneToWrapper.get(deadLetterPane)
         );
@@ -76,6 +79,7 @@ public class MainController implements Initializable {
         btnQueue.setOnAction(e -> showPane(queueDashboardPane));
         btnSettings.setOnAction(e -> showPane(settingsPane));
         btnStudio.setOnAction(e -> showPane(templateStudioPane));
+        btnImageLibrary.setOnAction(e -> showPane(imageLibraryPane));
         btnAnalytics.setOnAction(e -> showPane(analyticsPane));
         btnDeadLetters.setOnAction(e -> showPane(deadLetterPane));
 
@@ -100,7 +104,7 @@ public class MainController implements Initializable {
         List<Pane> panesToWrap = List.of(
                 accountSetupPane, contactListPane, composePane,
                 queueDashboardPane, settingsPane, templateStudioPane,
-                analyticsPane, deadLetterPane
+                imageLibraryPane, analyticsPane, deadLetterPane
         );
 
         for (Pane pane : panesToWrap) {
@@ -163,6 +167,11 @@ public class MainController implements Initializable {
     public void navigateToQueue() {
         btnQueue.setSelected(true);
         showPane(queueDashboardPane);
+    }
+
+    public void navigateToImageLibrary() {
+        btnImageLibrary.setSelected(true);
+        showPane(imageLibraryPane);
     }
 
     public void navigateToAnalytics() {

@@ -39,22 +39,46 @@ public final class GeminiEmailAgent {
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=";
 
     /**
-     * System prompt that establishes the RAG context.  Gemini will always follow
-     * these rules before acting on the user's specific request.
+     * System prompt prefix that establishes the RAG context with Isik IEEE CS branding.
+     * Gemini will always follow these rules before acting on the user's specific request.
+     * Image library context is appended dynamically when available.
      */
-    private static final String SYSTEM_PROMPT =
-            "You are an expert HTML email template designer for a university mass-email application. " +
-            "Your ONLY job is to produce ready-to-use HTML email body content.\n\n" +
+    private static final String SYSTEM_PROMPT_PREFIX =
+            "You are an expert HTML email template designer for I\u015f\u0131k University IEEE Computer Society " +
+            "(I\u015f\u0131k IEEE CS). Your ONLY job is to produce ready-to-use HTML email body content.\n\n" +
+
+            "BRAND GUIDELINES \u2014 I\u015f\u0131k IEEE CS:\n" +
+            "- Primary color: #00629B (IEEE Blue)\n" +
+            "- Secondary color: #1a2233 (Dark navy for text)\n" +
+            "- Accent color: #F7A800 (IEEE Gold/Amber for highlights and CTAs)\n" +
+            "- Background: White (#ffffff) with light gray sections (#f4f7fb)\n" +
+            "- Font: Arial, 'Helvetica Neue', Helvetica, sans-serif\n" +
+            "- Header: Use IEEE Blue background with white text, include the organization logo if available\n" +
+            "- Buttons/CTAs: IEEE Gold (#F7A800) background with dark text, or IEEE Blue with white text\n" +
+            "- Maintain a professional, academic, yet modern tone\n" +
+            "- The organization name is: I\u015f\u0131k IEEE Computer Society (or I\u015f\u0131k IEEE CS for short)\n\n" +
+
             "STRICT OUTPUT RULES:\n" +
-            "1. Return ONLY the inner HTML — NO <html>, <head>, or <body> wrapper tags.\n" +
-            "2. Use INLINE CSS on every element (no <style> blocks — email clients strip them).\n" +
+            "1. Return ONLY the inner HTML \u2014 NO <html>, <head>, or <body> wrapper tags.\n" +
+            "2. Use INLINE CSS on every element (no <style> blocks \u2014 email clients strip them).\n" +
             "3. Use table-based layout for pixel-perfect rendering in Outlook, Gmail, and Apple Mail.\n" +
-            "4. Include a professional header area, a clear content section, and a footer.\n" +
-            "5. Where contextually appropriate, use these personalisation variables:\n" +
+            "4. Include a professional header area and clear content sections.\n" +
+            "5. Do NOT include a footer section \u2014 the application automatically adds a branded footer " +
+            "with social links, unsubscribe, and attribution. Your output should end after the main content.\n" +
+            "6. Where contextually appropriate, use these personalisation variables:\n" +
             "   {{firstName}}, {{lastName}}, {{email}}, {{company}}, {{jobTitle}}\n" +
-            "6. Do NOT output markdown, code fences, explanations, or comments — raw HTML only.\n" +
-            "7. Make the design clean, modern, and visually compelling.\n\n" +
-            "User request: ";
+            "7. Do NOT output markdown, code fences, explanations, or comments \u2014 raw HTML only.\n" +
+            "8. Make the design clean, modern, and visually compelling following the IEEE brand colors.\n" +
+            "9. When images are available in the image library, USE THEM by embedding their URLs in <img> tags.\n" +
+            "   Always include width, height, alt text, and style=\"display:block;border:0;\" on images.\n" +
+            "   If a logo image is available (tagged 'logo'), use it in the email header.\n\n";
+
+    /**
+     * Legacy system prompt kept for backward compatibility via {@link #generateAsync(String)}.
+     * Delegates to the new prefix-based prompt with no image library context.
+     */
+    @SuppressWarnings("unused")
+    private static final String SYSTEM_PROMPT = SYSTEM_PROMPT_PREFIX + "User request: ";
 
     /**
      * System prompt for performance analysis.  Gemini acts as a data analyst
@@ -125,11 +149,29 @@ public final class GeminiEmailAgent {
 
     /**
      * Generates HTML email body content from a natural-language prompt.
+     * Backward-compatible entry point that delegates to
+     * {@link #generateWithLibraryAsync(String, String)} with no image context.
      *
      * @param userPrompt the user's description of the email they want
      * @return a CompletableFuture resolving to the HTML string
      */
     public static CompletableFuture<String> generateAsync(String userPrompt) {
+        return generateWithLibraryAsync(userPrompt, null);
+    }
+
+    /**
+     * Generates HTML email body content from a natural-language prompt,
+     * optionally including image library context so Gemini can embed
+     * available images in the generated template.
+     *
+     * @param userPrompt          the user's description of the email they want
+     * @param imageLibraryContext  a description of available images (from
+     *                             {@link com.outlookautoemailier.model.ImageLibraryStore#buildGeminiContext()}),
+     *                             or {@code null} / blank to omit
+     * @return a CompletableFuture resolving to the HTML string
+     */
+    public static CompletableFuture<String> generateWithLibraryAsync(String userPrompt,
+                                                                      String imageLibraryContext) {
         return CompletableFuture.supplyAsync(() -> {
             String apiKey = DotEnvLoader.get("GEMINI_API_KEY");
             if (apiKey == null || apiKey.isBlank()) {
@@ -138,7 +180,14 @@ public final class GeminiEmailAgent {
                         "Add: GEMINI_API_KEY=your_key_here");
             }
             try {
-                String body = buildRequestJson(SYSTEM_PROMPT + userPrompt);
+                // Build the full prompt: branding prefix + optional image context + user request
+                StringBuilder fullPrompt = new StringBuilder(SYSTEM_PROMPT_PREFIX);
+                if (imageLibraryContext != null && !imageLibraryContext.isBlank()) {
+                    fullPrompt.append(imageLibraryContext).append("\n\n");
+                }
+                fullPrompt.append("User request: ").append(userPrompt);
+
+                String body = buildRequestJson(fullPrompt.toString());
                 HttpClient client = HttpClient.newHttpClient();
                 HttpRequest req = HttpRequest.newBuilder()
                         .uri(URI.create(GEMINI_URL + apiKey))

@@ -982,3 +982,62 @@
     -fx-text-fill: #374151;
     -fx-padding: 2 0 2 8;
 }
+
+/* ── Image Library ─────────────────────────────────────────────────────── */
+.image-library-card {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #dde3ec;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(13,21,38,0.04), 4, 0, 0, 1);
+}
+
+.image-library-card:hover {
+    -fx-background-color: #eff6ff;
+    -fx-border-color: #bfdbfe;
+    -fx-effect: dropshadow(gaussian, rgba(37,99,235,0.12), 6, 0, 0, 2);
+}
+
+.image-card-name {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1a2233;
+}
+
+.image-tag {
+    -fx-background-color: #eff6ff;
+    -fx-text-fill: #1d4ed8;
+    -fx-border-color: #bfdbfe;
+    -fx-border-width: 1;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-padding: 2 8 2 8;
+    -fx-font-size: 10px;
+}
+
+.image-tag-remove {
+    -fx-background-color: transparent;
+    -fx-text-fill: #6b7280;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0 2 0 2;
+    -fx-font-size: 10px;
+    -fx-cursor: hand;
+    -fx-effect: none;
+}
+
+.image-tag-remove:hover {
+    -fx-text-fill: #dc2626;
+}
+
+.image-detail-panel {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #dde3ec;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 16;
+    -fx-effect: dropshadow(gaussian, rgba(13,21,38,0.06), 10, 0, 0, 2);
+}

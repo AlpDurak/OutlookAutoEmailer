@@ -194,10 +194,16 @@ public class SmtpSender {
                 );
 
         if (job.getTemplate().isHtml()) {
-            // Upload inline Base64 images to imgbb (cached per unique image)
-            String imgbbKey = com.outlookautoemailier.config.AppConfig.getInstance().getImgbbApiKey();
-            if (!imgbbKey.isBlank()) {
-                resolvedBody = replaceInlineImagesWithHosted(resolvedBody, imgbbKey);
+            // Upload inline Base64 images — prefer Google Drive, fall back to imgbb
+            com.outlookautoemailier.integration.GoogleDriveService driveService =
+                    com.outlookautoemailier.integration.GoogleDriveService.getInstance();
+            if (driveService.isAuthenticated()) {
+                resolvedBody = replaceInlineImagesWithDrive(resolvedBody, driveService);
+            } else {
+                String imgbbKey = com.outlookautoemailier.config.AppConfig.getInstance().getImgbbApiKey();
+                if (!imgbbKey.isBlank()) {
+                    resolvedBody = replaceInlineImagesWithHosted(resolvedBody, imgbbKey);
+                }
             }
             // Append branded footer before normalizing
             resolvedBody = resolvedBody + "\n" + EmailFooter.generate(
@@ -406,6 +412,45 @@ public class SmtpSender {
                 || lower.contains("address rejected")
                 || lower.contains("invalid address")
                 || lower.contains("mailbox not found");
+    }
+
+    /**
+     * Scans {@code html} for inline data-URI images, uploads each one to Google Drive,
+     * and replaces the {@code src} attribute with the returned public URL.
+     * Uses {@link ImageCache} for deduplication — same image data will not be re-uploaded.
+     * If an individual upload fails the original {@code src} is preserved.
+     *
+     * @param html         the HTML body to process
+     * @param driveService authenticated Google Drive service
+     * @return the HTML with data URIs replaced by hosted URLs
+     */
+    private static String replaceInlineImagesWithDrive(String html,
+            com.outlookautoemailier.integration.GoogleDriveService driveService) {
+        Pattern pat = Pattern.compile("src=\"data:image/[^;]+;base64,([^\"]+)\"");
+        Matcher mat = pat.matcher(html);
+        StringBuffer sb = new StringBuffer();
+        ImageCache cache = ImageCache.getInstance();
+        int index = 0;
+        while (mat.find()) {
+            String base64Data = mat.group(1);
+            try {
+                String url = cache.get(base64Data);
+                if (url == null) {
+                    String name = "email-image-" + (++index) + ".png";
+                    url = driveService.uploadBase64Image(base64Data, name);
+                    cache.put(base64Data, url);
+                    log.info("Uploaded image to Google Drive: {}", url);
+                } else {
+                    log.debug("Using cached Drive URL for image");
+                }
+                mat.appendReplacement(sb, Matcher.quoteReplacement("src=\"" + url + "\""));
+            } catch (Exception e) {
+                log.warn("Failed to upload inline image to Google Drive: {}", e.getMessage());
+                mat.appendReplacement(sb, Matcher.quoteReplacement(mat.group(0)));
+            }
+        }
+        mat.appendTail(sb);
+        return sb.toString();
     }
 
     /**

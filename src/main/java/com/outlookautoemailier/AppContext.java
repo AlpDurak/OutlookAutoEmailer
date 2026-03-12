@@ -9,6 +9,7 @@ import com.outlookautoemailier.security.RateLimiter;
 import com.outlookautoemailier.security.SpamGuard;
 import com.outlookautoemailier.smtp.SmtpConfig;
 import com.outlookautoemailier.smtp.SmtpSender;
+import com.outlookautoemailier.integration.GoogleDriveService;
 import com.outlookautoemailier.ui.AccountSetupController;
 import com.outlookautoemailier.ui.AnalyticsController;
 import com.outlookautoemailier.ui.ComposeController;
@@ -16,6 +17,7 @@ import com.outlookautoemailier.ui.ContactListController;
 import com.outlookautoemailier.ui.MainController;
 import com.outlookautoemailier.ui.QueueDashboardController;
 import com.outlookautoemailier.ui.DeadLetterExplorerController;
+import com.outlookautoemailier.ui.ImageLibraryController;
 import com.outlookautoemailier.ui.TemplateStudioController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,6 +82,7 @@ public class AppContext {
     private SmtpSender            smtpSender;
     /** Set by AccountSetupController before initBackend() to select the sender's SMTP provider. */
     private SmtpConfig            senderSmtpConfig;
+    private GoogleDriveService    googleDriveService;
 
     // ── UI controller fields ──────────────────────────────────────────────────
 
@@ -91,6 +94,7 @@ public class AppContext {
     private TemplateStudioController  templateStudioController;
     private AnalyticsController             analyticsController;
     private DeadLetterExplorerController  deadLetterExplorerController;
+    private ImageLibraryController        imageLibraryController;
 
     // ── Status helpers ────────────────────────────────────────────────────────
 
@@ -293,5 +297,11 @@ public class AppContext {
 
     public SmtpConfig getSenderSmtpConfig() { return senderSmtpConfig; }
     public void setSenderSmtpConfig(SmtpConfig cfg) { this.senderSmtpConfig = cfg; }
+
+    public ImageLibraryController getImageLibraryController() { return imageLibraryController; }
+    public void setImageLibraryController(ImageLibraryController c) { this.imageLibraryController = c; }
+
+    public GoogleDriveService getGoogleDriveService() { return googleDriveService; }
+    public void setGoogleDriveService(GoogleDriveService s) { this.googleDriveService = s; }
 
 }

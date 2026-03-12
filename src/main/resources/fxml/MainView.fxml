@@ -98,6 +98,12 @@
                           styleClass="nav-button"
                           maxWidth="Infinity"/>
 
+            <ToggleButton fx:id="btnImageLibrary"
+                          text="Image Library"
+                          toggleGroup="$navGroup"
+                          styleClass="nav-button"
+                          maxWidth="Infinity"/>
+
             <ToggleButton fx:id="btnAnalytics"
                           text="Analytics"
                           toggleGroup="$navGroup"
@@ -131,6 +137,7 @@
             <fx:include fx:id="queueDashboardPane" source="QueueDashboard.fxml" visible="false"/>
             <fx:include fx:id="settingsPane"       source="Settings.fxml"        visible="false"/>
             <fx:include fx:id="templateStudioPane" source="TemplateStudio.fxml"  visible="false"/>
+            <fx:include fx:id="imageLibraryPane"   source="ImageLibrary.fxml"    visible="false"/>
             <fx:include fx:id="analyticsPane"      source="Analytics.fxml"       visible="false"/>
             <fx:include fx:id="deadLetterPane"     source="DeadLetterExplorer.fxml" visible="false"/>
 

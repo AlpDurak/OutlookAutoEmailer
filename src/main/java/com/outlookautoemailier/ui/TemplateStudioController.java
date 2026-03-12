@@ -3,6 +3,7 @@ package com.outlookautoemailier.ui;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.outlookautoemailier.AppContext;
 import com.outlookautoemailier.integration.GeminiEmailAgent;
+import com.outlookautoemailier.model.ImageLibraryStore;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -591,7 +592,8 @@ public class TemplateStudioController implements Initializable {
         aiGenerateBtn.setDisable(true);
         aiStatusLabel.setText("Generating with Gemini\u2026");
 
-        GeminiEmailAgent.generateAsync(prompt)
+        String imageContext = ImageLibraryStore.getInstance().buildGeminiContext();
+        GeminiEmailAgent.generateWithLibraryAsync(prompt, imageContext)
                 .thenAccept(html -> Platform.runLater(() -> {
                     setEditorHtml(html);
                     aiStatusLabel.setText("Done! Template applied to editor.");

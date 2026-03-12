@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="16" xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.outlookautoemailier.ui.ImageLibraryController">
+    <padding>
+        <Insets top="24" right="28" bottom="24" left="28"/>
+    </padding>
+
+    <!-- Page title -->
+    <Label text="Image Library" styleClass="page-title"/>
+
+    <!-- Toolbar -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button fx:id="connectDriveBtn" text="Connect Google Drive"
+                styleClass="primary-button" onAction="#onConnectDrive"/>
+        <Label fx:id="driveStatusLabel" styleClass="help-label"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="uploadBtn" text="Upload Image"
+                styleClass="primary-button" onAction="#onUpload" disable="true"/>
+        <Button text="Refresh" onAction="#onRefresh"/>
+    </HBox>
+
+    <Separator/>
+
+    <!-- Image grid -->
+    <FlowPane fx:id="imageGrid" hgap="16" vgap="16">
+        <padding>
+            <Insets top="4"/>
+        </padding>
+    </FlowPane>
+
+    <Separator/>
+
+    <!-- Detail panel (hidden until an image is selected) -->
+    <VBox fx:id="detailPanel" spacing="12" visible="false" managed="false"
+          styleClass="image-detail-panel">
+        <padding>
+            <Insets top="16" right="16" bottom="16" left="16"/>
+        </padding>
+
+        <Label text="Image Details" styleClass="section-title"/>
+
+        <HBox spacing="16">
+            <ImageView fx:id="detailPreview" fitWidth="200" fitHeight="160" preserveRatio="true"/>
+            <VBox spacing="8" HBox.hgrow="ALWAYS">
+                <Label fx:id="detailFileName" styleClass="template-card-name"/>
+                <Label fx:id="detailUrl" styleClass="help-label" wrapText="true"/>
+
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <TextField fx:id="tagField" promptText="Add tag..." prefWidth="180"/>
+                    <Button text="Add Tag" onAction="#onAddTag"/>
+                </HBox>
+
+                <FlowPane fx:id="tagDisplay" hgap="6" vgap="6"/>
+
+                <Label text="Notes for AI:" styleClass="help-label"/>
+                <TextArea fx:id="notesArea" prefRowCount="3"
+                          promptText="e.g. 'Company logo, use in email header for branding'"
+                          wrapText="true"/>
+
+                <HBox spacing="8">
+                    <Button text="Save Changes" styleClass="primary-button" onAction="#onSaveDetails"/>
+                    <Button text="Copy URL" onAction="#onCopyUrl"/>
+                    <Button text="Delete Image" styleClass="danger-button" onAction="#onDeleteImage"/>
+                </HBox>
+            </VBox>
+        </HBox>
+    </VBox>
+</VBox>
