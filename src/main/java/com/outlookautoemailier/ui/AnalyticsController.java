@@ -566,8 +566,12 @@ public class AnalyticsController implements Initializable {
             clicks.append(String.format("%.1f", b.linkClickRatePct()));
         }
         cats.append("]"); opens.append("]"); clicks.append("]");
-        chartView.getEngine().executeScript(
-                "updateChart(" + cats + "," + opens + "," + clicks + ")");
+        try {
+            chartView.getEngine().executeScript(
+                    "updateChart(" + cats + "," + opens + "," + clicks + ")");
+        } catch (Exception e) {
+            log.debug("Campaign chart script not ready yet, will retry on next refresh cycle");
+        }
     }
 
     // ── Hourly distribution chart ──────────────────────────────────────────────
@@ -621,8 +625,14 @@ public class AnalyticsController implements Initializable {
         }
         hours.append("]"); counts.append("]"); rateJs.append("]");
 
-        hourlyChartView.getEngine().executeScript(
-                "updateHourlyChart(" + hours + "," + counts + "," + rateJs + ")");
+        try {
+            hourlyChartView.getEngine().executeScript(
+                    "updateHourlyChart(" + hours + "," + counts + "," + rateJs + ")");
+        } catch (Exception e) {
+            // ECharts CDN script not loaded yet; will retry on next auto-refresh
+            log.debug("Hourly chart script not ready yet, will retry on next refresh cycle");
+            return;
+        }
 
         // Update advice label
         String advice = SendTimeAnalyser.getRecommendedWindows(rates);
@@ -671,8 +681,13 @@ public class AnalyticsController implements Initializable {
         }
         weeks.append("]"); counts.append("]");
 
-        unsubChartView.getEngine().executeScript(
-                "updateUnsubChart(" + weeks + "," + counts + ")");
+        try {
+            unsubChartView.getEngine().executeScript(
+                    "updateUnsubChart(" + weeks + "," + counts + ")");
+        } catch (Exception e) {
+            // ECharts CDN script not loaded yet; will retry on next auto-refresh
+            log.debug("Unsub chart script not ready yet, will retry on next refresh cycle");
+        }
     }
 
     // ── AI performance context builder ────────────────────────────────────────
