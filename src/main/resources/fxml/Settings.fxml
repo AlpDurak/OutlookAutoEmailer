@@ -80,33 +80,9 @@
                  editable="true" prefWidth="120"
                  GridPane.columnIndex="1" GridPane.rowIndex="5"/>
 
-        <!-- Row 6: imgbb API key -->
-        <Label text="imgbb API Key:"
-               GridPane.columnIndex="0" GridPane.rowIndex="6"/>
-        <TextField fx:id="imgbbApiKeyField"
-                   promptText="Paste your free key from imgbb.com/signup"
-                   prefWidth="280"
-                   GridPane.columnIndex="1" GridPane.rowIndex="6"/>
-
-        <!-- Row 7: Google Client ID -->
-        <Label text="Google Client ID:"
-               GridPane.columnIndex="0" GridPane.rowIndex="7"/>
-        <TextField fx:id="googleClientIdField"
-                   promptText="OAuth2 Client ID from Google Cloud Console"
-                   prefWidth="280"
-                   GridPane.columnIndex="1" GridPane.rowIndex="7"/>
-
-        <!-- Row 8: Google Client Secret -->
-        <Label text="Google Client Secret:"
-               GridPane.columnIndex="0" GridPane.rowIndex="8"/>
-        <TextField fx:id="googleClientSecretField"
-                   promptText="OAuth2 Client Secret from Google Cloud Console"
-                   prefWidth="280"
-                   GridPane.columnIndex="1" GridPane.rowIndex="8"/>
-
     </GridPane>
 
-    <Label text="imgbb API key: required for images in HTML emails to display in recipients' email clients. Get a free key at imgbb.com/signup."
+    <Label text="API keys (IMGBB_API_KEY, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET) are read from the .env file in the project root."
            wrapText="true" styleClass="help-label"/>
 
     <Separator/>

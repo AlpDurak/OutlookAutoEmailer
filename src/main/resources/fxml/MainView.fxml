@@ -5,6 +5,8 @@
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
@@ -21,12 +23,15 @@
                 <Insets top="0" right="0" bottom="10" left="0"/>
             </padding>
 
-            <!-- App title -->
-            <Label text="OutlookAutoEmailer" styleClass="app-title" wrapText="true">
+            <!-- App logo -->
+            <ImageView fitWidth="156" fitHeight="50" preserveRatio="true" smooth="true">
+                <image>
+                    <Image url="@../images/splash.png"/>
+                </image>
                 <VBox.margin>
-                    <Insets top="16" right="12" bottom="4" left="12"/>
+                    <Insets top="12" right="12" bottom="4" left="12"/>
                 </VBox.margin>
-            </Label>
+            </ImageView>
 
             <Separator>
                 <VBox.margin>

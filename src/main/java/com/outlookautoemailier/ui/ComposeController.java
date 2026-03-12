@@ -377,7 +377,7 @@ public class ComposeController implements Initializable {
 
     // ── Group selector helpers ────────────────────────────────────────────────
 
-    private void refreshGroupCombo() {
+    public void refreshGroupCombo() {
         if (groupComboBox == null) return;
         java.util.List<ContactGroup> groups = ContactGroupStore.getInstance().getAll();
         groupComboBox.setItems(javafx.collections.FXCollections.observableArrayList(groups));

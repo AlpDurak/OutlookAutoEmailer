@@ -603,6 +603,7 @@ public class ContactListController implements Initializable {
             if (!name.isBlank()) {
                 ContactGroupStore.getInstance().addGroup(new ContactGroup(name.trim()));
                 refreshGroupCombo();
+                notifyComposeGroupRefresh();
             }
         });
     }
@@ -624,6 +625,8 @@ public class ContactListController implements Initializable {
         }
         checked.forEach(row -> group.addEmail(row.getContact().getPrimaryEmail()));
         ContactGroupStore.getInstance().updateGroup(group);
+        refreshGroupCombo();
+        notifyComposeGroupRefresh();
         showInfo("Added " + checked.size() + " contact(s) to \"" + group.getName() + "\".");
     }
 
@@ -637,6 +640,8 @@ public class ContactListController implements Initializable {
         if (checked.isEmpty()) { showInfo("Tick checkboxes to select contacts, then click Remove from Group."); return; }
         checked.forEach(row -> group.removeEmail(row.getContact().getPrimaryEmail()));
         ContactGroupStore.getInstance().updateGroup(group);
+        refreshGroupCombo();
+        notifyComposeGroupRefresh();
         showInfo("Removed " + checked.size() + " contact(s) from \"" + group.getName() + "\".");
     }
 
@@ -647,7 +652,14 @@ public class ContactListController implements Initializable {
         ContactGroupStore.getInstance().removeGroup(group.getId());
         groupComboBox.setValue(null);
         refreshGroupCombo();
+        notifyComposeGroupRefresh();
         showInfo("Group \"" + group.getName() + "\" deleted.");
+    }
+
+    /** Pushes the latest group list to the Compose page's ComboBox. */
+    private void notifyComposeGroupRefresh() {
+        ComposeController cc = AppContext.get().getComposeController();
+        if (cc != null) cc.refreshGroupCombo();
     }
 
     private void showInfo(String msg) {

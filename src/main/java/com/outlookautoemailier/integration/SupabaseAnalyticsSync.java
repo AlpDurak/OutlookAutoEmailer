@@ -112,10 +112,10 @@ public final class SupabaseAnalyticsSync {
      * {@link BatchStore}.  Batches already present locally are not overwritten.
      * Called on Analytics page open so data survives app restarts.
      */
-    public static void syncBatchesFromSupabaseAsync() {
+    public static CompletableFuture<Void> syncBatchesFromSupabaseAsync() {
         String key = serviceRoleKey();
-        if (key == null) return;
-        CompletableFuture.runAsync(() -> {
+        if (key == null) return CompletableFuture.completedFuture(null);
+        return CompletableFuture.runAsync(() -> {
             try {
                 HttpClient client = HttpClient.newHttpClient();
                 HttpRequest req = HttpRequest.newBuilder()
@@ -143,10 +143,10 @@ public final class SupabaseAnalyticsSync {
      * and updates local {@link SentEmailRecord} and {@link BatchStore} counters.
      * Called periodically by {@link com.outlookautoemailier.ui.AnalyticsController}.
      */
-    public static void syncOpensAsync() {
+    public static CompletableFuture<Void> syncOpensAsync() {
         String key = serviceRoleKey();
-        if (key == null) return;
-        CompletableFuture.runAsync(() -> {
+        if (key == null) return CompletableFuture.completedFuture(null);
+        return CompletableFuture.runAsync(() -> {
             try {
                 HttpClient client = HttpClient.newHttpClient();
                 HttpRequest req = HttpRequest.newBuilder()

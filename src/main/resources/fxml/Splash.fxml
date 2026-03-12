@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.Insets?>
+
+<StackPane xmlns="http://javafx.com/javafx/21"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.outlookautoemailier.ui.SplashController"
+           fx:id="root"
+           style="-fx-background-color:#0f172a;">
+
+    <!-- Background image fills the whole pane -->
+    <ImageView fx:id="splashImage" preserveRatio="false"
+               fitWidth="900" fitHeight="560" smooth="true">
+        <image>
+            <Image url="@../images/splash.png"/>
+        </image>
+    </ImageView>
+
+    <!-- Semi-transparent bottom bar with app name -->
+    <VBox alignment="BOTTOM_CENTER">
+        <StackPane style="-fx-background-color:rgba(0,0,0,0.55);-fx-padding:18 0 18 0;">
+            <Label text="Outlook Auto Emailer"
+                   style="-fx-font-size:28px;-fx-font-weight:bold;-fx-text-fill:white;
+                          -fx-font-family:'Segoe UI',sans-serif;
+                          -fx-effect:dropshadow(gaussian,black,6,0.4,0,2);"/>
+        </StackPane>
+    </VBox>
+
+</StackPane>

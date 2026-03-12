@@ -2651,3 +2651,225 @@ java.lang.NullPointerException: Cannot invoke "com.fasterxml.jackson.databind.Ob
 13:16:02.490 [ForkJoinPool.commonPool-worker-3] WARN  c.o.analytics.SentEmailStore - Skipping malformed record: {"trackingId":"ca635313-9b40-4ad5-92fd-589948521a9e","batchId":"669a0aed-ab79-4a91-8a3b-3eef8cbc224b","recipientEmail":"24COMP1013@isik.edu.tr","recipientName":"ALI EREN MENEKSELI","subject":"ALI ERENslm","sentAt":"2026-03-12T12:48:12.230827500","status":"SENT","failureReason":"","openedAt":""}
 13:16:02.491 [ForkJoinPool.commonPool-worker-3] INFO  c.o.analytics.SentEmailStore - Loaded 0 sent-email records from disk.
 13:17:51.572 [Thread-6] INFO  c.o.api.GraphApiClient - Fetching organisation users from Graph API /users (paginated)...
+13:18:16.182 [Thread-6] INFO  c.o.api.GraphApiClient - Fetched 33351 users total across 34 page(s).
+13:33:04.958 [auto-restore] INFO  c.o.config.AppConfig - application.properties loaded from classpath.
+13:33:04.959 [auto-restore] INFO  c.o.config.AppConfig - Loaded user settings override from: C:\Users\alpdu\.outlookautoemailier\application.properties
+13:33:04.962 [auto-restore] INFO  c.o.config.EnvLoader - Loaded 15 variables from .env file: C:\Users\alpdu\Documents\OutlookAutoEmailer\.env
+13:33:05.029 [JavaFX Application Thread] ERROR c.o.model.ContactGroupStore - ContactGroupStore init failed
+java.lang.NullPointerException: Cannot invoke "com.fasterxml.jackson.databind.ObjectMapper.readTree(java.io.File)" because "com.outlookautoemailier.model.ContactGroupStore.MAPPER" is null
+	at com.outlookautoemailier.model.ContactGroupStore.loadFromDisk(ContactGroupStore.java:94)
+	at com.outlookautoemailier.model.ContactGroupStore.<init>(ContactGroupStore.java:40)
+	at com.outlookautoemailier.model.ContactGroupStore.<clinit>(ContactGroupStore.java:28)
+	at com.outlookautoemailier.ui.ContactListController.refreshGroupCombo(ContactListController.java:581)
+	at com.outlookautoemailier.ui.ContactListController.initialize(ContactListController.java:143)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2670)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2563)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader$IncludeElement.constructValue(FXMLLoader.java:1155)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader$ValueElement.processStartElement(FXMLLoader.java:759)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.processStartElement(FXMLLoader.java:2853)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2649)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2563)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:3376)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:3332)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:3300)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:3272)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:3248)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.load(FXMLLoader.java:3241)
+	at com.outlookautoemailier.Main.showMainWindow(Main.java:40)
+	at com.outlookautoemailier.Main.lambda$start$0(Main.java:32)
+	at com.outlookautoemailier.ui.SplashController.lambda$startAndClose$3(SplashController.java:31)
+	at javafx.graphics@21.0.2/javafx.animation.Animation.runHandler(Animation.java:1102)
+	at javafx.graphics@21.0.2/javafx.animation.Animation.finished(Animation.java:1096)
+	at javafx.graphics@21.0.2/javafx.animation.AnimationAccessorImpl.finished(AnimationAccessorImpl.java:49)
+	at javafx.graphics@21.0.2/com.sun.scenario.animation.shared.SingleLoopClipEnvelope.timePulse(SingleLoopClipEnvelope.java:107)
+	at javafx.graphics@21.0.2/javafx.animation.Animation.doTimePulse(Animation.java:1189)
+	at javafx.graphics@21.0.2/javafx.animation.Animation$1.lambda$timePulse$0(Animation.java:207)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:138)
+	at javafx.graphics@21.0.2/javafx.animation.Animation$1.timePulse(Animation.java:206)
+	at javafx.graphics@21.0.2/com.sun.scenario.animation.AbstractPrimaryTimer.timePulseImpl(AbstractPrimaryTimer.java:343)
+	at javafx.graphics@21.0.2/com.sun.scenario.animation.AbstractPrimaryTimer$MainLoop.run(AbstractPrimaryTimer.java:266)
+	at javafx.graphics@21.0.2/com.sun.javafx.tk.quantum.QuantumToolkit.pulse(QuantumToolkit.java:588)
+	at javafx.graphics@21.0.2/com.sun.javafx.tk.quantum.QuantumToolkit.pulse(QuantumToolkit.java:572)
+	at javafx.graphics@21.0.2/com.sun.javafx.tk.quantum.QuantumToolkit.pulseFromQueue(QuantumToolkit.java:565)
+	at javafx.graphics@21.0.2/com.sun.javafx.tk.quantum.QuantumToolkit.lambda$runToolkit$11(QuantumToolkit.java:352)
+	at javafx.graphics@21.0.2/com.sun.glass.ui.InvokeLaterDispatcher$Future.run(InvokeLaterDispatcher.java:95)
+	at javafx.graphics@21.0.2/com.sun.glass.ui.win.WinApplication._runLoop(Native Method)
+	at javafx.graphics@21.0.2/com.sun.glass.ui.win.WinApplication.lambda$runLoop$3(WinApplication.java:185)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+13:33:05.746 [auto-restore] INFO  c.o.security.OAuth2Helper - Session restored silently for type: SOURCE (25COMP1019@isik.edu.tr)
+13:33:05.747 [auto-restore] INFO  c.o.ui.AccountSetupController - Source account restored silently: 25COMP1019@isik.edu.tr
+13:33:06.190 [ForkJoinPool.commonPool-worker-1] INFO  c.m.a.m.AcquireTokenSilentSupplier - Access token refreshed successfully.
+13:33:06.191 [auto-restore] INFO  c.o.security.OAuth2Helper - Session restored silently for type: SENDER (25COMP1019@isik.edu.tr)
+13:33:06.193 [auto-restore] INFO  c.o.ui.AccountSetupController - Sender account (M365) restored silently: 25COMP1019@isik.edu.tr
+13:33:06.278 [JavaFX Application Thread] INFO  c.o.config.DotEnvLoader - .env loaded from C:\Users\alpdu\Documents\OutlookAutoEmailer\.env (15 key(s)).
+13:33:06.281 [JavaFX Application Thread] ERROR c.o.analytics.BatchStore - BatchStore init failed
+java.lang.NullPointerException: Cannot invoke "com.fasterxml.jackson.databind.ObjectMapper.readTree(java.io.File)" because "com.outlookautoemailier.analytics.BatchStore.MAPPER" is null
+	at com.outlookautoemailier.analytics.BatchStore.loadFromDisk(BatchStore.java:116)
+	at com.outlookautoemailier.analytics.BatchStore.<init>(BatchStore.java:33)
+	at com.outlookautoemailier.analytics.BatchStore.<clinit>(BatchStore.java:22)
+	at com.outlookautoemailier.ui.AnalyticsController.refresh(AnalyticsController.java:149)
+	at com.outlookautoemailier.ui.AnalyticsController.initialize(AnalyticsController.java:65)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2670)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2563)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader$IncludeElement.constructValue(FXMLLoader.java:1155)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader$ValueElement.processStartElement(FXMLLoader.java:759)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.processStartElement(FXMLLoader.java:2853)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2649)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2563)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:3376)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:3332)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:3300)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:3272)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:3248)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.load(FXMLLoader.java:3241)
+	at com.outlookautoemailier.Main.showMainWindow(Main.java:40)
+	at com.outlookautoemailier.Main.lambda$start$0(Main.java:32)
+	at com.outlookautoemailier.ui.SplashController.lambda$startAndClose$3(SplashController.java:31)
+	at javafx.graphics@21.0.2/javafx.animation.Animation.runHandler(Animation.java:1102)
+	at javafx.graphics@21.0.2/javafx.animation.Animation.finished(Animation.java:1096)
+	at javafx.graphics@21.0.2/javafx.animation.AnimationAccessorImpl.finished(AnimationAccessorImpl.java:49)
+	at javafx.graphics@21.0.2/com.sun.scenario.animation.shared.SingleLoopClipEnvelope.timePulse(SingleLoopClipEnvelope.java:107)
+	at javafx.graphics@21.0.2/javafx.animation.Animation.doTimePulse(Animation.java:1189)
+	at javafx.graphics@21.0.2/javafx.animation.Animation$1.lambda$timePulse$0(Animation.java:207)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:138)
+	at javafx.graphics@21.0.2/javafx.animation.Animation$1.timePulse(Animation.java:206)
+	at javafx.graphics@21.0.2/com.sun.scenario.animation.AbstractPrimaryTimer.timePulseImpl(AbstractPrimaryTimer.java:343)
+	at javafx.graphics@21.0.2/com.sun.scenario.animation.AbstractPrimaryTimer$MainLoop.run(AbstractPrimaryTimer.java:266)
+	at javafx.graphics@21.0.2/com.sun.javafx.tk.quantum.QuantumToolkit.pulse(QuantumToolkit.java:588)
+	at javafx.graphics@21.0.2/com.sun.javafx.tk.quantum.QuantumToolkit.pulse(QuantumToolkit.java:572)
+	at javafx.graphics@21.0.2/com.sun.javafx.tk.quantum.QuantumToolkit.pulseFromQueue(QuantumToolkit.java:565)
+	at javafx.graphics@21.0.2/com.sun.javafx.tk.quantum.QuantumToolkit.lambda$runToolkit$11(QuantumToolkit.java:352)
+	at javafx.graphics@21.0.2/com.sun.glass.ui.InvokeLaterDispatcher$Future.run(InvokeLaterDispatcher.java:95)
+	at javafx.graphics@21.0.2/com.sun.glass.ui.win.WinApplication._runLoop(Native Method)
+	at javafx.graphics@21.0.2/com.sun.glass.ui.win.WinApplication.lambda$runLoop$3(WinApplication.java:185)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+13:33:06.996 [ForkJoinPool.commonPool-worker-1] INFO  c.o.i.SupabaseAnalyticsSync - Merged 3 batches from Supabase.
+13:33:07.004 [JavaFX Application Thread] INFO  c.o.api.GraphApiClient - GraphApiClient connected for account: 25COMP1019@isik.edu.tr
+13:33:07.006 [JavaFX Application Thread] INFO  com.outlookautoemailier.AppContext - GraphApiClient initialized for source account: 25COMP1019@isik.edu.tr
+13:33:07.011 [JavaFX Application Thread] INFO  c.o.security.RateLimiter - RateLimiter initialised: 100 tokens/hour, next refill at 2026-03-12T11:33:07.010280300Z.
+13:33:07.038 [JavaFX Application Thread] INFO  c.o.smtp.SmtpSender - SMTP session initialised with XOAUTH2 for 25COMP1019@isik.edu.tr@smtp.office365.com:587
+13:33:07.041 [JavaFX Application Thread] INFO  c.o.queue.EmailDispatcher - EmailDispatcher started with 2 worker thread(s).
+13:33:07.045 [JavaFX Application Thread] INFO  com.outlookautoemailier.AppContext - AppContext backend initialised.
+13:33:07.046 [JavaFX Application Thread] INFO  c.o.ui.AccountSetupController - Backend initialised: source=25COMP1019@isik.edu.tr sender=25COMP1019@isik.edu.tr
+13:33:07.047 [JavaFX Application Thread] INFO  c.o.security.RateLimiter - RateLimiter initialised: 100 tokens/hour, next refill at 2026-03-12T11:33:07.047737800Z.
+13:33:07.048 [ForkJoinPool.commonPool-worker-1] INFO  c.o.security.UnsubscribeManager - Suppression list loaded from C:\Users\alpdu\.outlookautoemailier\unsubscribed.txt: 1 address(es).
+13:33:07.050 [JavaFX Application Thread] INFO  c.o.smtp.SmtpSender - SMTP session initialised with XOAUTH2 for 25COMP1019@isik.edu.tr@smtp.office365.com:587
+13:33:07.050 [JavaFX Application Thread] INFO  c.o.queue.EmailDispatcher - EmailDispatcher started with 2 worker thread(s).
+13:33:07.050 [JavaFX Application Thread] INFO  com.outlookautoemailier.AppContext - AppContext backend initialised.
+13:33:07.050 [JavaFX Application Thread] INFO  c.o.ui.AccountSetupController - Backend initialised: source=25COMP1019@isik.edu.tr sender=25COMP1019@isik.edu.tr
+13:33:07.154 [Thread-4] INFO  c.o.api.GraphApiClient - Fetching organisation users from Graph API /users (paginated)...
+13:33:07.491 [ForkJoinPool.commonPool-worker-2] INFO  c.o.i.SupabaseUnsubscribeSync - Supabase sync: 0 new remote unsubscribe(s) added to local list.
+13:33:07.541 [ForkJoinPool.commonPool-worker-1] INFO  c.o.i.SupabaseUnsubscribeSync - Supabase sync: 0 new remote unsubscribe(s) added to local list.
+13:33:07.887 [ForkJoinPool.commonPool-worker-2] INFO  c.o.i.SupabaseUnsubscribeSync - Supabase sync: 0 local unsubscribe(s) pushed to remote.
+13:33:07.927 [ForkJoinPool.commonPool-worker-1] INFO  c.o.i.SupabaseUnsubscribeSync - Supabase sync: 0 local unsubscribe(s) pushed to remote.
+13:33:21.586 [auto-restore] INFO  c.o.config.AppConfig - application.properties loaded from classpath.
+13:33:21.588 [auto-restore] INFO  c.o.config.AppConfig - Loaded user settings override from: C:\Users\alpdu\.outlookautoemailier\application.properties
+13:33:21.591 [auto-restore] INFO  c.o.config.EnvLoader - Loaded 15 variables from .env file: C:\Users\alpdu\Documents\OutlookAutoEmailer\.env
+13:33:21.665 [JavaFX Application Thread] ERROR c.o.model.ContactGroupStore - ContactGroupStore init failed
+java.lang.NullPointerException: Cannot invoke "com.fasterxml.jackson.databind.ObjectMapper.readTree(java.io.File)" because "com.outlookautoemailier.model.ContactGroupStore.MAPPER" is null
+	at com.outlookautoemailier.model.ContactGroupStore.loadFromDisk(ContactGroupStore.java:94)
+	at com.outlookautoemailier.model.ContactGroupStore.<init>(ContactGroupStore.java:40)
+	at com.outlookautoemailier.model.ContactGroupStore.<clinit>(ContactGroupStore.java:28)
+	at com.outlookautoemailier.ui.ContactListController.refreshGroupCombo(ContactListController.java:581)
+	at com.outlookautoemailier.ui.ContactListController.initialize(ContactListController.java:143)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2670)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2563)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader$IncludeElement.constructValue(FXMLLoader.java:1155)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader$ValueElement.processStartElement(FXMLLoader.java:759)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.processStartElement(FXMLLoader.java:2853)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2649)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2563)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:3376)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:3332)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:3300)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:3272)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:3248)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.load(FXMLLoader.java:3241)
+	at com.outlookautoemailier.Main.showMainWindow(Main.java:40)
+	at com.outlookautoemailier.Main.lambda$start$0(Main.java:32)
+	at com.outlookautoemailier.ui.SplashController.lambda$startAndClose$3(SplashController.java:31)
+	at javafx.graphics@21.0.2/javafx.animation.Animation.runHandler(Animation.java:1102)
+	at javafx.graphics@21.0.2/javafx.animation.Animation.finished(Animation.java:1096)
+	at javafx.graphics@21.0.2/javafx.animation.AnimationAccessorImpl.finished(AnimationAccessorImpl.java:49)
+	at javafx.graphics@21.0.2/com.sun.scenario.animation.shared.SingleLoopClipEnvelope.timePulse(SingleLoopClipEnvelope.java:107)
+	at javafx.graphics@21.0.2/javafx.animation.Animation.doTimePulse(Animation.java:1189)
+	at javafx.graphics@21.0.2/javafx.animation.Animation$1.lambda$timePulse$0(Animation.java:207)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:138)
+	at javafx.graphics@21.0.2/javafx.animation.Animation$1.timePulse(Animation.java:206)
+	at javafx.graphics@21.0.2/com.sun.scenario.animation.AbstractPrimaryTimer.timePulseImpl(AbstractPrimaryTimer.java:343)
+	at javafx.graphics@21.0.2/com.sun.scenario.animation.AbstractPrimaryTimer$MainLoop.run(AbstractPrimaryTimer.java:266)
+	at javafx.graphics@21.0.2/com.sun.javafx.tk.quantum.QuantumToolkit.pulse(QuantumToolkit.java:588)
+	at javafx.graphics@21.0.2/com.sun.javafx.tk.quantum.QuantumToolkit.pulse(QuantumToolkit.java:572)
+	at javafx.graphics@21.0.2/com.sun.javafx.tk.quantum.QuantumToolkit.pulseFromQueue(QuantumToolkit.java:565)
+	at javafx.graphics@21.0.2/com.sun.javafx.tk.quantum.QuantumToolkit.lambda$runToolkit$11(QuantumToolkit.java:352)
+	at javafx.graphics@21.0.2/com.sun.glass.ui.InvokeLaterDispatcher$Future.run(InvokeLaterDispatcher.java:95)
+	at javafx.graphics@21.0.2/com.sun.glass.ui.win.WinApplication._runLoop(Native Method)
+	at javafx.graphics@21.0.2/com.sun.glass.ui.win.WinApplication.lambda$runLoop$3(WinApplication.java:185)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+13:33:22.329 [auto-restore] INFO  c.o.security.OAuth2Helper - Session restored silently for type: SOURCE (25COMP1019@isik.edu.tr)
+13:33:22.330 [auto-restore] INFO  c.o.ui.AccountSetupController - Source account restored silently: 25COMP1019@isik.edu.tr
+13:33:22.616 [JavaFX Application Thread] INFO  c.o.config.DotEnvLoader - .env loaded from C:\Users\alpdu\Documents\OutlookAutoEmailer\.env (15 key(s)).
+13:33:22.619 [JavaFX Application Thread] ERROR c.o.analytics.BatchStore - BatchStore init failed
+java.lang.NullPointerException: Cannot invoke "com.fasterxml.jackson.databind.ObjectMapper.readTree(java.io.File)" because "com.outlookautoemailier.analytics.BatchStore.MAPPER" is null
+	at com.outlookautoemailier.analytics.BatchStore.loadFromDisk(BatchStore.java:116)
+	at com.outlookautoemailier.analytics.BatchStore.<init>(BatchStore.java:33)
+	at com.outlookautoemailier.analytics.BatchStore.<clinit>(BatchStore.java:22)
+	at com.outlookautoemailier.ui.AnalyticsController.refresh(AnalyticsController.java:149)
+	at com.outlookautoemailier.ui.AnalyticsController.initialize(AnalyticsController.java:65)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2670)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2563)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader$IncludeElement.constructValue(FXMLLoader.java:1155)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader$ValueElement.processStartElement(FXMLLoader.java:759)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.processStartElement(FXMLLoader.java:2853)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2649)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2563)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:3376)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:3332)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:3300)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:3272)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:3248)
+	at javafx.fxml@21.0.2/javafx.fxml.FXMLLoader.load(FXMLLoader.java:3241)
+	at com.outlookautoemailier.Main.showMainWindow(Main.java:40)
+	at com.outlookautoemailier.Main.lambda$start$0(Main.java:32)
+	at com.outlookautoemailier.ui.SplashController.lambda$startAndClose$3(SplashController.java:31)
+	at javafx.graphics@21.0.2/javafx.animation.Animation.runHandler(Animation.java:1102)
+	at javafx.graphics@21.0.2/javafx.animation.Animation.finished(Animation.java:1096)
+	at javafx.graphics@21.0.2/javafx.animation.AnimationAccessorImpl.finished(AnimationAccessorImpl.java:49)
+	at javafx.graphics@21.0.2/com.sun.scenario.animation.shared.SingleLoopClipEnvelope.timePulse(SingleLoopClipEnvelope.java:107)
+	at javafx.graphics@21.0.2/javafx.animation.Animation.doTimePulse(Animation.java:1189)
+	at javafx.graphics@21.0.2/javafx.animation.Animation$1.lambda$timePulse$0(Animation.java:207)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:138)
+	at javafx.graphics@21.0.2/javafx.animation.Animation$1.timePulse(Animation.java:206)
+	at javafx.graphics@21.0.2/com.sun.scenario.animation.AbstractPrimaryTimer.timePulseImpl(AbstractPrimaryTimer.java:343)
+	at javafx.graphics@21.0.2/com.sun.scenario.animation.AbstractPrimaryTimer$MainLoop.run(AbstractPrimaryTimer.java:266)
+	at javafx.graphics@21.0.2/com.sun.javafx.tk.quantum.QuantumToolkit.pulse(QuantumToolkit.java:588)
+	at javafx.graphics@21.0.2/com.sun.javafx.tk.quantum.QuantumToolkit.pulse(QuantumToolkit.java:572)
+	at javafx.graphics@21.0.2/com.sun.javafx.tk.quantum.QuantumToolkit.pulseFromQueue(QuantumToolkit.java:565)
+	at javafx.graphics@21.0.2/com.sun.javafx.tk.quantum.QuantumToolkit.lambda$runToolkit$11(QuantumToolkit.java:352)
+	at javafx.graphics@21.0.2/com.sun.glass.ui.InvokeLaterDispatcher$Future.run(InvokeLaterDispatcher.java:95)
+	at javafx.graphics@21.0.2/com.sun.glass.ui.win.WinApplication._runLoop(Native Method)
+	at javafx.graphics@21.0.2/com.sun.glass.ui.win.WinApplication.lambda$runLoop$3(WinApplication.java:185)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+13:33:22.811 [ForkJoinPool.commonPool-worker-1] INFO  c.m.a.m.AcquireTokenSilentSupplier - Access token refreshed successfully.
+13:33:22.811 [auto-restore] INFO  c.o.security.OAuth2Helper - Session restored silently for type: SENDER (25COMP1019@isik.edu.tr)
+13:33:22.813 [auto-restore] INFO  c.o.ui.AccountSetupController - Sender account (M365) restored silently: 25COMP1019@isik.edu.tr
+13:33:23.222 [ForkJoinPool.commonPool-worker-2] INFO  c.o.i.SupabaseAnalyticsSync - Merged 3 batches from Supabase.
+13:33:23.478 [JavaFX Application Thread] INFO  c.o.api.GraphApiClient - GraphApiClient connected for account: 25COMP1019@isik.edu.tr
+13:33:23.480 [JavaFX Application Thread] INFO  com.outlookautoemailier.AppContext - GraphApiClient initialized for source account: 25COMP1019@isik.edu.tr
+13:33:23.485 [JavaFX Application Thread] INFO  c.o.security.RateLimiter - RateLimiter initialised: 100 tokens/hour, next refill at 2026-03-12T11:33:23.484207800Z.
+13:33:23.521 [JavaFX Application Thread] INFO  c.o.smtp.SmtpSender - SMTP session initialised with XOAUTH2 for 25COMP1019@isik.edu.tr@smtp.office365.com:587
+13:33:23.523 [JavaFX Application Thread] INFO  c.o.queue.EmailDispatcher - EmailDispatcher started with 2 worker thread(s).
+13:33:23.528 [JavaFX Application Thread] INFO  com.outlookautoemailier.AppContext - AppContext backend initialised.
+13:33:23.528 [JavaFX Application Thread] INFO  c.o.ui.AccountSetupController - Backend initialised: source=25COMP1019@isik.edu.tr sender=25COMP1019@isik.edu.tr
+13:33:23.532 [ForkJoinPool.commonPool-worker-2] INFO  c.o.security.UnsubscribeManager - Suppression list loaded from C:\Users\alpdu\.outlookautoemailier\unsubscribed.txt: 1 address(es).
+13:33:23.545 [JavaFX Application Thread] INFO  c.o.security.RateLimiter - RateLimiter initialised: 100 tokens/hour, next refill at 2026-03-12T11:33:23.545788600Z.
+13:33:23.548 [JavaFX Application Thread] INFO  c.o.smtp.SmtpSender - SMTP session initialised with XOAUTH2 for 25COMP1019@isik.edu.tr@smtp.office365.com:587
+13:33:23.549 [JavaFX Application Thread] INFO  c.o.queue.EmailDispatcher - EmailDispatcher started with 2 worker thread(s).
+13:33:23.549 [JavaFX Application Thread] INFO  com.outlookautoemailier.AppContext - AppContext backend initialised.
+13:33:23.549 [JavaFX Application Thread] INFO  c.o.ui.AccountSetupController - Backend initialised: source=25COMP1019@isik.edu.tr sender=25COMP1019@isik.edu.tr
+13:33:23.657 [Thread-4] INFO  c.o.api.GraphApiClient - Fetching organisation users from Graph API /users (paginated)...
+13:33:23.980 [ForkJoinPool.commonPool-worker-2] INFO  c.o.i.SupabaseUnsubscribeSync - Supabase sync: 0 new remote unsubscribe(s) added to local list.
+13:33:23.999 [ForkJoinPool.commonPool-worker-1] INFO  c.o.i.SupabaseUnsubscribeSync - Supabase sync: 0 new remote unsubscribe(s) added to local list.
+13:33:24.355 [ForkJoinPool.commonPool-worker-2] INFO  c.o.i.SupabaseUnsubscribeSync - Supabase sync: 0 local unsubscribe(s) pushed to remote.
+13:33:24.357 [ForkJoinPool.commonPool-worker-1] INFO  c.o.i.SupabaseUnsubscribeSync - Supabase sync: 0 local unsubscribe(s) pushed to remote.
+13:33:43.027 [Thread-4] INFO  c.o.api.GraphApiClient - Fetched 33351 users total across 34 page(s).

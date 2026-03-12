@@ -59,7 +59,9 @@ public class AnalyticsController implements Initializable {
         configureColumns();
         batchTable.setItems(batchRows);
         AppContext.get().setAnalyticsController(this);
-        SupabaseAnalyticsSync.syncBatchesFromSupabaseAsync();
+        // Fetch campaigns from Supabase; refresh UI when done
+        SupabaseAnalyticsSync.syncBatchesFromSupabaseAsync()
+                .thenRun(() -> javafx.application.Platform.runLater(this::refresh));
         refresh();
 
         // Auto-refresh local data every 5 seconds
@@ -68,9 +70,11 @@ public class AnalyticsController implements Initializable {
         localRefresh.setCycleCount(Animation.INDEFINITE);
         localRefresh.play();
 
-        // Sync open events from Supabase every 60 seconds
+        // Sync open events from Supabase every 60 seconds, then refresh UI
         Timeline openSync = new Timeline(
-                new KeyFrame(Duration.seconds(60), e -> SupabaseAnalyticsSync.syncOpensAsync()));
+                new KeyFrame(Duration.seconds(60), e ->
+                        SupabaseAnalyticsSync.syncOpensAsync()
+                                .thenRun(() -> javafx.application.Platform.runLater(this::refresh))));
         openSync.setCycleCount(Animation.INDEFINITE);
         openSync.play();
     }
@@ -124,8 +128,8 @@ public class AnalyticsController implements Initializable {
 
     @FXML
     private void onSyncOpens() {
-        SupabaseAnalyticsSync.syncOpensAsync();
-        refresh();
+        SupabaseAnalyticsSync.syncOpensAsync()
+                .thenRun(() -> javafx.application.Platform.runLater(this::refresh));
     }
 
     @FXML
