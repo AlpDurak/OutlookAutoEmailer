@@ -115,6 +115,10 @@ public class MainController implements Initializable {
                 scroll.getStyleClass().add("content-scroll");
                 scroll.setVisible(pane.isVisible());
 
+                // The inner pane must always be visible — visibility is now
+                // controlled by the ScrollPane wrapper, not the pane itself.
+                pane.setVisible(true);
+
                 parent.getChildren().set(index, scroll);
                 paneToWrapper.put(pane, scroll);
             } else {
