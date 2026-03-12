@@ -2,18 +2,22 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.web.WebView?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.web.WebView?>
 
+<ScrollPane fitToWidth="true" fitToHeight="true"
+            xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1">
 <VBox spacing="14"
-      xmlns="http://javafx.com/javafx/21"
-      xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.outlookautoemailier.ui.AnalyticsController">
 
     <padding>
@@ -41,26 +45,45 @@
                    style="-fx-text-fill:#ef4444;"/>
             <Label text="Failed Sends" styleClass="stat-label"/>
         </VBox>
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="130">
+            <Label fx:id="totalSuppressedLabel" text="0" styleClass="stat-count"/>
+            <Label text="Total Suppressed" styleClass="stat-label"/>
+        </VBox>
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="130">
+            <Label fx:id="suppressedThisMonthLabel" text="0" styleClass="stat-count"
+                   style="-fx-text-fill:#d97706;"/>
+            <Label text="Suppressed This Month" styleClass="stat-label"/>
+        </VBox>
     </HBox>
 
     <!-- ── Toolbar ─────────────────────────────────────────────────────────── -->
     <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button fx:id="aiInsightsButton" text="AI Insights" onAction="#onAiInsights"
+                styleClass="ai-toggle-btn"/>
+        <ProgressIndicator fx:id="aiSpinner" prefWidth="20" prefHeight="20"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Button text="Sync Opens" onAction="#onSyncOpens"/>
         <Button text="Refresh"    onAction="#onRefresh"/>
     </HBox>
 
+    <!-- ── AI Insights panel ───────────────────────────────────────────────── -->
+    <VBox fx:id="aiInsightsPanel" styleClass="ai-insights-panel" spacing="8">
+        <TextArea fx:id="aiInsightsArea" prefRowCount="6" editable="false"
+                  wrapText="true" promptText="AI-generated campaign insights will appear here..."/>
+    </VBox>
+
     <!-- ── Campaign batch table ────────────────────────────────────────────── -->
     <TableView fx:id="batchTable" VBox.vgrow="ALWAYS">
         <columns>
-            <TableColumn fx:id="batchNameColumn"     text="Campaign"  prefWidth="160"/>
-            <TableColumn fx:id="batchSubjectColumn"  text="Subject"   prefWidth="200"/>
-            <TableColumn fx:id="batchSentAtColumn"   text="Sent At"   prefWidth="140"/>
-            <TableColumn fx:id="batchTotalColumn"    text="Total"     prefWidth="60"/>
-            <TableColumn fx:id="batchSentColumn"     text="Delivered" prefWidth="75"/>
-            <TableColumn fx:id="batchFailedColumn"   text="Failed"    prefWidth="60"/>
-            <TableColumn fx:id="batchOpensColumn"    text="Opens"     prefWidth="60"/>
-            <TableColumn fx:id="batchOpenRateColumn" text="Open Rate" prefWidth="80"/>
+            <TableColumn fx:id="batchNameColumn"     text="Campaign"    prefWidth="150"/>
+            <TableColumn fx:id="batchSubjectColumn"  text="Subject"     prefWidth="180"/>
+            <TableColumn fx:id="batchSentAtColumn"   text="Sent At"     prefWidth="130"/>
+            <TableColumn fx:id="batchTotalColumn"    text="Total"       prefWidth="55"/>
+            <TableColumn fx:id="batchSentColumn"     text="Delivered"   prefWidth="70"/>
+            <TableColumn fx:id="batchFailedColumn"   text="Failed"      prefWidth="55"/>
+            <TableColumn fx:id="batchOpensColumn"    text="Opens"       prefWidth="55"/>
+            <TableColumn fx:id="batchOpenRateColumn" text="Open Rate"   prefWidth="75"/>
+            <TableColumn fx:id="batchUnsubRateColumn" text="Unsub Rate" prefWidth="80"/>
         </columns>
         <placeholder>
             <Label text="No campaigns sent yet."/>
@@ -84,4 +107,11 @@
     <WebView fx:id="hourlyChartView" prefHeight="260" VBox.vgrow="NEVER"/>
     <Label fx:id="sendTimeAdvice" text="" styleClass="advice-label"/>
 
+    <Separator/>
+
+    <!-- ── Unsubscribe weekly trend chart ──────────────────────────────────── -->
+    <Label text="Weekly Unsubscribe Trend" styleClass="section-title"/>
+    <WebView fx:id="unsubChartView" prefHeight="240" VBox.vgrow="NEVER"/>
+
 </VBox>
+</ScrollPane>

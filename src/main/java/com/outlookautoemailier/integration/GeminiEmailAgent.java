@@ -56,9 +56,72 @@ public final class GeminiEmailAgent {
             "7. Make the design clean, modern, and visually compelling.\n\n" +
             "User request: ";
 
+    /**
+     * System prompt for performance analysis.  Gemini acts as a data analyst
+     * reviewing email campaign metrics and providing actionable insights.
+     */
+    private static final String ANALYST_SYSTEM_PROMPT =
+            "You are a senior email campaign performance analyst reviewing metrics for a mass-email " +
+            "desktop application.  You receive JSON data containing batch metrics, failure reasons, " +
+            "and group performance.\n\n" +
+            "RULES:\n" +
+            "1. Provide 3-5 concise, actionable insights based on the data.\n" +
+            "2. Highlight any concerning trends (high failure rates, declining open rates, etc.).\n" +
+            "3. Suggest specific improvements (send time optimisation, subject line changes, list hygiene).\n" +
+            "4. Use plain text, no markdown formatting.\n" +
+            "5. Keep the total response under 300 words.\n" +
+            "6. If data is sparse, say so and recommend collecting more before drawing conclusions.\n\n" +
+            "Campaign data:\n";
+
     private GeminiEmailAgent() {}
 
     // ── Public API ─────────────────────────────────────────────────────────────
+
+    /**
+     * Returns {@code true} if the {@code GEMINI_API_KEY} is present and non-blank
+     * in the {@code .env} file.
+     */
+    public static boolean isConfigured() {
+        return DotEnvLoader.has("GEMINI_API_KEY");
+    }
+
+    /**
+     * Sends campaign performance data (as a JSON string) to Gemini for analysis
+     * and returns the AI-generated insights.
+     *
+     * @param contextJson JSON string containing batch metrics, failure reasons, etc.
+     * @return a CompletableFuture resolving to the analysis text
+     */
+    public static CompletableFuture<String> analyzePerformanceAsync(String contextJson) {
+        return CompletableFuture.supplyAsync(() -> {
+            String apiKey = DotEnvLoader.get("GEMINI_API_KEY");
+            if (apiKey == null || apiKey.isBlank()) {
+                throw new IllegalStateException(
+                        "GEMINI_API_KEY is not set in your .env file.");
+            }
+            try {
+                String body = buildRequestJson(ANALYST_SYSTEM_PROMPT + contextJson);
+                HttpClient client = HttpClient.newHttpClient();
+                HttpRequest req = HttpRequest.newBuilder()
+                        .uri(URI.create(GEMINI_URL + apiKey))
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
+                        .build();
+                HttpResponse<String> resp =
+                        client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                if (resp.statusCode() != 200) {
+                    String errMsg = extractErrorMessage(resp.body());
+                    log.warn("Gemini analytics API returned {}: {}", resp.statusCode(), resp.body());
+                    throw new RuntimeException("Gemini API error " + resp.statusCode() + ": " + errMsg);
+                }
+                return extractText(resp.body());
+            } catch (RuntimeException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new RuntimeException("Gemini analytics request failed: " + e.getMessage(), e);
+            }
+        });
+    }
 
     /**
      * Generates HTML email body content from a natural-language prompt.
@@ -139,6 +202,19 @@ public final class GeminiEmailAgent {
             text = m.group(1);
         }
 
+        return text.trim();
+    }
+
+    /**
+     * Extracts raw text from Gemini's JSON response (no HTML cleanup).
+     * Used for analytics insights where the response is plain text.
+     */
+    private static String extractText(String json) throws Exception {
+        JsonNode root = MAPPER.readTree(json);
+        String text = root.at("/candidates/0/content/parts/0/text").asText(null);
+        if (text == null || text.isBlank()) {
+            throw new RuntimeException("Gemini returned an empty response.");
+        }
         return text.trim();
     }
 

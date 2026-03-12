@@ -7,7 +7,13 @@ import com.outlookautoemailier.analytics.LinkClickRecord;
 import com.outlookautoemailier.analytics.SendTimeAnalyser;
 import com.outlookautoemailier.analytics.SentEmailRecord;
 import com.outlookautoemailier.analytics.SentEmailStore;
+import com.outlookautoemailier.analytics.UnsubscribeAnalyser;
+import com.outlookautoemailier.integration.GeminiEmailAgent;
 import com.outlookautoemailier.integration.SupabaseAnalyticsSync;
+import com.outlookautoemailier.security.UnsubscribeManager;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -22,20 +28,43 @@ import javafx.scene.web.WebView;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 public class AnalyticsController implements Initializable {
 
+    private static final Logger log = LoggerFactory.getLogger(AnalyticsController.class);
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     // ── Stat labels ───────────────────────────────────────────────────────────
     @FXML private Label totalBatchesLabel;
     @FXML private Label avgOpenRateLabel;
     @FXML private Label totalSentLabel;
     @FXML private Label totalFailedLabel;
+    @FXML private Label totalSuppressedLabel;
+    @FXML private Label suppressedThisMonthLabel;
+
+    // ── AI Insights ───────────────────────────────────────────────────────────
+    @FXML private Button aiInsightsButton;
+    @FXML private ProgressIndicator aiSpinner;
+    @FXML private TextArea aiInsightsArea;
+
+    // ── Unsub trend chart ─────────────────────────────────────────────────────
+    @FXML private WebView unsubChartView;
+
+    private boolean unsubChartReady = false;
+    private boolean unsubChartPending = false;
+
+    // ── Unsub rate column ─────────────────────────────────────────────────────
+    @FXML private TableColumn<EmailBatch, String> batchUnsubRateColumn;
 
     // ── Batch table ───────────────────────────────────────────────────────────
     @FXML private TableView<EmailBatch>           batchTable;
@@ -222,6 +251,67 @@ public class AnalyticsController implements Initializable {
             </html>
             """;
 
+    private static final String UNSUB_CHART_HTML = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+            <meta charset="UTF-8">
+            <style>
+              * { margin:0; padding:0; box-sizing:border-box; }
+              body { background:#ffffff; font-family:"Segoe UI",Arial,sans-serif; }
+              #chart { width:100%%; height:220px; }
+            </style>
+            <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+            </head>
+            <body>
+            <div id="chart"></div>
+            <script>
+            var chart = echarts.init(document.getElementById('chart'));
+            function updateUnsubChart(weeks, counts) {
+              chart.setOption({
+                backgroundColor: '#ffffff',
+                tooltip: { trigger: 'axis' },
+                grid: { left: 50, right: 16, top: 20, bottom: 40 },
+                xAxis: {
+                  type: 'category',
+                  data: weeks,
+                  axisLabel: { color: '#6b7280', rotate: 30, fontSize: 10 },
+                  axisLine: { lineStyle: { color: '#dde3ec' } },
+                  axisTick: { show: false }
+                },
+                yAxis: {
+                  type: 'value',
+                  minInterval: 1,
+                  axisLabel: { color: '#6b7280', fontSize: 11 },
+                  splitLine: { lineStyle: { color: '#eef2f7' } },
+                  axisLine: { show: false }
+                },
+                series: [{
+                  type: 'line',
+                  data: counts,
+                  smooth: true,
+                  symbol: 'circle',
+                  symbolSize: 6,
+                  lineStyle: { color: '#ef4444', width: 2 },
+                  itemStyle: { color: '#ef4444' },
+                  areaStyle: {
+                    color: {
+                      type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+                      colorStops: [
+                        { offset: 0, color: 'rgba(239,68,68,0.2)' },
+                        { offset: 1, color: 'rgba(239,68,68,0.02)' }
+                      ]
+                    }
+                  }
+                }]
+              });
+            }
+            window.addEventListener('resize', function() { chart.resize(); });
+            </script>
+            </body>
+            </html>
+            """;
+
     private final ObservableList<EmailBatch> batchRows = FXCollections.observableArrayList();
 
     // ── Initializable ─────────────────────────────────────────────────────────
@@ -233,6 +323,15 @@ public class AnalyticsController implements Initializable {
         AppContext.get().setAnalyticsController(this);
         initChart();
         initHourlyChart();
+        initUnsubChart();
+
+        // AI Insights button — disable if Gemini is not configured
+        aiSpinner.setVisible(false);
+        aiInsightsArea.setVisible(false);
+        if (!GeminiEmailAgent.isConfigured()) {
+            aiInsightsButton.setDisable(true);
+            aiInsightsButton.setText("AI Insights (No API Key)");
+        }
 
         // Fetch campaigns + link-click counts from Supabase; refresh UI when done
         SupabaseAnalyticsSync.syncBatchesFromSupabaseAsync()
@@ -297,7 +396,30 @@ public class AnalyticsController implements Initializable {
                 setStyle("-fx-text-fill:#16a34a;-fx-font-weight:bold;");
             }
         });
+
+        // Unsub rate column — configured from cached rates; warning for >1%
+        batchUnsubRateColumn.setCellValueFactory(cd -> {
+            double rate = cachedUnsubRates.getOrDefault(cd.getValue().getId(), 0.0);
+            return new SimpleStringProperty(String.format("%.1f%%", rate));
+        });
+        batchUnsubRateColumn.setCellFactory(col -> new TableCell<>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); getStyleClass().removeAll("unsub-warning-cell"); return; }
+                setText(item);
+                getStyleClass().removeAll("unsub-warning-cell");
+                try {
+                    double val = Double.parseDouble(item.replace("%", ""));
+                    if (val > 1.0) {
+                        getStyleClass().add("unsub-warning-cell");
+                    }
+                } catch (NumberFormatException ignored) {}
+            }
+        });
     }
+
+    /** Cached unsub rates per batch, refreshed each cycle. */
+    private Map<String, Double> cachedUnsubRates = Map.of();
 
     // ── FXML handlers ─────────────────────────────────────────────────────────
 
@@ -308,6 +430,30 @@ public class AnalyticsController implements Initializable {
     private void onSyncOpens() {
         SupabaseAnalyticsSync.syncOpensAsync()
                 .thenRun(() -> javafx.application.Platform.runLater(this::refresh));
+    }
+
+    @FXML
+    private void onAiInsights() {
+        aiInsightsButton.setDisable(true);
+        aiSpinner.setVisible(true);
+        aiInsightsArea.setVisible(true);
+        aiInsightsArea.setText("Analysing campaign performance...");
+
+        String contextJson = buildPerformanceContextJson();
+        GeminiEmailAgent.analyzePerformanceAsync(contextJson)
+                .thenAccept(result -> javafx.application.Platform.runLater(() -> {
+                    aiSpinner.setVisible(false);
+                    aiInsightsArea.setText(result);
+                    aiInsightsButton.setDisable(false);
+                }))
+                .exceptionally(ex -> {
+                    javafx.application.Platform.runLater(() -> {
+                        aiSpinner.setVisible(false);
+                        aiInsightsArea.setText("Analysis failed: " + ex.getMessage());
+                        aiInsightsButton.setDisable(false);
+                    });
+                    return null;
+                });
     }
 
     @FXML
@@ -325,6 +471,14 @@ public class AnalyticsController implements Initializable {
 
     public void refresh() {
         List<EmailBatch> batches = BatchStore.getInstance().getAll();
+
+        // Compute unsub rates before setting table data
+        Map<String, LocalDateTime> unsubData =
+                UnsubscribeManager.getInstance().getAllSuppressedWithTimestamps();
+        List<SentEmailRecord> allSends = SentEmailStore.getInstance().getAll();
+        cachedUnsubRates = UnsubscribeAnalyser.campaignUnsubscribeRates(
+                unsubData, allSends, batches);
+
         batchRows.setAll(batches);
 
         long totalSent   = batches.stream().mapToInt(EmailBatch::getSentCount).sum();
@@ -339,8 +493,14 @@ public class AnalyticsController implements Initializable {
         totalSentLabel.setText(String.valueOf(totalSent));
         totalFailedLabel.setText(String.valueOf(totalFailed));
 
+        // Unsub stats
+        totalSuppressedLabel.setText(String.valueOf(unsubData.size()));
+        suppressedThisMonthLabel.setText(
+                String.valueOf(UnsubscribeAnalyser.countThisMonth(unsubData)));
+
         updateChart(batches);
         refreshHourlyChart();
+        refreshUnsubChart(unsubData);
     }
 
     /** Fetches per-batch unique-clicker counts from Supabase and updates BatchStore. */
@@ -453,6 +613,101 @@ public class AnalyticsController implements Initializable {
         // Update advice label
         String advice = SendTimeAnalyser.getRecommendedWindows(rates);
         sendTimeAdvice.setText(advice);
+    }
+
+    // ── Unsubscribe trend chart ──────────────────────────────────────────────
+
+    private void initUnsubChart() {
+        unsubChartView.getEngine().setJavaScriptEnabled(true);
+        unsubChartView.getEngine().loadContent(UNSUB_CHART_HTML);
+        unsubChartView.getEngine().getLoadWorker().stateProperty().addListener(
+                (obs, oldState, newState) -> {
+                    if (newState == Worker.State.SUCCEEDED) {
+                        unsubChartReady = true;
+                        if (unsubChartPending) {
+                            unsubChartPending = false;
+                            Map<String, LocalDateTime> data =
+                                    UnsubscribeManager.getInstance().getAllSuppressedWithTimestamps();
+                            renderUnsubChart(data);
+                        }
+                    }
+                });
+    }
+
+    private void refreshUnsubChart(Map<String, LocalDateTime> unsubData) {
+        if (!unsubChartReady) {
+            unsubChartPending = true;
+            return;
+        }
+        renderUnsubChart(unsubData);
+    }
+
+    private void renderUnsubChart(Map<String, LocalDateTime> unsubData) {
+        Map<String, Long> weekly = UnsubscribeAnalyser.weeklyUnsubscribeCounts(unsubData);
+        // Show at most the last 12 weeks
+        java.util.List<Map.Entry<String, Long>> entries = new java.util.ArrayList<>(weekly.entrySet());
+        int from = Math.max(0, entries.size() - 12);
+
+        StringBuilder weeks = new StringBuilder("[");
+        StringBuilder counts = new StringBuilder("[");
+        for (int i = from; i < entries.size(); i++) {
+            if (i > from) { weeks.append(","); counts.append(","); }
+            weeks.append("'").append(entries.get(i).getKey()).append("'");
+            counts.append(entries.get(i).getValue());
+        }
+        weeks.append("]"); counts.append("]");
+
+        unsubChartView.getEngine().executeScript(
+                "updateUnsubChart(" + weeks + "," + counts + ")");
+    }
+
+    // ── AI performance context builder ────────────────────────────────────────
+
+    private String buildPerformanceContextJson() {
+        try {
+            List<EmailBatch> batches = BatchStore.getInstance().getAll();
+            List<SentEmailRecord> sends = SentEmailStore.getInstance().getAll();
+
+            ObjectNode root = MAPPER.createObjectNode();
+
+            // Batch summaries
+            ArrayNode batchArr = root.putArray("batches");
+            for (EmailBatch b : batches) {
+                ObjectNode bn = batchArr.addObject();
+                bn.put("name", b.getBatchName());
+                bn.put("subject", b.getSubject());
+                bn.put("sentAt", b.getSentAt() != null ? b.getSentAt().toString() : "");
+                bn.put("totalRecipients", b.getTotalRecipients());
+                bn.put("delivered", b.getSentCount());
+                bn.put("failed", b.getFailedCount());
+                bn.put("opens", b.getOpenCount());
+                bn.put("openRate", String.format("%.1f%%", b.openRatePct()));
+                bn.put("clickRate", String.format("%.1f%%", b.linkClickRatePct()));
+                double unsubRate = cachedUnsubRates.getOrDefault(b.getId(), 0.0);
+                bn.put("unsubRate", String.format("%.1f%%", unsubRate));
+            }
+
+            // Failure reasons summary
+            Map<String, Integer> failureReasons = new java.util.HashMap<>();
+            for (SentEmailRecord r : sends) {
+                if ("FAILED".equals(r.getStatus()) && r.getFailureReason() != null) {
+                    failureReasons.merge(r.getFailureReason(), 1, Integer::sum);
+                }
+            }
+            ObjectNode failures = root.putObject("failureReasons");
+            failureReasons.forEach(failures::put);
+
+            // Suppression summary
+            Map<String, LocalDateTime> unsubs =
+                    UnsubscribeManager.getInstance().getAllSuppressedWithTimestamps();
+            root.put("totalSuppressed", unsubs.size());
+            root.put("suppressedThisMonth", UnsubscribeAnalyser.countThisMonth(unsubs));
+
+            return MAPPER.writeValueAsString(root);
+        } catch (Exception e) {
+            log.error("Failed to build AI context JSON", e);
+            return "{\"error\":\"Failed to gather metrics\"}";
+        }
     }
 
     // ── Drill-down dialog ─────────────────────────────────────────────────────

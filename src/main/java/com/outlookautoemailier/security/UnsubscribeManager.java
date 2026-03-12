@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * Manages a persistent, per-user suppression list that prevents the mailer
@@ -104,6 +105,15 @@ public class UnsubscribeManager {
     private final Set<String> suppressedEmails = ConcurrentHashMap.newKeySet();
 
     /**
+     * Maps each suppressed email address to the timestamp when it was
+     * unsubscribed.  Populated during {@link #ensureLoaded()} by parsing
+     * the {@code # unsubscribed: <ISO datetime>} comment lines, and updated
+     * in {@link #addUnsubscribe(String)}.
+     */
+    private final ConcurrentHashMap<String, LocalDateTime> suppressedWithTimestamps =
+            new ConcurrentHashMap<>();
+
+    /**
      * Guards against loading the file more than once.  Writes are still
      * serialised through the instance monitor.
      */
@@ -151,17 +161,35 @@ public class UnsubscribeManager {
         try {
             List<String> lines = Files.readAllLines(storageFile, StandardCharsets.UTF_8);
             int count = 0;
+            String lastEmail = null;
             for (String line : lines) {
                 String trimmed = line.trim();
-                // Skip blank lines and comment lines.
-                if (trimmed.isEmpty() || trimmed.startsWith("#")) {
+                if (trimmed.isEmpty()) {
                     continue;
                 }
-                suppressedEmails.add(trimmed.toLowerCase(Locale.ROOT));
+                if (trimmed.startsWith(COMMENT_PREFIX)) {
+                    // Parse timestamp and associate with the preceding email
+                    if (lastEmail != null) {
+                        try {
+                            String tsStr = trimmed.substring(COMMENT_PREFIX.length()).trim();
+                            LocalDateTime ts = LocalDateTime.parse(tsStr, TIMESTAMP_FMT);
+                            suppressedWithTimestamps.put(lastEmail, ts);
+                        } catch (Exception ex) {
+                            log.debug("Could not parse timestamp from line: {}", trimmed);
+                        }
+                    }
+                    continue;
+                }
+                if (trimmed.startsWith("#")) {
+                    continue;
+                }
+                lastEmail = trimmed.toLowerCase(Locale.ROOT);
+                suppressedEmails.add(lastEmail);
                 count++;
             }
             loaded = true;
-            log.info("Suppression list loaded from {}: {} address(es).", storageFile, count);
+            log.info("Suppression list loaded from {}: {} address(es), {} with timestamps.",
+                     storageFile, count, suppressedWithTimestamps.size());
         } catch (IOException e) {
             log.error("Failed to load suppression list from {}: {}", storageFile, e.getMessage(), e);
             // Do not set loaded = true; allow a retry on the next call.
@@ -193,7 +221,10 @@ public class UnsubscribeManager {
         String normalised = email.trim().toLowerCase(Locale.ROOT);
         suppressedEmails.add(normalised);
 
-        String timestamp = LocalDateTime.now().format(TIMESTAMP_FMT);
+        LocalDateTime now = LocalDateTime.now();
+        suppressedWithTimestamps.put(normalised, now);
+
+        String timestamp = now.format(TIMESTAMP_FMT);
         List<String> lines = List.of(normalised, COMMENT_PREFIX + timestamp);
 
         synchronized (this) {
@@ -316,6 +347,19 @@ public class UnsubscribeManager {
     public int count() {
         ensureLoaded();
         return suppressedEmails.size();
+    }
+
+    /**
+     * Returns an unmodifiable view of all suppressed addresses with their
+     * unsubscribe timestamps.  Addresses whose timestamp could not be parsed
+     * from the file are omitted.
+     *
+     * @return an unmodifiable {@link Map} of lowercase email to timestamp;
+     *         never {@code null}
+     */
+    public Map<String, LocalDateTime> getAllSuppressedWithTimestamps() {
+        ensureLoaded();
+        return Collections.unmodifiableMap(suppressedWithTimestamps);
     }
 
     // ------------------------------------------------------------------

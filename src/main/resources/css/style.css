@@ -828,6 +828,32 @@
     -fx-padding: 4 0 2 0;
 }
 
+/* ── AI Insights panel (Analytics screen) ──────────────────────────────── */
+.ai-insights-panel {
+    -fx-padding: 0 0 4 0;
+}
+
+.ai-insights-panel .text-area {
+    -fx-font-size: 12px;
+    -fx-text-fill: #1a2233;
+    -fx-background-color: #f8fafc;
+    -fx-border-color: #dde3ec;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+.ai-insights-panel .text-area .content {
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 8;
+}
+
+/* ── Unsub rate warning cell (>1% unsub rate) ─────────────────────────── */
+.unsub-warning-cell {
+    -fx-text-fill: #dc2626;
+    -fx-font-weight: bold;
+}
+
 /* ── Advice / recommendation labels ─────────────────────────────────────── */
 .advice-label {
     -fx-text-fill: #0d9488;
