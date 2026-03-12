@@ -22,6 +22,7 @@ public class MainController implements Initializable {
     @FXML private Pane settingsPane;
     @FXML private Pane templateStudioPane;
     @FXML private Pane analyticsPane;
+    @FXML private Pane deadLetterPane;
 
     // ── Sidebar nav buttons ──────────────────────────────────────────────────
     @FXML private ToggleButton btnAccounts;
@@ -31,6 +32,7 @@ public class MainController implements Initializable {
     @FXML private ToggleButton btnSettings;
     @FXML private ToggleButton btnStudio;
     @FXML private ToggleButton btnAnalytics;
+    @FXML private ToggleButton btnDeadLetters;
 
     // ── Sidebar badges ────────────────────────────────────────────────────
     @FXML private Label queueBadge;
@@ -51,7 +53,8 @@ public class MainController implements Initializable {
                 queueDashboardPane,
                 settingsPane,
                 templateStudioPane,
-                analyticsPane
+                analyticsPane,
+                deadLetterPane
         );
 
         // Wire nav buttons → pane visibility
@@ -62,6 +65,7 @@ public class MainController implements Initializable {
         btnSettings.setOnAction(e -> showPane(settingsPane));
         btnStudio.setOnAction(e -> showPane(templateStudioPane));
         btnAnalytics.setOnAction(e -> showPane(analyticsPane));
+        btnDeadLetters.setOnAction(e -> showPane(deadLetterPane));
 
         // Prevent the active toggle from being de-selected by a second click
         btnAccounts.getToggleGroup().selectedToggleProperty().addListener(
@@ -167,5 +171,14 @@ public class MainController implements Initializable {
         } else {
             Platform.runLater(update);
         }
+    }
+
+    /**
+     * Navigates to the Dead-Letter Explorer pane.
+     * Called programmatically from other controllers.
+     */
+    public void navigateToDeadLetters() {
+        btnDeadLetters.setSelected(true);
+        showPane(deadLetterPane);
     }
 }

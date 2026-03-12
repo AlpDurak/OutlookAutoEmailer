@@ -15,6 +15,7 @@ import com.outlookautoemailier.ui.ComposeController;
 import com.outlookautoemailier.ui.ContactListController;
 import com.outlookautoemailier.ui.MainController;
 import com.outlookautoemailier.ui.QueueDashboardController;
+import com.outlookautoemailier.ui.DeadLetterExplorerController;
 import com.outlookautoemailier.ui.TemplateStudioController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,7 +89,8 @@ public class AppContext {
     private ComposeController         composeController;
     private QueueDashboardController  queueDashboardController;
     private TemplateStudioController  templateStudioController;
-    private AnalyticsController       analyticsController;
+    private AnalyticsController             analyticsController;
+    private DeadLetterExplorerController  deadLetterExplorerController;
 
     // ── Status helpers ────────────────────────────────────────────────────────
 
@@ -279,6 +281,14 @@ public class AppContext {
 
     public void setAnalyticsController(AnalyticsController analyticsController) {
         this.analyticsController = analyticsController;
+    }
+
+    public DeadLetterExplorerController getDeadLetterExplorerController() {
+        return deadLetterExplorerController;
+    }
+
+    public void setDeadLetterExplorerController(DeadLetterExplorerController deadLetterExplorerController) {
+        this.deadLetterExplorerController = deadLetterExplorerController;
     }
 
     public SmtpConfig getSenderSmtpConfig() { return senderSmtpConfig; }

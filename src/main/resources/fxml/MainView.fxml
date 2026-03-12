@@ -104,6 +104,12 @@
                           styleClass="nav-button"
                           maxWidth="Infinity"/>
 
+            <ToggleButton fx:id="btnDeadLetters"
+                          text="Dead Letters"
+                          toggleGroup="$navGroup"
+                          styleClass="nav-button"
+                          maxWidth="Infinity"/>
+
             <!-- Spacer — pushes version label to the bottom -->
             <Region VBox.vgrow="ALWAYS"/>
 
@@ -126,6 +132,7 @@
             <fx:include fx:id="settingsPane"       source="Settings.fxml"        visible="false"/>
             <fx:include fx:id="templateStudioPane" source="TemplateStudio.fxml"  visible="false"/>
             <fx:include fx:id="analyticsPane"      source="Analytics.fxml"       visible="false"/>
+            <fx:include fx:id="deadLetterPane"     source="DeadLetterExplorer.fxml" visible="false"/>
 
         </StackPane>
     </center>

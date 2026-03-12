@@ -382,4 +382,72 @@ public class EmailQueue {
                           && !inFlightIds.contains(j.getId()))
                 .collect(Collectors.toList());
     }
+
+    // ------------------------------------------------------------------
+    //  Dead-letter operations
+    // ------------------------------------------------------------------
+
+    /**
+     * Returns a snapshot of all jobs currently in the DEAD_LETTER state.
+     *
+     * @return unmodifiable list of dead-letter jobs; never null
+     */
+    public List<EmailJob> getDeadLetterJobs() {
+        return getJobsByStatus(JobStatus.DEAD_LETTER);
+    }
+
+    /**
+     * Removes the specified dead-letter jobs from the master list and adjusts
+     * the {@code deadLetterCount} counter accordingly.  Only jobs whose current
+     * status is {@link JobStatus#DEAD_LETTER} are removed; others are silently
+     * skipped.
+     *
+     * @param jobs the dead-letter jobs to remove; must not be null
+     */
+    public void removeDeadLetterJobs(List<EmailJob> jobs) {
+        Objects.requireNonNull(jobs, "jobs must not be null");
+        synchronized (allJobsLock) {
+            for (EmailJob job : jobs) {
+                if (job.getStatus() == JobStatus.DEAD_LETTER && allJobs.remove(job)) {
+                    deadLetterCount.decrementAndGet();
+                    log.info("Removed DEAD_LETTER job {} from master list.", job.getId());
+                }
+            }
+        }
+    }
+
+    /**
+     * Re-enqueues the specified dead-letter jobs for a fresh retry run.
+     * Each job is replaced with a fresh copy that has {@code attemptCount=0}
+     * and {@code status=PENDING}, preserving the original UUID.
+     *
+     * @param jobs the dead-letter jobs to retry; must not be null
+     */
+    public void retryDeadLetterJobs(List<EmailJob> jobs) {
+        Objects.requireNonNull(jobs, "jobs must not be null");
+        synchronized (allJobsLock) {
+            for (EmailJob old : jobs) {
+                if (old.getStatus() != JobStatus.DEAD_LETTER) {
+                    continue;
+                }
+                allJobs.remove(old);
+                deadLetterCount.decrementAndGet();
+
+                EmailJob fresh = EmailJob.builder()
+                        .id(old.getId())
+                        .batchId(old.getBatchId())
+                        .contact(old.getContact())
+                        .template(old.getTemplate())
+                        .priority(old.getPriority())
+                        .maxAttempts(old.getMaxAttempts())
+                        .createdAt(old.getCreatedAt())
+                        .build();
+
+                allJobs.add(fresh);
+                queue.offer(fresh);
+                pendingCount.incrementAndGet();
+                log.info("Retried DEAD_LETTER job {} — re-enqueued as PENDING.", fresh.getId());
+            }
+        }
+    }
 }

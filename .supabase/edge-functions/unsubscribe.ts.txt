@@ -1,0 +1,62 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+Deno.serve(async (req: Request) => {
+  const url   = new URL(req.url);
+  const email = url.searchParams.get("email")?.toLowerCase().trim();
+
+  if (!email || !email.includes("@")) {
+    return new Response(
+      `<!DOCTYPE html><html><body><h2>Invalid request.</h2></body></html>`,
+      { status: 400, headers: { "Content-Type": "text/html; charset=utf-8" } }
+    );
+  }
+
+  try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      { auth: { persistSession: false } }
+    );
+    await supabase
+      .from("unsubscribes")
+      .upsert(
+        { email, source: "email_link", unsubscribed_at: new Date().toISOString() },
+        { onConflict: "email" }
+      );
+  } catch (_) {
+    // silently continue — still show confirmation
+  }
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unsubscribed</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center; max-width: 480px; }
+    h1 { color: #1e293b; }
+    p { color: #64748b; line-height: 1.6; }
+    .email { font-weight: bold; color: #2563eb; }
+    .footer { margin-top: 24px; font-size: 13px; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>&#10003; Unsubscribed</h1>
+    <p>The address <span class="email">${email}</span> has been removed from our mailing list.</p>
+    <p>You will no longer receive emails from Işık IEEE Computer Society.</p>
+    <div class="footer">Developed by Alp Durak &mdash; <a href="https://isikieee.com.tr/" style="color:#2563eb;">isikieee.com.tr</a></div>
+  </div>
+</body>
+</html>`;
+
+  return new Response(html, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
+    },
+  });
+});

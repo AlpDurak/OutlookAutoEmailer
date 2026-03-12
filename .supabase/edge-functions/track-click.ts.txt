@@ -1,0 +1,47 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+Deno.serve(async (req: Request) => {
+  const params      = new URL(req.url).searchParams;
+  const trackingId  = params.get("tracking_id");
+  const batchId     = params.get("batch_id");
+  const encodedUrl  = params.get("url");
+
+  if (!trackingId || !batchId || !encodedUrl) {
+    return new Response("Missing parameters", { status: 400 });
+  }
+
+  let originalUrl: string;
+  try {
+    originalUrl = decodeURIComponent(encodedUrl);
+    const parsed = new URL(originalUrl);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return new Response("Invalid URL", { status: 400 });
+    }
+  } catch {
+    return new Response("Invalid URL", { status: 400 });
+  }
+
+  const sb = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    { auth: { persistSession: false } }
+  );
+
+  // Fire-and-forget — don't delay the redirect
+  sb.from("link_clicks")
+    .insert({
+      batch_id:     batchId,
+      tracking_id:  trackingId,
+      original_url: originalUrl,
+      clicked_at:   new Date().toISOString(),
+    })
+    .then(({ error }) => { if (error) console.error(error.message); });
+
+  return new Response(null, {
+    status: 302,
+    headers: {
+      "Location":      originalUrl,
+      "Cache-Control": "no-store",
+    },
+  });
+});

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="15"
+      xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.outlookautoemailier.ui.DeadLetterExplorerController">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- Page title -->
+    <Label text="Dead-Letter Queue" styleClass="page-title"/>
+
+    <!-- Stat summary bar -->
+    <HBox spacing="20" alignment="CENTER_LEFT">
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="140">
+            <Label fx:id="totalDeadLabel" text="0" styleClass="stat-count"/>
+            <Label text="Dead-Lettered" styleClass="stat-label"/>
+        </VBox>
+        <VBox styleClass="stat-card,dl-top-reason-card" alignment="CENTER" minWidth="220">
+            <Label fx:id="topReasonLabel" text="--" styleClass="dl-top-reason-value"/>
+            <Label text="Most Common Failure" styleClass="stat-label"/>
+        </VBox>
+    </HBox>
+
+    <!-- Filter controls -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <TextField fx:id="searchField"
+                   promptText="Search by email or domain..."
+                   prefWidth="260"/>
+        <ComboBox fx:id="reasonFilter" promptText="All Failure Reasons" prefWidth="220"/>
+        <Button text="Clear Filters" onAction="#onClearFilters"/>
+    </HBox>
+
+    <!-- Job table -->
+    <TableView fx:id="deadLetterTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="recipientColumn"    text="Recipient"      prefWidth="200"/>
+            <TableColumn fx:id="domainColumn"       text="Domain"         prefWidth="130"/>
+            <TableColumn fx:id="subjectColumn"      text="Subject"        prefWidth="180"/>
+            <TableColumn fx:id="failureReasonColumn" text="Failure Reason" prefWidth="200"/>
+            <TableColumn fx:id="attemptsColumn"     text="Attempts"       prefWidth="70"/>
+            <TableColumn fx:id="timestampColumn"    text="Timestamp"      prefWidth="140"/>
+        </columns>
+        <placeholder>
+            <Label text="No dead-letter jobs found."/>
+        </placeholder>
+    </TableView>
+
+    <!-- Failure breakdown -->
+    <Separator/>
+    <Label text="FAILURE BREAKDOWN" styleClass="section-header"/>
+    <VBox fx:id="failureBreakdownBox" spacing="4">
+        <padding>
+            <Insets left="4"/>
+        </padding>
+    </VBox>
+
+    <!-- Action buttons -->
+    <Separator/>
+    <HBox spacing="8" alignment="CENTER_LEFT">
+        <Button text="Retry Selected"
+                styleClass="primary-button"
+                onAction="#onRetrySelected"/>
+        <Button text="Retry All Visible"
+                onAction="#onRetryAll"/>
+        <Button text="Export CSV"
+                onAction="#onExportCsv"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Delete Selected"
+                styleClass="danger-button"
+                onAction="#onDeleteSelected"/>
+    </HBox>
+
+</VBox>

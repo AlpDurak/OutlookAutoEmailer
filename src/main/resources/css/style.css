@@ -915,3 +915,25 @@
 .toolbar-btn-italic {
     -fx-font-style: italic;
 }
+
+/* ── Dead-Letter Explorer ───────────────────────────────────────────────── */
+
+.dl-top-reason-card {
+    -fx-border-color: #fca5a5;
+}
+
+.dl-top-reason-value {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #dc2626;
+}
+
+.dl-failure-cell {
+    -fx-text-fill: #dc2626;
+}
+
+.dl-breakdown-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #374151;
+    -fx-padding: 2 0 2 8;
+}
