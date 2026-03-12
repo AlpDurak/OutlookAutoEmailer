@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.web.WebView?>
+
+<VBox spacing="12"
+      xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.outlookautoemailier.ui.PreviewModalController"
+      prefWidth="800" prefHeight="600">
+
+    <padding>
+        <Insets top="20" right="24" bottom="20" left="24"/>
+    </padding>
+
+    <!-- ── Header ────────────────────────────────────────────────────────── -->
+    <Label text="Email Preview" styleClass="page-title"/>
+
+    <!-- ── Subject display ───────────────────────────────────────────────── -->
+    <HBox spacing="8" alignment="CENTER_LEFT">
+        <Label text="Subject:" styleClass="preview-field-label"/>
+        <Label fx:id="subjectLabel" styleClass="preview-subject" wrapText="true"
+               HBox.hgrow="ALWAYS"/>
+    </HBox>
+
+    <Separator/>
+
+    <!-- ── Recipient navigation ──────────────────────────────────────────── -->
+    <HBox spacing="10" alignment="CENTER_LEFT" styleClass="preview-nav-bar">
+        <Button fx:id="prevButton" text="Previous" onAction="#onPrevious"
+                styleClass="secondary-button"/>
+        <Label fx:id="recipientLabel" styleClass="preview-recipient-label"/>
+        <Label fx:id="counterLabel" styleClass="help-label"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="nextButton" text="Next" onAction="#onNext"
+                styleClass="secondary-button"/>
+    </HBox>
+
+    <!-- ── Unresolved token warning ──────────────────────────────────────── -->
+    <Label fx:id="unresolvedWarning" styleClass="preview-warning"
+           wrapText="true" managed="false" visible="false"/>
+
+    <!-- ── HTML preview ──────────────────────────────────────────────────── -->
+    <WebView fx:id="previewWebView" VBox.vgrow="ALWAYS"/>
+
+</VBox>

@@ -13,11 +13,14 @@ import com.outlookautoemailier.ui.MainController;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -253,10 +256,9 @@ public class ComposeController implements Initializable {
     }
 
     /**
-     * Shows a preview dialog with the first recipient's resolved subject and body.
-     *
-     * <p>TODO Sprint 2: replace the stub with a proper modal that renders the
-     * full resolved template for the first (or a user-chosen) contact.
+     * Opens a full-screen preview modal that renders the email HTML in a
+     * {@link WebView} with per-recipient variable resolution and
+     * previous/next navigation.
      */
     @FXML
     private void onPreview() {
@@ -267,16 +269,34 @@ public class ComposeController implements Initializable {
             return;
         }
 
-        Contact first   = recipients.get(0);
-        String subject  = resolveTemplate(subjectField.getText(), first);
-        String body     = resolveTemplate(bodyArea.getText(), first);
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/fxml/PreviewModal.fxml"));
+            Parent root = loader.load();
 
-        Alert preview = new Alert(Alert.AlertType.INFORMATION);
-        preview.setTitle("Email Preview — " + first.getDisplayName());
-        preview.setHeaderText("Subject: " + subject);
-        preview.setContentText(body.length() > 800 ? body.substring(0, 800) + "…" : body);
-        preview.getDialogPane().setPrefWidth(600);
-        preview.showAndWait();
+            PreviewModalController controller = loader.getController();
+            controller.setData(recipients, subjectField.getText(), bodyArea.getText());
+
+            Dialog<Void> dialog = new Dialog<>();
+            dialog.setTitle("Email Preview");
+            dialog.initModality(Modality.APPLICATION_MODAL);
+            dialog.initOwner(subjectField.getScene().getWindow());
+            dialog.setResizable(true);
+
+            DialogPane dialogPane = dialog.getDialogPane();
+            dialogPane.setContent(root);
+            dialogPane.getButtonTypes().add(ButtonType.CLOSE);
+            dialogPane.setPrefSize(850, 650);
+
+            // Apply app stylesheet to the dialog
+            dialogPane.getStylesheets().add(
+                    getClass().getResource("/css/style.css").toExternalForm());
+
+            dialog.showAndWait();
+        } catch (Exception ex) {
+            showAlert(Alert.AlertType.ERROR, "Preview Failed",
+                    "Could not open preview: " + ex.getMessage());
+        }
     }
 
     /**
@@ -459,7 +479,8 @@ public class ComposeController implements Initializable {
                 .replace("{{firstName}}", nvl(contact.getFirstName()))
                 .replace("{{lastName}}",  nvl(contact.getLastName()))
                 .replace("{{email}}",     nvl(contact.getPrimaryEmail()))
-                .replace("{{company}}",   nvl(contact.getCompany()));
+                .replace("{{company}}",   nvl(contact.getCompany()))
+                .replace("{{jobTitle}}",  nvl(contact.getJobTitle()));
     }
 
     private static String nvl(String value) {
