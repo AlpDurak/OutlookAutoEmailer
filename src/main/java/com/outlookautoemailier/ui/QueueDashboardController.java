@@ -166,6 +166,12 @@ public class QueueDashboardController implements Initializable {
         progressLabel.setText(sent + " / " + total + " processed"
                 + (sending > 0 ? "  ·  " + sending + " sending" : ""));
 
+        // Update sidebar badge
+        MainController mainCtrl = ctx.getMainController();
+        if (mainCtrl != null) {
+            mainCtrl.updateQueueBadge(pending + sending, failed);
+        }
+
         // Refresh job table
         List<JobRow> rows = q.getAllJobsSnapshot().stream()
                 .map(job -> new JobRow(

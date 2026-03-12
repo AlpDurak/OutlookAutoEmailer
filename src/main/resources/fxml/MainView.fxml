@@ -50,11 +50,20 @@
                           styleClass="nav-button"
                           maxWidth="Infinity"/>
 
-            <ToggleButton fx:id="btnContacts"
-                          text="Contacts"
-                          toggleGroup="$navGroup"
-                          styleClass="nav-button"
-                          maxWidth="Infinity"/>
+            <StackPane>
+                <ToggleButton fx:id="btnContacts"
+                              text="Contacts"
+                              toggleGroup="$navGroup"
+                              styleClass="nav-button"
+                              maxWidth="Infinity"/>
+                <Label fx:id="contactsBadge" styleClass="nav-badge"
+                       visible="false" managed="false"
+                       StackPane.alignment="CENTER_RIGHT" mouseTransparent="true">
+                    <StackPane.margin>
+                        <Insets right="10"/>
+                    </StackPane.margin>
+                </Label>
+            </StackPane>
 
             <ToggleButton fx:id="btnCompose"
                           text="Compose"
@@ -62,11 +71,20 @@
                           styleClass="nav-button"
                           maxWidth="Infinity"/>
 
-            <ToggleButton fx:id="btnQueue"
-                          text="Queue"
-                          toggleGroup="$navGroup"
-                          styleClass="nav-button"
-                          maxWidth="Infinity"/>
+            <StackPane>
+                <ToggleButton fx:id="btnQueue"
+                              text="Queue"
+                              toggleGroup="$navGroup"
+                              styleClass="nav-button"
+                              maxWidth="Infinity"/>
+                <Label fx:id="queueBadge" styleClass="nav-badge"
+                       visible="false" managed="false"
+                       StackPane.alignment="CENTER_RIGHT" mouseTransparent="true">
+                    <StackPane.margin>
+                        <Insets right="10"/>
+                    </StackPane.margin>
+                </Label>
+            </StackPane>
 
             <ToggleButton fx:id="btnSettings"
                           text="Settings"

@@ -75,6 +75,20 @@
     -fx-faint-focus-color: transparent;
 }
 
+/* ── Navigation badge (overlaid count on sidebar buttons) ────────────────── */
+.nav-badge {
+    -fx-background-color: #d97706;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 10;
+    -fx-padding: 1 6 1 6;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+
+.nav-badge.danger {
+    -fx-background-color: #dc2626;
+}
+
 /* ── Content area ────────────────────────────────────────────────────────── */
 .content-area {
     -fx-background-color: #eef2f7;

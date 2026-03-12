@@ -1,7 +1,9 @@
 package com.outlookautoemailier.ui;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.Pane;
@@ -29,6 +31,10 @@ public class MainController implements Initializable {
     @FXML private ToggleButton btnSettings;
     @FXML private ToggleButton btnStudio;
     @FXML private ToggleButton btnAnalytics;
+
+    // ── Sidebar badges ────────────────────────────────────────────────────
+    @FXML private Label queueBadge;
+    @FXML private Label contactsBadge;
 
     /** Ordered list used for bulk visibility toggling. */
     private List<Pane> allPanes;
@@ -104,5 +110,62 @@ public class MainController implements Initializable {
     public void navigateToAnalytics() {
         btnAnalytics.setSelected(true);
         showPane(analyticsPane);
+    }
+
+    // ── Badge updates ─────────────────────────────────────────────────────
+
+    /**
+     * Updates the queue sidebar badge.
+     *
+     * @param active number of pending + sending jobs
+     * @param failed number of failed + dead-letter jobs
+     */
+    public void updateQueueBadge(int active, int failed) {
+        Runnable update = () -> {
+            if (active == 0 && failed == 0) {
+                queueBadge.setVisible(false);
+                queueBadge.setManaged(false);
+                return;
+            }
+            if (failed > 0) {
+                queueBadge.setText(String.valueOf(failed));
+                if (!queueBadge.getStyleClass().contains("danger")) {
+                    queueBadge.getStyleClass().add("danger");
+                }
+            } else {
+                queueBadge.setText(String.valueOf(active));
+                queueBadge.getStyleClass().remove("danger");
+            }
+            queueBadge.setVisible(true);
+            queueBadge.setManaged(true);
+        };
+        if (Platform.isFxApplicationThread()) {
+            update.run();
+        } else {
+            Platform.runLater(update);
+        }
+    }
+
+    /**
+     * Updates the contacts sidebar badge.
+     *
+     * @param count number of recipients currently selected
+     */
+    public void updateContactsBadge(int count) {
+        Runnable update = () -> {
+            if (count == 0) {
+                contactsBadge.setVisible(false);
+                contactsBadge.setManaged(false);
+            } else {
+                contactsBadge.setText(String.valueOf(count));
+                contactsBadge.setVisible(true);
+                contactsBadge.setManaged(true);
+            }
+        };
+        if (Platform.isFxApplicationThread()) {
+            update.run();
+        } else {
+            Platform.runLater(update);
+        }
     }
 }

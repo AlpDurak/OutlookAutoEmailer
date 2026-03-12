@@ -104,6 +104,12 @@ public class ComposeController implements Initializable {
                 ? Collections.unmodifiableList(new ArrayList<>(contacts))
                 : Collections.emptyList();
         updateRecipientCountLabel();
+
+        // Update sidebar badge
+        MainController mainCtrl = AppContext.get().getMainController();
+        if (mainCtrl != null) {
+            mainCtrl.updateContactsBadge(recipients.size());
+        }
     }
 
     /** @return an unmodifiable view of the current recipient list. */
