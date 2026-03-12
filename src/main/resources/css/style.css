@@ -862,3 +862,56 @@
     -fx-wrap-text: true;
     -fx-padding: 4 0 8 0;
 }
+
+/* ── Template Library Panel ─────────────────────────────────────────────── */
+.template-library-panel {
+    -fx-background-color: #f8fafc;
+    -fx-border-color: #dde3ec;
+    -fx-border-width: 0 0 0 1;
+}
+
+.template-library-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.template-library-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.template-card {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #dde3ec;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 10 12 10 12;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(13,21,38,0.04), 4, 0, 0, 1);
+}
+
+.template-card:hover {
+    -fx-background-color: #eff6ff;
+    -fx-border-color: #bfdbfe;
+    -fx-effect: dropshadow(gaussian, rgba(37,99,235,0.12), 6, 0, 0, 2);
+}
+
+.template-card-name {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1a2233;
+}
+
+.template-card-subject {
+    -fx-font-size: 11px;
+    -fx-text-fill: #6b7280;
+}
+
+/* Bold / italic toolbar button visual hints */
+.toolbar-btn-bold {
+    -fx-font-weight: bold;
+}
+
+.toolbar-btn-italic {
+    -fx-font-style: italic;
+}

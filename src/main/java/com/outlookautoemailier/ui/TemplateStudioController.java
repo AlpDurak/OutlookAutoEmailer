@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -32,6 +33,7 @@ import java.util.ResourceBundle;
 public class TemplateStudioController implements Initializable {
 
     private static final Logger log = LoggerFactory.getLogger(TemplateStudioController.class);
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @FXML private TextField   templateNameField;
     @FXML private WebView     editorView;
@@ -45,6 +47,11 @@ public class TemplateStudioController implements Initializable {
     @FXML private Label     aiStatusLabel;
     @FXML private Button    aiToggleBtn;
     @FXML private Button    aiGenerateBtn;
+
+    // ── Template library panel ────────────────────────────────────────────────
+    @FXML private VBox      templateLibraryPanel;
+    @FXML private VBox      templateCardList;
+    @FXML private Button    btnToggleLibrary;
 
     private static final String EDITOR_HTML = """
             <!DOCTYPE html>
@@ -286,7 +293,105 @@ public class TemplateStudioController implements Initializable {
             editorView.getEngine().executeScript("applyForeColor(" + jsStr(hex) + ")");
         });
 
+        // Populate template library on startup
+        refreshTemplateLibrary();
+
         AppContext.get().setTemplateStudioController(this);
+    }
+
+    // ── Template library panel ────────────────────────────────────────────────
+
+    @FXML
+    private void onToggleLibrary() {
+        boolean nowVisible = !templateLibraryPanel.isVisible();
+        templateLibraryPanel.setVisible(nowVisible);
+        templateLibraryPanel.setManaged(nowVisible);
+        if (nowVisible) {
+            refreshTemplateLibrary();
+        }
+    }
+
+    /**
+     * Scans the templates directory and populates the library panel with clickable cards.
+     */
+    public void refreshTemplateLibrary() {
+        templateCardList.getChildren().clear();
+
+        Path templatesDir = Path.of(System.getProperty("user.home"), ".outlookautoemailier", "templates");
+        if (!Files.isDirectory(templatesDir)) {
+            Label emptyLabel = new Label("No templates saved yet.");
+            emptyLabel.getStyleClass().add("help-label");
+            emptyLabel.setWrapText(true);
+            templateCardList.getChildren().add(emptyLabel);
+            return;
+        }
+
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(templatesDir, "*.json")) {
+            boolean hasTemplates = false;
+            for (Path file : stream) {
+                hasTemplates = true;
+                try {
+                    @SuppressWarnings("unchecked")
+                    Map<String, String> data = objectMapper.readValue(file.toFile(), Map.class);
+                    String name = data.getOrDefault("name", file.getFileName().toString());
+                    String subject = data.getOrDefault("subject", "");
+
+                    VBox card = buildTemplateCard(name, subject, file);
+                    templateCardList.getChildren().add(card);
+                } catch (Exception ex) {
+                    log.warn("Could not parse template file: {}", file.getFileName(), ex);
+                }
+            }
+
+            if (!hasTemplates) {
+                Label emptyLabel = new Label("No templates saved yet.");
+                emptyLabel.getStyleClass().add("help-label");
+                emptyLabel.setWrapText(true);
+                templateCardList.getChildren().add(emptyLabel);
+            }
+        } catch (Exception ex) {
+            log.error("Failed to scan templates directory", ex);
+        }
+    }
+
+    private VBox buildTemplateCard(String name, String subject, Path filePath) {
+        VBox card = new VBox(4);
+        card.getStyleClass().add("template-card");
+
+        Label nameLabel = new Label(name);
+        nameLabel.getStyleClass().add("template-card-name");
+        nameLabel.setMaxWidth(Double.MAX_VALUE);
+
+        card.getChildren().add(nameLabel);
+
+        if (subject != null && !subject.isBlank()) {
+            String preview = subject.length() > 40 ? subject.substring(0, 40) + "..." : subject;
+            Label subjectLabel = new Label(preview);
+            subjectLabel.getStyleClass().add("template-card-subject");
+            subjectLabel.setMaxWidth(Double.MAX_VALUE);
+            card.getChildren().add(subjectLabel);
+        }
+
+        card.setOnMouseClicked(e -> loadTemplateFromCard(filePath));
+        return card;
+    }
+
+    /**
+     * Loads a template from the given file path into the editor fields.
+     */
+    private void loadTemplateFromCard(Path filePath) {
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, String> data = objectMapper.readValue(filePath.toFile(), Map.class);
+            templateNameField.setText(data.getOrDefault("name", ""));
+            String body = data.getOrDefault("body", "");
+            editorView.getEngine().executeScript(
+                "document.getElementById('editor').innerHTML = " + jsStr(body));
+            log.info("Loaded template from library: {}", filePath.getFileName());
+        } catch (Exception ex) {
+            showAlert("Load Failed", "Could not read template: " + ex.getMessage());
+            log.error("Failed to load template from card: {}", filePath, ex);
+        }
     }
 
     // ── Formatting commands ───────────────────────────────────────────────────
@@ -434,8 +539,11 @@ public class TemplateStudioController implements Initializable {
             data.put("html", "true");
             data.put("savedAt", LocalDateTime.now().toString());
 
-            new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(file.toFile(), data);
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(file.toFile(), data);
             showAlert("Saved", "Template \"" + name + "\" saved to:\n" + file);
+
+            // Refresh the library panel so the new template appears immediately
+            refreshTemplateLibrary();
         } catch (Exception ex) {
             showAlert("Save Failed", ex.getMessage());
         }
@@ -453,7 +561,7 @@ public class TemplateStudioController implements Initializable {
         if (selected == null) return;
         try {
             @SuppressWarnings("unchecked")
-            Map<String, String> data = new ObjectMapper().readValue(selected, Map.class);
+            Map<String, String> data = objectMapper.readValue(selected, Map.class);
             templateNameField.setText(data.getOrDefault("name", ""));
             String body = data.getOrDefault("body", "");
             editorView.getEngine().executeScript(
@@ -470,7 +578,7 @@ public class TemplateStudioController implements Initializable {
         boolean nowVisible = !aiPanel.isVisible();
         aiPanel.setVisible(nowVisible);
         aiPanel.setManaged(nowVisible);
-        aiToggleBtn.setText(nowVisible ? "✕ Close AI" : "✨ AI Assist");
+        aiToggleBtn.setText(nowVisible ? "\u2715 Close AI" : "\u2728 AI Assist");
     }
 
     @FXML
@@ -481,7 +589,7 @@ public class TemplateStudioController implements Initializable {
             return;
         }
         aiGenerateBtn.setDisable(true);
-        aiStatusLabel.setText("Generating with Gemini…");
+        aiStatusLabel.setText("Generating with Gemini\u2026");
 
         GeminiEmailAgent.generateAsync(prompt)
                 .thenAccept(html -> Platform.runLater(() -> {

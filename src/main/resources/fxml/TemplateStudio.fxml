@@ -5,6 +5,7 @@
 <?import javafx.scene.control.ColorPicker?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
@@ -14,147 +15,181 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
 
-<VBox spacing="8"
-      xmlns="http://javafx.com/javafx/21"
+<HBox xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.outlookautoemailier.ui.TemplateStudioController">
-    <padding>
-        <Insets top="16" right="16" bottom="16" left="16"/>
-    </padding>
 
-    <Label text="Template Studio" styleClass="page-title"/>
-
-    <!-- Template name + save/load -->
-    <HBox spacing="10" alignment="CENTER_LEFT">
-        <Label text="Template Name:"/>
-        <TextField fx:id="templateNameField" promptText="My Template" prefWidth="180"/>
-        <Button text="Save" onAction="#onSaveTemplate">
-            <tooltip><Tooltip text="Save template to disk"/></tooltip>
-        </Button>
-        <Button text="Load" onAction="#onLoadTemplate">
-            <tooltip><Tooltip text="Load a saved template"/></tooltip>
-        </Button>
-    </HBox>
-
-    <Separator/>
-
-    <!-- Toolbar row 1: text formatting + headings + lists + insert -->
-    <HBox spacing="4" alignment="CENTER_LEFT">
-        <Button text="B" onAction="#onBold" styleClass="toolbar-btn" style="-fx-font-weight:bold;">
-            <tooltip><Tooltip text="Bold"/></tooltip>
-        </Button>
-        <Button text="I" onAction="#onItalic" styleClass="toolbar-btn" style="-fx-font-style:italic;">
-            <tooltip><Tooltip text="Italic"/></tooltip>
-        </Button>
-        <Button text="U" onAction="#onUnderline" styleClass="toolbar-btn">
-            <tooltip><Tooltip text="Underline"/></tooltip>
-        </Button>
-        <Separator orientation="VERTICAL"/>
-        <Button text="H1" onAction="#onH1" styleClass="toolbar-btn"><tooltip><Tooltip text="Heading 1"/></tooltip></Button>
-        <Button text="H2" onAction="#onH2" styleClass="toolbar-btn"><tooltip><Tooltip text="Heading 2"/></tooltip></Button>
-        <Button text="H3" onAction="#onH3" styleClass="toolbar-btn"><tooltip><Tooltip text="Heading 3"/></tooltip></Button>
-        <Separator orientation="VERTICAL"/>
-        <Button text="&#8226; List" onAction="#onInsertUl" styleClass="toolbar-btn"><tooltip><Tooltip text="Bullet list"/></tooltip></Button>
-        <Button text="&#8213; Line" onAction="#onInsertDivider" styleClass="toolbar-btn"><tooltip><Tooltip text="Horizontal divider"/></tooltip></Button>
-        <Separator orientation="VERTICAL"/>
-        <Button text="Image" onAction="#onInsertImage" styleClass="toolbar-btn"><tooltip><Tooltip text="Insert image (resizable)"/></tooltip></Button>
-        <Button text="Button" onAction="#onInsertButton" styleClass="toolbar-btn"><tooltip><Tooltip text="Insert link button"/></tooltip></Button>
-        <Separator orientation="VERTICAL"/>
-        <Button text="Undo" onAction="#onUndo" styleClass="toolbar-btn"><tooltip><Tooltip text="Undo"/></tooltip></Button>
-        <Button text="Redo" onAction="#onRedo" styleClass="toolbar-btn"><tooltip><Tooltip text="Redo"/></tooltip></Button>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Button text="Clear" onAction="#onClear" styleClass="toolbar-btn"><tooltip><Tooltip text="Clear all content"/></tooltip></Button>
-    </HBox>
-
-    <!-- Toolbar row 2: font family, size, color -->
-    <HBox spacing="8" alignment="CENTER_LEFT">
-        <Label text="Font:"/>
-        <ComboBox fx:id="fontFamilyBox" prefWidth="160">
-            <tooltip><Tooltip text="Select font family — applies to selected text"/></tooltip>
-        </ComboBox>
-        <Label text="Size:"/>
-        <TextField fx:id="fontSizeField" promptText="px" prefWidth="52"
-                   onAction="#onApplyFontSize">
-            <tooltip><Tooltip text="Enter size in px and press Enter — applies to selected text"/></tooltip>
-        </TextField>
-        <Button text="Apply Size" onAction="#onApplyFontSize">
-            <tooltip><Tooltip text="Apply font size to selected text"/></tooltip>
-        </Button>
-        <Label text="Color:"/>
-        <ColorPicker fx:id="textColorPicker" prefWidth="90">
-            <tooltip><Tooltip text="Text color — applies to selected text"/></tooltip>
-        </ColorPicker>
-    </HBox>
-
-    <!-- Variable insertion -->
-    <HBox spacing="6" alignment="CENTER_LEFT">
-        <Label text="Insert:" style="-fx-text-fill:#6b7280; -fx-font-size:11px;"/>
-        <Button text="{{firstName}}" onAction="#onInsertVar" userData="{{firstName}}" styleClass="tag-btn"/>
-        <Button text="{{lastName}}"  onAction="#onInsertVar" userData="{{lastName}}"  styleClass="tag-btn"/>
-        <Button text="{{email}}"     onAction="#onInsertVar" userData="{{email}}"     styleClass="tag-btn"/>
-        <Button text="{{company}}"   onAction="#onInsertVar" userData="{{company}}"   styleClass="tag-btn"/>
-        <Button text="{{jobTitle}}"  onAction="#onInsertVar" userData="{{jobTitle}}"  styleClass="tag-btn"/>
-    </HBox>
-
-    <!-- WebView editor — grows to fill available space -->
-    <WebView fx:id="editorView" VBox.vgrow="ALWAYS" prefHeight="340"/>
-
-    <Separator/>
-
-    <!-- Footer -->
-    <HBox spacing="10" alignment="CENTER_RIGHT">
-        <Button text="&lt;/&gt; View HTML" onAction="#onGetHtml">
-            <tooltip><Tooltip text="Show the raw HTML source"/></tooltip>
-        </Button>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Button fx:id="aiToggleBtn" text="&#10024; AI Assist" styleClass="ai-toggle-btn"
-                onAction="#onToggleAiPanel">
-            <tooltip><Tooltip text="Open the AI email generator powered by Google Gemini"/></tooltip>
-        </Button>
-        <Button text="&#9658; Use in Compose" styleClass="primary-button" onAction="#onUseInCompose">
-            <tooltip><Tooltip text="Send this template to the Compose pane"/></tooltip>
-        </Button>
-    </HBox>
-
-    <!-- ════════════════ AI Chat Panel ════════════════ -->
-    <!-- Sits inline below the footer; hidden by default (visible=false, managed=false). -->
-    <!-- Controller toggles both visible and managed together so it pushes the layout    -->
-    <!-- only when open and doesn't occupy space when closed.                            -->
-    <VBox fx:id="aiPanel" styleClass="ai-panel"
-          visible="false" managed="false"
-          prefHeight="220" minHeight="220"
-          spacing="10">
+    <!-- ════════════ Main editor panel ════════════ -->
+    <VBox spacing="8" HBox.hgrow="ALWAYS">
         <padding>
-            <Insets top="14" right="16" bottom="14" left="16"/>
+            <Insets top="16" right="16" bottom="16" left="16"/>
         </padding>
 
-        <!-- Panel header -->
-        <HBox alignment="CENTER_LEFT" spacing="6">
-            <Label text="&#10024; AI Email Assistant" styleClass="ai-panel-title" HBox.hgrow="ALWAYS"/>
-            <Button text="&#10005; Close" styleClass="ai-close-btn" onAction="#onToggleAiPanel">
-                <tooltip><Tooltip text="Close AI panel"/></tooltip>
+        <Label text="Template Studio" styleClass="page-title"/>
+
+        <!-- Template name + save/load + library toggle -->
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Template Name:"/>
+            <TextField fx:id="templateNameField" promptText="My Template" prefWidth="180"/>
+            <Button text="Save" onAction="#onSaveTemplate">
+                <tooltip><Tooltip text="Save template to disk"/></tooltip>
+            </Button>
+            <Button text="Load" onAction="#onLoadTemplate">
+                <tooltip><Tooltip text="Load a saved template"/></tooltip>
+            </Button>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="btnToggleLibrary" text="Library" onAction="#onToggleLibrary"
+                    styleClass="secondary-button">
+                <tooltip><Tooltip text="Show or hide the template library panel"/></tooltip>
             </Button>
         </HBox>
 
         <Separator/>
 
-        <!-- Prompt + send on one row -->
-        <HBox spacing="10" alignment="CENTER_LEFT" VBox.vgrow="ALWAYS">
-            <TextArea fx:id="aiPromptArea"
-                      promptText="Describe the email you want… e.g. A formal welcome email for new Isik University students with a blue header, course registration reminder, and contact details."
-                      wrapText="true" prefRowCount="4"
-                      HBox.hgrow="ALWAYS"/>
-            <VBox spacing="8" alignment="CENTER" minWidth="150">
-                <Button fx:id="aiGenerateBtn" text="Generate &#10148;"
-                        styleClass="primary-button" onAction="#onAiGenerate"
-                        prefWidth="150" prefHeight="50">
-                    <tooltip><Tooltip text="Generate HTML email from your prompt (replaces editor content)"/></tooltip>
-                </Button>
-                <Label fx:id="aiStatusLabel" text=""
-                       style="-fx-text-fill:#94a3b8; -fx-font-size:11px;"
-                       wrapText="true" maxWidth="150"/>
-            </VBox>
+        <!-- Toolbar row 1: text formatting + headings + lists + insert -->
+        <HBox spacing="4" alignment="CENTER_LEFT">
+            <Button text="B" onAction="#onBold" styleClass="toolbar-btn,toolbar-btn-bold">
+                <tooltip><Tooltip text="Bold"/></tooltip>
+            </Button>
+            <Button text="I" onAction="#onItalic" styleClass="toolbar-btn,toolbar-btn-italic">
+                <tooltip><Tooltip text="Italic"/></tooltip>
+            </Button>
+            <Button text="U" onAction="#onUnderline" styleClass="toolbar-btn">
+                <tooltip><Tooltip text="Underline"/></tooltip>
+            </Button>
+            <Separator orientation="VERTICAL"/>
+            <Button text="H1" onAction="#onH1" styleClass="toolbar-btn"><tooltip><Tooltip text="Heading 1"/></tooltip></Button>
+            <Button text="H2" onAction="#onH2" styleClass="toolbar-btn"><tooltip><Tooltip text="Heading 2"/></tooltip></Button>
+            <Button text="H3" onAction="#onH3" styleClass="toolbar-btn"><tooltip><Tooltip text="Heading 3"/></tooltip></Button>
+            <Separator orientation="VERTICAL"/>
+            <Button text="&#8226; List" onAction="#onInsertUl" styleClass="toolbar-btn"><tooltip><Tooltip text="Bullet list"/></tooltip></Button>
+            <Button text="&#8213; Line" onAction="#onInsertDivider" styleClass="toolbar-btn"><tooltip><Tooltip text="Horizontal divider"/></tooltip></Button>
+            <Separator orientation="VERTICAL"/>
+            <Button text="Image" onAction="#onInsertImage" styleClass="toolbar-btn"><tooltip><Tooltip text="Insert image (resizable)"/></tooltip></Button>
+            <Button text="Button" onAction="#onInsertButton" styleClass="toolbar-btn"><tooltip><Tooltip text="Insert link button"/></tooltip></Button>
+            <Separator orientation="VERTICAL"/>
+            <Button text="Undo" onAction="#onUndo" styleClass="toolbar-btn"><tooltip><Tooltip text="Undo"/></tooltip></Button>
+            <Button text="Redo" onAction="#onRedo" styleClass="toolbar-btn"><tooltip><Tooltip text="Redo"/></tooltip></Button>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Clear" onAction="#onClear" styleClass="toolbar-btn"><tooltip><Tooltip text="Clear all content"/></tooltip></Button>
         </HBox>
+
+        <!-- Toolbar row 2: font family, size, color -->
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <Label text="Font:"/>
+            <ComboBox fx:id="fontFamilyBox" prefWidth="160">
+                <tooltip><Tooltip text="Select font family — applies to selected text"/></tooltip>
+            </ComboBox>
+            <Label text="Size:"/>
+            <TextField fx:id="fontSizeField" promptText="px" prefWidth="52"
+                       onAction="#onApplyFontSize">
+                <tooltip><Tooltip text="Enter size in px and press Enter — applies to selected text"/></tooltip>
+            </TextField>
+            <Button text="Apply Size" onAction="#onApplyFontSize">
+                <tooltip><Tooltip text="Apply font size to selected text"/></tooltip>
+            </Button>
+            <Label text="Color:"/>
+            <ColorPicker fx:id="textColorPicker" prefWidth="90">
+                <tooltip><Tooltip text="Text color — applies to selected text"/></tooltip>
+            </ColorPicker>
+        </HBox>
+
+        <!-- Variable insertion -->
+        <HBox spacing="6" alignment="CENTER_LEFT">
+            <Label text="Insert:" styleClass="help-label"/>
+            <Button text="{{firstName}}" onAction="#onInsertVar" userData="{{firstName}}" styleClass="tag-btn"/>
+            <Button text="{{lastName}}"  onAction="#onInsertVar" userData="{{lastName}}"  styleClass="tag-btn"/>
+            <Button text="{{email}}"     onAction="#onInsertVar" userData="{{email}}"     styleClass="tag-btn"/>
+            <Button text="{{company}}"   onAction="#onInsertVar" userData="{{company}}"   styleClass="tag-btn"/>
+            <Button text="{{jobTitle}}"  onAction="#onInsertVar" userData="{{jobTitle}}"  styleClass="tag-btn"/>
+        </HBox>
+
+        <!-- WebView editor — grows to fill available space -->
+        <WebView fx:id="editorView" VBox.vgrow="ALWAYS" prefHeight="340"/>
+
+        <Separator/>
+
+        <!-- Footer -->
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Button text="&lt;/&gt; View HTML" onAction="#onGetHtml">
+                <tooltip><Tooltip text="Show the raw HTML source"/></tooltip>
+            </Button>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="aiToggleBtn" text="&#10024; AI Assist" styleClass="ai-toggle-btn"
+                    onAction="#onToggleAiPanel">
+                <tooltip><Tooltip text="Open the AI email generator powered by Google Gemini"/></tooltip>
+            </Button>
+            <Button text="&#9658; Use in Compose" styleClass="primary-button" onAction="#onUseInCompose">
+                <tooltip><Tooltip text="Send this template to the Compose pane"/></tooltip>
+            </Button>
+        </HBox>
+
+        <!-- ════════════════ AI Chat Panel ════════════════ -->
+        <VBox fx:id="aiPanel" styleClass="ai-panel"
+              visible="false" managed="false"
+              prefHeight="220" minHeight="220"
+              spacing="10">
+            <padding>
+                <Insets top="14" right="16" bottom="14" left="16"/>
+            </padding>
+
+            <!-- Panel header -->
+            <HBox alignment="CENTER_LEFT" spacing="6">
+                <Label text="&#10024; AI Email Assistant" styleClass="ai-panel-title" HBox.hgrow="ALWAYS"/>
+                <Button text="&#10005; Close" styleClass="ai-close-btn" onAction="#onToggleAiPanel">
+                    <tooltip><Tooltip text="Close AI panel"/></tooltip>
+                </Button>
+            </HBox>
+
+            <Separator/>
+
+            <!-- Prompt + send on one row -->
+            <HBox spacing="10" alignment="CENTER_LEFT" VBox.vgrow="ALWAYS">
+                <TextArea fx:id="aiPromptArea"
+                          promptText="Describe the email you want… e.g. A formal welcome email for new Isik University students with a blue header, course registration reminder, and contact details."
+                          wrapText="true" prefRowCount="4"
+                          HBox.hgrow="ALWAYS"/>
+                <VBox spacing="8" alignment="CENTER" minWidth="150">
+                    <Button fx:id="aiGenerateBtn" text="Generate &#10148;"
+                            styleClass="primary-button" onAction="#onAiGenerate"
+                            prefWidth="150" prefHeight="50">
+                        <tooltip><Tooltip text="Generate HTML email from your prompt (replaces editor content)"/></tooltip>
+                    </Button>
+                    <Label fx:id="aiStatusLabel" text=""
+                           styleClass="help-label"
+                           wrapText="true" maxWidth="150"/>
+                </VBox>
+            </HBox>
+        </VBox>
     </VBox>
 
-</VBox>
+    <!-- ════════════ Template Library side panel ════════════ -->
+    <VBox fx:id="templateLibraryPanel" styleClass="template-library-panel"
+          prefWidth="260" minWidth="260"
+          visible="false" managed="false">
+        <padding>
+            <Insets top="16" right="12" bottom="16" left="12"/>
+        </padding>
+
+        <!-- Panel header -->
+        <HBox alignment="CENTER_LEFT" spacing="8">
+            <Label text="Templates" styleClass="page-title" HBox.hgrow="ALWAYS"/>
+            <Button text="&#10005;" styleClass="ai-close-btn" onAction="#onToggleLibrary">
+                <tooltip><Tooltip text="Close library panel"/></tooltip>
+            </Button>
+        </HBox>
+
+        <Separator/>
+
+        <!-- Scrollable card list -->
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                    styleClass="template-library-scroll">
+            <VBox fx:id="templateCardList" spacing="8">
+                <padding>
+                    <Insets top="8" right="4" bottom="8" left="4"/>
+                </padding>
+            </VBox>
+        </ScrollPane>
+    </VBox>
+
+</HBox>
