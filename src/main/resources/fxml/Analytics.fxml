@@ -74,7 +74,14 @@
 
     <Separator/>
 
-    <!-- ── ECharts panel ───────────────────────────────────────────────────── -->
+    <!-- ── ECharts panel (campaign open/click rates) ───────────────────────── -->
     <WebView fx:id="chartView" prefHeight="240" VBox.vgrow="NEVER"/>
+
+    <Separator/>
+
+    <!-- ── Hourly distribution chart (send count + success rate overlay) ─── -->
+    <Label text="Hourly Send Distribution" styleClass="section-title"/>
+    <WebView fx:id="hourlyChartView" prefHeight="260" VBox.vgrow="NEVER"/>
+    <Label fx:id="sendTimeAdvice" text="" styleClass="advice-label"/>
 
 </VBox>
