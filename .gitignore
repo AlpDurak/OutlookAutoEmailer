@@ -4,5 +4,5 @@
 *.class
 *.jar
 *.log
-/.claude/
+.claude/
 
