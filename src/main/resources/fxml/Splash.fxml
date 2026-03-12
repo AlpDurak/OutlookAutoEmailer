@@ -14,7 +14,7 @@
            style="-fx-background-color:#0f172a;">
 
     <!-- Background image fills the whole pane -->
-    <ImageView fx:id="splashImage" preserveRatio="false"
+    <ImageView fx:id="splashImage" preserveRatio="true"
                fitWidth="900" fitHeight="560" smooth="true">
         <image>
             <Image url="@../images/splash.png"/>

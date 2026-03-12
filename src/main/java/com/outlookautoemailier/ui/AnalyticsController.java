@@ -13,11 +13,11 @@ import javafx.animation.Timeline;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.chart.BarChart;
-import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
+import javafx.scene.web.WebView;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
@@ -48,7 +48,76 @@ public class AnalyticsController implements Initializable {
     @FXML private TableColumn<EmailBatch, String> batchOpenRateColumn;
 
     // ── Chart ─────────────────────────────────────────────────────────────────
-    @FXML private BarChart<String, Number> openRateChart;
+    @FXML private WebView chartView;
+
+    private boolean chartReady = false;
+    private List<EmailBatch> pendingChartData = null;
+
+    private static final String CHART_HTML = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+            <meta charset="UTF-8">
+            <style>
+              * { margin:0; padding:0; box-sizing:border-box; }
+              body { background:#ffffff; font-family:"Segoe UI",Arial,sans-serif; }
+              #chart { width:100%; height:230px; }
+            </style>
+            <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+            </head>
+            <body>
+            <div id="chart"></div>
+            <script>
+            var chart = echarts.init(document.getElementById('chart'));
+            function updateChart(categories, openData, clickData) {
+              chart.setOption({
+                backgroundColor: '#ffffff',
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                legend: {
+                  data: ['Open Rate %', 'Click Rate %'],
+                  textStyle: { color: '#6b7280', fontSize: 11 },
+                  top: 4
+                },
+                grid: { left: 44, right: 16, top: 36, bottom: 54 },
+                xAxis: {
+                  type: 'category',
+                  data: categories,
+                  axisLabel: { color: '#6b7280', rotate: 30, fontSize: 11 },
+                  axisLine: { lineStyle: { color: '#dde3ec' } },
+                  axisTick: { show: false }
+                },
+                yAxis: {
+                  type: 'value',
+                  max: 100,
+                  axisLabel: { color: '#6b7280', formatter: '{value}%', fontSize: 11 },
+                  splitLine: { lineStyle: { color: '#eef2f7' } },
+                  axisLine: { show: false }
+                },
+                series: [
+                  {
+                    name: 'Open Rate %',
+                    type: 'bar',
+                    data: openData,
+                    barMaxWidth: 36,
+                    itemStyle: { color: '#2563eb', borderRadius: [4,4,0,0] },
+                    emphasis: { itemStyle: { color: '#1d4ed8' } }
+                  },
+                  {
+                    name: 'Click Rate %',
+                    type: 'bar',
+                    data: clickData,
+                    barMaxWidth: 36,
+                    itemStyle: { color: '#7c3aed', borderRadius: [4,4,0,0] },
+                    emphasis: { itemStyle: { color: '#6d28d9' } }
+                  }
+                ]
+              });
+            }
+            window.addEventListener('resize', function() { chart.resize(); });
+            </script>
+            </body>
+            </html>
+            """;
 
     private final ObservableList<EmailBatch> batchRows = FXCollections.observableArrayList();
 
@@ -59,9 +128,12 @@ public class AnalyticsController implements Initializable {
         configureColumns();
         batchTable.setItems(batchRows);
         AppContext.get().setAnalyticsController(this);
-        // Fetch campaigns from Supabase; refresh UI when done
+        initChart();
+
+        // Fetch campaigns + link-click counts from Supabase; refresh UI when done
         SupabaseAnalyticsSync.syncBatchesFromSupabaseAsync()
                 .thenRun(() -> javafx.application.Platform.runLater(this::refresh));
+        syncLinkClickCounts();
         refresh();
 
         // Auto-refresh local data every 5 seconds
@@ -70,11 +142,13 @@ public class AnalyticsController implements Initializable {
         localRefresh.setCycleCount(Animation.INDEFINITE);
         localRefresh.play();
 
-        // Sync open events from Supabase every 60 seconds, then refresh UI
+        // Sync opens + link-click counts from Supabase every 60 seconds
         Timeline openSync = new Timeline(
-                new KeyFrame(Duration.seconds(60), e ->
-                        SupabaseAnalyticsSync.syncOpensAsync()
-                                .thenRun(() -> javafx.application.Platform.runLater(this::refresh))));
+                new KeyFrame(Duration.seconds(60), e -> {
+                    SupabaseAnalyticsSync.syncOpensAsync()
+                            .thenRun(() -> javafx.application.Platform.runLater(this::refresh));
+                    syncLinkClickCounts();
+                }));
         openSync.setCycleCount(Animation.INDEFINITE);
         openSync.play();
     }
@@ -164,18 +238,57 @@ public class AnalyticsController implements Initializable {
         updateChart(batches);
     }
 
+    /** Fetches per-batch unique-clicker counts from Supabase and updates BatchStore. */
+    private void syncLinkClickCounts() {
+        SupabaseAnalyticsSync.syncLinkClickCountsAsync()
+                .thenAccept(counts -> {
+                    counts.forEach((batchId, count) ->
+                            BatchStore.getInstance().setLinkClickCount(batchId, count));
+                    javafx.application.Platform.runLater(this::refresh);
+                });
+    }
+
+    private void initChart() {
+        chartView.getEngine().setJavaScriptEnabled(true);
+        chartView.getEngine().loadContent(CHART_HTML);
+        chartView.getEngine().getLoadWorker().stateProperty().addListener(
+                (obs, oldState, newState) -> {
+                    if (newState == Worker.State.SUCCEEDED) {
+                        chartReady = true;
+                        if (pendingChartData != null) {
+                            renderChart(pendingChartData);
+                            pendingChartData = null;
+                        }
+                    }
+                });
+    }
+
     private void updateChart(List<EmailBatch> batches) {
-        XYChart.Series<String, Number> series = new XYChart.Series<>();
-        // Show the 10 most recent batches in chronological order
+        if (!chartReady) {
+            pendingChartData = batches;
+            return;
+        }
+        renderChart(batches);
+    }
+
+    private void renderChart(List<EmailBatch> batches) {
         int from = Math.max(0, batches.size() - 10);
+        StringBuilder cats   = new StringBuilder("[");
+        StringBuilder opens  = new StringBuilder("[");
+        StringBuilder clicks = new StringBuilder("[");
         for (int i = from; i < batches.size(); i++) {
             EmailBatch b = batches.get(i);
             String label = b.getBatchName().length() > 14
                     ? b.getBatchName().substring(0, 11) + "\u2026"
                     : b.getBatchName();
-            series.getData().add(new XYChart.Data<>(label, b.openRatePct()));
+            if (i > from) { cats.append(","); opens.append(","); clicks.append(","); }
+            cats.append("'").append(label.replace("'", "\\'")).append("'");
+            opens.append(String.format("%.1f", b.openRatePct()));
+            clicks.append(String.format("%.1f", b.linkClickRatePct()));
         }
-        openRateChart.getData().setAll(series);
+        cats.append("]"); opens.append("]"); clicks.append("]");
+        chartView.getEngine().executeScript(
+                "updateChart(" + cats + "," + opens + "," + clicks + ")");
     }
 
     // ── Drill-down dialog ─────────────────────────────────────────────────────

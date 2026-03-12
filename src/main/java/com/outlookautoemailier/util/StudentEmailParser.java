@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 public final class StudentEmailParser {
 
     private static final Pattern STUDENT_PATTERN =
-            Pattern.compile("^(\\d{2})([a-zA-Z]+)(\\d+)@.*$", Pattern.CASE_INSENSITIVE);
+            Pattern.compile("^(\\d{2})([A-Za-z]{4})(\\d{4})@isik\\.edu\\.tr$", Pattern.CASE_INSENSITIVE);
 
     public record ParsedStudentEmail(int year, String major, String studentId) {}
 

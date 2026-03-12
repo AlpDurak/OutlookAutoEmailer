@@ -3,6 +3,7 @@ package com.outlookautoemailier.security;
 import com.microsoft.aad.msal4j.IAccount;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
 import com.microsoft.aad.msal4j.InteractiveRequestParameters;
+import com.microsoft.aad.msal4j.Prompt;
 import com.microsoft.aad.msal4j.PublicClientApplication;
 import com.microsoft.aad.msal4j.SilentParameters;
 import com.outlookautoemailier.config.AppConfig;
@@ -156,6 +157,7 @@ public class OAuth2Helper {
         InteractiveRequestParameters parameters = InteractiveRequestParameters
                 .builder(new URI(REDIRECT_URI))
                 .scopes(Set.of(scopes))
+                .prompt(Prompt.SELECT_ACCOUNT)
                 .build();
 
         CompletableFuture<IAuthenticationResult> future =

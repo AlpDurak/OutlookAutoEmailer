@@ -5,11 +5,11 @@
 <?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
-<?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox spacing="20"
+<VBox spacing="24"
       xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.outlookautoemailier.ui.AccountSetupController">
@@ -19,70 +19,82 @@
     </padding>
 
     <!-- Page heading -->
-    <Label text="Account Setup" styleClass="page-title"/>
+    <VBox spacing="4">
+        <Label text="Account Setup" styleClass="page-title"/>
+        <Label text="Connect your Microsoft 365 accounts to get started."
+               styleClass="help-label"/>
+    </VBox>
+
     <Separator/>
 
-    <!-- ══ Two account cards side-by-side ══════════════════════════════════ -->
+    <!-- Two account cards side-by-side -->
     <HBox spacing="20" fillHeight="true">
 
-        <!-- ── Source Account ─────────────────────────────────────────────── -->
-        <TitledPane text="Source Account" collapsible="false" HBox.hgrow="ALWAYS">
-            <VBox spacing="12">
-                <padding>
-                    <Insets top="12" right="16" bottom="16" left="16"/>
-                </padding>
+        <!-- ── Source Account card ──────────────────────────────────────── -->
+        <VBox styleClass="account-card" HBox.hgrow="ALWAYS">
 
-                <Label text="Used to read Outlook contacts." wrapText="true"/>
+            <!-- Card header -->
+            <HBox styleClass="account-card-header" alignment="CENTER_LEFT" spacing="10">
+                <Label text="Source Account" styleClass="account-card-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="sourceStatusLabel" text="Not connected"
+                       styleClass="status-disconnected"/>
+            </HBox>
 
-                <HBox spacing="8" alignment="CENTER_LEFT">
-                    <Label text="Status:"/>
-                    <Label fx:id="sourceStatusLabel"
-                           text="Not connected"
-                           styleClass="status-disconnected"/>
-                </HBox>
+            <!-- Card body -->
+            <VBox styleClass="account-card-body" spacing="14">
+                <Label text="Used to read Outlook contacts from your directory."
+                       styleClass="help-label" wrapText="true"/>
+
+                <Label fx:id="sourceEmailLabel" text=""
+                       style="-fx-font-size:12px; -fx-text-fill:#1d4ed8; -fx-font-weight:bold;"
+                       wrapText="true"/>
 
                 <Button fx:id="btnConnectSource"
                         text="Connect Source Account"
                         onAction="#onConnectSource"
+                        styleClass="primary-button"
                         maxWidth="Infinity"/>
-
-                <Label fx:id="sourceEmailLabel" text="" wrapText="true"/>
             </VBox>
-        </TitledPane>
+        </VBox>
 
-        <!-- ── Sender Account ─────────────────────────────────────────────── -->
-        <TitledPane text="Sender Account" collapsible="false" HBox.hgrow="ALWAYS">
-            <VBox spacing="12">
-                <padding>
-                    <Insets top="12" right="16" bottom="16" left="16"/>
-                </padding>
+        <!-- ── Sender Account card ───────────────────────────────────────── -->
+        <VBox styleClass="account-card" HBox.hgrow="ALWAYS">
+
+            <!-- Card header -->
+            <HBox styleClass="account-card-header" alignment="CENTER_LEFT" spacing="10">
+                <Label text="Sender Account" styleClass="account-card-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="senderStatusLabel" text="Not connected"
+                       styleClass="status-disconnected"/>
+            </HBox>
+
+            <!-- Card body -->
+            <VBox styleClass="account-card-body" spacing="14">
+                <Label text="Used to send emails. Choose your email provider below."
+                       styleClass="help-label" wrapText="true"/>
 
                 <!-- Provider selector -->
-                <HBox spacing="8" alignment="CENTER_LEFT">
-                    <Label text="Provider:"/>
-                    <ChoiceBox fx:id="senderProviderChoice" prefWidth="180"/>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Provider:" style="-fx-min-width:70px;"/>
+                    <ChoiceBox fx:id="senderProviderChoice" prefWidth="200"/>
                 </HBox>
 
                 <Label fx:id="gmailHintLabel"
-                       text="Gmail: enter your Google Client ID &amp; Secret in Settings first."
+                       text="Gmail: enter your Google Client ID and Secret in Settings first."
                        wrapText="true" styleClass="help-label" managed="false" visible="false"/>
 
-                <!-- Status row -->
-                <HBox spacing="8" alignment="CENTER_LEFT">
-                    <Label text="Status:"/>
-                    <Label fx:id="senderStatusLabel"
-                           text="Not connected"
-                           styleClass="status-disconnected"/>
-                </HBox>
+                <Label fx:id="senderEmailLabel" text=""
+                       style="-fx-font-size:12px; -fx-text-fill:#1d4ed8; -fx-font-weight:bold;"
+                       wrapText="true"/>
 
                 <Button fx:id="btnConnectSender"
                         text="Connect Sender Account"
                         onAction="#onConnectSender"
+                        styleClass="primary-button"
                         maxWidth="Infinity"/>
-
-                <Label fx:id="senderEmailLabel" text="" wrapText="true"/>
             </VBox>
-        </TitledPane>
+        </VBox>
 
     </HBox>
 </VBox>

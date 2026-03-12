@@ -57,16 +57,16 @@
     <Separator/>
 
     <!-- ── Subject row ─────────────────────────────────────────────────────── -->
-    <Label text="Subject:"/>
+    <Label text="Subject:" style="-fx-font-weight:bold; -fx-text-fill:#374151;"/>
     <HBox spacing="6" alignment="CENTER_LEFT">
         <TextField fx:id="subjectField"
                    promptText="Enter email subject…"
                    HBox.hgrow="ALWAYS"/>
         <!-- Variable-insertion buttons targeting the subject field -->
-        <Button text="{{firstName}}" onAction="#onInsertVariable" userData="subject"/>
-        <Button text="{{lastName}}"  onAction="#onInsertVariable" userData="subject"/>
-        <Button text="{{email}}"     onAction="#onInsertVariable" userData="subject"/>
-        <Button text="{{company}}"   onAction="#onInsertVariable" userData="subject"/>
+        <Button text="{{firstName}}" onAction="#onInsertVariable" userData="subject" styleClass="tag-btn"/>
+        <Button text="{{lastName}}"  onAction="#onInsertVariable" userData="subject" styleClass="tag-btn"/>
+        <Button text="{{email}}"     onAction="#onInsertVariable" userData="subject" styleClass="tag-btn"/>
+        <Button text="{{company}}"   onAction="#onInsertVariable" userData="subject" styleClass="tag-btn"/>
     </HBox>
 
     <!-- ── Body area ───────────────────────────────────────────────────────── -->
@@ -92,10 +92,10 @@
 
     <!-- Variable-insertion buttons targeting the body area -->
     <HBox spacing="6">
-        <Button text="{{firstName}}" onAction="#onInsertVariable" userData="body"/>
-        <Button text="{{lastName}}"  onAction="#onInsertVariable" userData="body"/>
-        <Button text="{{email}}"     onAction="#onInsertVariable" userData="body"/>
-        <Button text="{{company}}"   onAction="#onInsertVariable" userData="body"/>
+        <Button text="{{firstName}}" onAction="#onInsertVariable" userData="body" styleClass="tag-btn"/>
+        <Button text="{{lastName}}"  onAction="#onInsertVariable" userData="body" styleClass="tag-btn"/>
+        <Button text="{{email}}"     onAction="#onInsertVariable" userData="body" styleClass="tag-btn"/>
+        <Button text="{{company}}"   onAction="#onInsertVariable" userData="body" styleClass="tag-btn"/>
     </HBox>
 
     <Separator/>

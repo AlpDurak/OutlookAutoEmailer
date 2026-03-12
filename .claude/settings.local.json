@@ -26,7 +26,10 @@
       "Bash(mvn compile:*)",
       "Bash(javap com/microsoft/graph/requests/UserCollectionRequestBuilder.class)",
       "Read(//c/Users/alpdu/AppData/Local/Temp/claude/c--Users-alpdu-Documents-OutlookAutoEmailer/tasks/**)",
-      "Bash(curl -L -o \"c:\\\\Users\\\\alpdu\\\\Documents\\\\OutlookAutoEmailer\\\\src\\\\main\\\\resources\\\\images\\\\splash.png\" \"https://drive.google.com/uc?export=download&id=10DIerE5TE64yLD9qO8UxpIAlb1iQ6XgC\")"
+      "Bash(curl -L -o \"c:\\\\Users\\\\alpdu\\\\Documents\\\\OutlookAutoEmailer\\\\src\\\\main\\\\resources\\\\images\\\\splash.png\" \"https://drive.google.com/uc?export=download&id=10DIerE5TE64yLD9qO8UxpIAlb1iQ6XgC\")",
+      "Bash(where jpackage:*)",
+      "Bash(java -version)",
+      "Bash(javac -version)"
     ]
   }
 }

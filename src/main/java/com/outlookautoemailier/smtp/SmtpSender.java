@@ -262,9 +262,12 @@ public class SmtpSender {
             log.info("Delivered job {} to {} (subject: '{}')",
                     job.getId(), recipientEmail, resolvedSubject);
             com.outlookautoemailier.analytics.SentEmailStore.getInstance().add(trackingRecord);
-            // Update batch counters and push to Supabase
+            // Update batch counters locally and patch Supabase
             if (job.getBatchId() != null) {
                 com.outlookautoemailier.analytics.BatchStore.getInstance().incrementSent(job.getBatchId());
+                com.outlookautoemailier.analytics.BatchStore.getInstance().getById(job.getBatchId())
+                        .ifPresent(b -> com.outlookautoemailier.integration.SupabaseAnalyticsSync
+                                .patchBatchCountsAsync(job.getBatchId(), b.getSentCount(), b.getFailedCount()));
             }
             com.outlookautoemailier.integration.SupabaseAnalyticsSync.pushSendAsync(trackingRecord);
         } catch (MessagingException ex) {
@@ -285,9 +288,12 @@ public class SmtpSender {
                     null
                 );
             com.outlookautoemailier.analytics.SentEmailStore.getInstance().add(failRecord);
-            // Update batch failure counter and push to Supabase
+            // Update batch failure counter locally and patch Supabase
             if (job.getBatchId() != null) {
                 com.outlookautoemailier.analytics.BatchStore.getInstance().incrementFailed(job.getBatchId());
+                com.outlookautoemailier.analytics.BatchStore.getInstance().getById(job.getBatchId())
+                        .ifPresent(b -> com.outlookautoemailier.integration.SupabaseAnalyticsSync
+                                .patchBatchCountsAsync(job.getBatchId(), b.getSentCount(), b.getFailedCount()));
             }
             com.outlookautoemailier.integration.SupabaseAnalyticsSync.pushSendAsync(failRecord);
 

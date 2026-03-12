@@ -2,11 +2,14 @@ package com.outlookautoemailier.ui;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.outlookautoemailier.AppContext;
+import com.outlookautoemailier.integration.GeminiEmailAgent;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
@@ -35,6 +38,13 @@ public class TemplateStudioController implements Initializable {
     @FXML private ComboBox<String> fontFamilyBox;
     @FXML private TextField   fontSizeField;
     @FXML private ColorPicker textColorPicker;
+
+    // ── AI panel ──────────────────────────────────────────────────────────────
+    @FXML private VBox      aiPanel;
+    @FXML private TextArea  aiPromptArea;
+    @FXML private Label     aiStatusLabel;
+    @FXML private Button    aiToggleBtn;
+    @FXML private Button    aiGenerateBtn;
 
     private static final String EDITOR_HTML = """
             <!DOCTYPE html>
@@ -451,6 +461,49 @@ public class TemplateStudioController implements Initializable {
         } catch (Exception ex) {
             showAlert("Load Failed", "Could not read template: " + ex.getMessage());
         }
+    }
+
+    // ── AI panel ──────────────────────────────────────────────────────────────
+
+    @FXML
+    private void onToggleAiPanel() {
+        boolean nowVisible = !aiPanel.isVisible();
+        aiPanel.setVisible(nowVisible);
+        aiPanel.setManaged(nowVisible);
+        aiToggleBtn.setText(nowVisible ? "✕ Close AI" : "✨ AI Assist");
+    }
+
+    @FXML
+    private void onAiGenerate() {
+        String prompt = aiPromptArea.getText().trim();
+        if (prompt.isEmpty()) {
+            aiStatusLabel.setText("Please describe the email you want.");
+            return;
+        }
+        aiGenerateBtn.setDisable(true);
+        aiStatusLabel.setText("Generating with Gemini…");
+
+        GeminiEmailAgent.generateAsync(prompt)
+                .thenAccept(html -> Platform.runLater(() -> {
+                    setEditorHtml(html);
+                    aiStatusLabel.setText("Done! Template applied to editor.");
+                    aiGenerateBtn.setDisable(false);
+                }))
+                .exceptionally(ex -> {
+                    Platform.runLater(() -> {
+                        String msg = ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage();
+                        aiStatusLabel.setText("Error: " + msg);
+                        aiGenerateBtn.setDisable(false);
+                        log.warn("Gemini generation failed", ex);
+                    });
+                    return null;
+                });
+    }
+
+    /** Replaces the entire editor content with the given HTML. */
+    public void setEditorHtml(String html) {
+        editorView.getEngine().executeScript(
+                "document.getElementById('editor').innerHTML = " + jsStr(html));
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

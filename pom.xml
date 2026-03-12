@@ -112,61 +112,117 @@
         </plugins>
     </build>
 
-    <!-- ═══ EXE packaging profile: mvn package -Ppackage-exe ═══ -->
+    <!-- ═══ EXE packaging profile: mvn clean package -Ppackage-exe -DskipTests ═══ -->
+    <!--     Output: target\installer\OutlookAutoEmailer-1.2.0.exe                  -->
     <profiles>
         <profile>
             <id>package-exe</id>
+
+            <!-- Windows-native JavaFX JARs (contain .dll natives required at runtime) -->
+            <dependencies>
+                <dependency>
+                    <groupId>org.openjfx</groupId><artifactId>javafx-base</artifactId>
+                    <version>${javafx.version}</version><classifier>win</classifier>
+                </dependency>
+                <dependency>
+                    <groupId>org.openjfx</groupId><artifactId>javafx-graphics</artifactId>
+                    <version>${javafx.version}</version><classifier>win</classifier>
+                </dependency>
+                <dependency>
+                    <groupId>org.openjfx</groupId><artifactId>javafx-controls</artifactId>
+                    <version>${javafx.version}</version><classifier>win</classifier>
+                </dependency>
+                <dependency>
+                    <groupId>org.openjfx</groupId><artifactId>javafx-fxml</artifactId>
+                    <version>${javafx.version}</version><classifier>win</classifier>
+                </dependency>
+                <dependency>
+                    <groupId>org.openjfx</groupId><artifactId>javafx-web</artifactId>
+                    <version>${javafx.version}</version><classifier>win</classifier>
+                </dependency>
+                <dependency>
+                    <groupId>org.openjfx</groupId><artifactId>javafx-media</artifactId>
+                    <version>${javafx.version}</version><classifier>win</classifier>
+                </dependency>
+            </dependencies>
+
             <build>
                 <plugins>
-                    <!-- Fat JAR with all deps -->
+
+                    <!-- Step 1 (prepare-package): copy all runtime deps into target/libs/
+                         Two executions: (a) everything except org.openjfx, then
+                         (b) only the Windows-native JavaFX JARs (classifier=win).
+                         This prevents duplicate module errors at runtime — the plain
+                         javafx-base-21.0.2.jar and javafx-base-21.0.2-win.jar both
+                         declare module javafx.base, which causes an immediate JVM crash. -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-shade-plugin</artifactId>
-                        <version>3.5.1</version>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <version>3.6.1</version>
                         <executions>
+                            <!-- (a) All runtime deps except JavaFX -->
                             <execution>
-                                <phase>package</phase>
-                                <goals><goal>shade</goal></goals>
+                                <id>copy-deps</id>
+                                <phase>prepare-package</phase>
+                                <goals><goal>copy-dependencies</goal></goals>
                                 <configuration>
-                                    <finalName>OutlookAutoEmailer-fat</finalName>
-                                    <transformers>
-                                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                            <mainClass>com.outlookautoemailier.Main</mainClass>
-                                        </transformer>
-                                    </transformers>
-                                    <filters>
-                                        <filter>
-                                            <artifact>*:*</artifact>
-                                            <excludes>
-                                                <exclude>META-INF/*.SF</exclude>
-                                                <exclude>META-INF/*.DSA</exclude>
-                                                <exclude>META-INF/*.RSA</exclude>
-                                            </excludes>
-                                        </filter>
-                                    </filters>
+                                    <outputDirectory>${project.build.directory}/libs</outputDirectory>
+                                    <includeScope>runtime</includeScope>
+                                    <excludeGroupIds>org.openjfx</excludeGroupIds>
+                                </configuration>
+                            </execution>
+                            <!-- (b) Windows-native JavaFX JARs only (contain .dll natives) -->
+                            <execution>
+                                <id>copy-javafx-win</id>
+                                <phase>prepare-package</phase>
+                                <goals><goal>copy-dependencies</goal></goals>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/libs</outputDirectory>
+                                    <includeScope>runtime</includeScope>
+                                    <includeGroupIds>org.openjfx</includeGroupIds>
+                                    <includeClassifiers>win</includeClassifiers>
                                 </configuration>
                             </execution>
                         </executions>
                     </plugin>
-                    <!-- jpackage — creates Windows EXE installer -->
+
+                    <!-- Step 2 (package): write the app JAR directly into target/libs/
+                         so jpackage finds everything in one place -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <version>3.3.0</version>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/libs</outputDirectory>
+                        </configuration>
+                    </plugin>
+
+                    <!-- Step 3 (package): bundle into a self-contained Windows EXE
+                         (jpackage embeds a JRE — no Java installation required on target PC) -->
                     <plugin>
                         <groupId>org.panteleyev</groupId>
                         <artifactId>jpackage-maven-plugin</artifactId>
                         <version>1.6.5</version>
                         <configuration>
                             <name>OutlookAutoEmailer</name>
-                            <appVersion>1.0.0</appVersion>
+                            <appVersion>1.2.0</appVersion>
                             <vendor>OutlookAutoEmailer</vendor>
-                            <destination>target/installer</destination>
-                            <module>com.outlookautoemailier/com.outlookautoemailier.Main</module>
-                            <runtimeImage>${java.home}</runtimeImage>
+                            <destination>${project.build.directory}/installer</destination>
+                            <!-- All JARs (app + deps + JavaFX natives) live here -->
+                            <input>${project.build.directory}/libs</input>
+                            <mainJar>${project.build.finalName}.jar</mainJar>
+                            <mainClass>com.outlookautoemailier.Main</mainClass>
+                            <!-- Load JavaFX modules at runtime from the install dir -->
                             <javaOptions>
+                                <option>--module-path $APPDIR</option>
+                                <option>--add-modules javafx.base,javafx.graphics,javafx.controls,javafx.fxml,javafx.web,javafx.media</option>
                                 <option>--add-opens=javafx.graphics/com.sun.javafx.application=ALL-UNNAMED</option>
+                                <option>--add-opens=java.base/java.lang=ALL-UNNAMED</option>
+                                <option>--add-opens=java.base/java.lang.reflect=ALL-UNNAMED</option>
                             </javaOptions>
-                            <winDirChooser>true</winDirChooser>
-                            <winMenu>true</winMenu>
-                            <winShortcut>true</winShortcut>
-                            <type>EXE</type>
+                            <!-- app-image: no WiX required; produces a self-contained folder
+                                 with OutlookAutoEmailer.exe inside target/installer/OutlookAutoEmailer/ -->
+                            <type>APP_IMAGE</type>
                         </configuration>
                         <executions>
                             <execution>
@@ -176,6 +232,7 @@
                             </execution>
                         </executions>
                     </plugin>
+
                 </plugins>
             </build>
         </profile>

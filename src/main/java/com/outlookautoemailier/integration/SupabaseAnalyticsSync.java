@@ -20,8 +20,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -171,6 +173,61 @@ public final class SupabaseAnalyticsSync {
     }
 
     /**
+     * PATCHes the {@code sent_count} and {@code failed_count} columns of
+     * {@code email_batches} for the given batch. Called fire-and-forget after
+     * every successful delivery and every failure in {@code SmtpSender} so that
+     * Supabase always holds accurate delivery stats.
+     */
+    public static void patchBatchCountsAsync(String batchId, int sentCount, int failedCount) {
+        String key = serviceRoleKey();
+        if (key == null || batchId == null) return;
+        CompletableFuture.runAsync(() -> {
+            try {
+                String path = "/rest/v1/email_batches?id=eq."
+                        + URLEncoder.encode(batchId, StandardCharsets.UTF_8);
+                String body = "{\"sent_count\":" + sentCount
+                        + ",\"failed_count\":" + failedCount + "}";
+                patch(path, body, key);
+            } catch (Exception e) {
+                log.warn("Failed to patch batch counts for {}: {}", batchId, e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Fetches all rows from {@code link_clicks}, aggregates unique clickers per
+     * batch, and returns a map of batchId → uniqueClickerCount.
+     * Used by {@link com.outlookautoemailier.ui.AnalyticsController} to populate
+     * the link-click-rate series in the open rate chart.
+     */
+    public static CompletableFuture<Map<String, Integer>> syncLinkClickCountsAsync() {
+        String key = serviceRoleKey();
+        if (key == null) return CompletableFuture.completedFuture(Collections.emptyMap());
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                HttpClient client = HttpClient.newHttpClient();
+                HttpRequest req = HttpRequest.newBuilder()
+                        .uri(URI.create(SUPABASE_URL
+                                + "/rest/v1/link_clicks"
+                                + "?select=batch_id,tracking_id"
+                                + "&limit=100000"))
+                        .header("apikey",        key)
+                        .header("Authorization", "Bearer " + key)
+                        .GET().build();
+                HttpResponse<String> resp =
+                        client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                if (resp.statusCode() == 200) {
+                    return aggregateLinkClickCounts(resp.body());
+                }
+                log.warn("syncLinkClickCounts returned {}", resp.statusCode());
+            } catch (Exception e) {
+                log.warn("Failed to sync link click counts: {}", e.getMessage());
+            }
+            return Collections.emptyMap();
+        });
+    }
+
+    /**
      * Synchronously fetches click events for a batch from {@code link_clicks}
      * and returns them aggregated by URL.
      * Returns an empty list if the key is absent or an error occurs.
@@ -293,6 +350,39 @@ public final class SupabaseAnalyticsSync {
             } catch (Exception e) {
                 log.debug("Could not parse open event: {}", e.getMessage());
             }
+        }
+    }
+
+    private static Map<String, Integer> aggregateLinkClickCounts(String json) {
+        // Each row: {"batch_id":"...","tracking_id":"..."}
+        Pattern pat = Pattern.compile(
+                "\"batch_id\"\\s*:\\s*\"([^\"]+)\"[^}]*\"tracking_id\"\\s*:\\s*\"([^\"]+)\"");
+        Matcher mat = pat.matcher(json);
+        Map<String, Set<String>> batchToClickers = new HashMap<>();
+        while (mat.find()) {
+            batchToClickers
+                    .computeIfAbsent(mat.group(1), k -> new HashSet<>())
+                    .add(mat.group(2));
+        }
+        Map<String, Integer> result = new HashMap<>();
+        batchToClickers.forEach((batchId, clickers) -> result.put(batchId, clickers.size()));
+        return result;
+    }
+
+    private static void patch(String path, String body, String key) throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(SUPABASE_URL + path))
+                .header("apikey",        key)
+                .header("Authorization", "Bearer " + key)
+                .header("Content-Type",  "application/json")
+                .header("Prefer",        "return=minimal")
+                .method("PATCH", HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
+                .build();
+        HttpResponse<String> resp =
+                client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        if (resp.statusCode() >= 400) {
+            log.warn("Supabase PATCH {} returned {}: {}", path, resp.statusCode(), resp.body());
         }
     }
 

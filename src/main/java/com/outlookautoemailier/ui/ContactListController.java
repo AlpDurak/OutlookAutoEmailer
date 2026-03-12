@@ -54,20 +54,30 @@ public class ContactListController implements Initializable {
 
     private static final Logger log = LoggerFactory.getLogger(ContactListController.class);
 
-    // ── Faculty → major codes mapping ────────────────────────────────────────
+    // ── Faculty → major codes mapping (Isik University 4-letter dept codes) ──
+    // Codes are matched case-insensitively against the 4-letter segment of
+    // student emails: [0-9]{2}[A-Z]{4}[0-9]{4}@isik.edu.tr
     private static final Map<String, Set<String>> FACULTY_MAJORS = new LinkedHashMap<>();
     static {
+        // Mühendislik ve Doğa Bilimleri Fakültesi
         FACULTY_MAJORS.put("Engineering & Natural Sciences",
-                Set.of("comp", "soft", "elec", "mech", "ie", "ce", "ee", "che", "math",
-                        "phys", "bio", "chem", "env", "bme"));
+                Set.of("comp", "soft", "elec", "eelc", "mech", "mhnd", "civl", "insm",
+                        "meka", "mect", "biom", "bmed", "mfge", "math", "phys", "chem",
+                        "biol", "enve", "gene", "gida"));
+        // İktisadi ve İdari Bilimler Fakültesi
         FACULTY_MAJORS.put("Business & Economics",
-                Set.of("bba", "acc", "fin", "mgmt", "econ", "mba", "bus"));
-        FACULTY_MAJORS.put("Architecture",
-                Set.of("arch", "id", "gd"));
-        FACULTY_MAJORS.put("Law",
-                Set.of("law", "hukuk", "huk"));
-        FACULTY_MAJORS.put("Arts & Social Sciences",
-                Set.of("psy", "soc", "phil", "hist", "eng", "comm", "pr", "edu"));
+                Set.of("bizm", "isbm", "buss", "econ", "ikti", "intr", "uils", "itch",
+                        "itic", "lojs", "lojm", "finc", "muha", "muhs", "bnyg", "uyte"));
+        // Mimarlık ve Tasarım Fakültesi
+        FACULTY_MAJORS.put("Architecture & Design",
+                Set.of("arch", "mima", "icar", "intd", "grfd", "visu", "tasa", "endt"));
+        // Fen-Edebiyat Fakültesi
+        FACULTY_MAJORS.put("Arts & Sciences",
+                Set.of("engl", "ingl", "psyc", "psyk", "socl", "sosy", "trnl",
+                        "hist", "tarh", "phil", "fels", "turk", "amkl"));
+        // Eğitim Fakültesi
+        FACULTY_MAJORS.put("Education",
+                Set.of("educ", "egit", "mfbt", "okup", "rhem", "guze", "mzkt", "sinf"));
     }
 
     // ── FXML — toolbar ────────────────────────────────────────────────────────

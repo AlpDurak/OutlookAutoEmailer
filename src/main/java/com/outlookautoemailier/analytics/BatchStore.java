@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -47,12 +48,29 @@ public class BatchStore {
     }
 
     /**
-     * Adds the batch if its id is not yet known, otherwise skips (local data wins).
-     * Used to merge batches fetched from Supabase without overwriting live counters.
+     * Adds the batch if its id is not yet known.
+     * If it already exists, takes the maximum of local vs incoming counters so that
+     * Supabase data (which has the authoritative counts) can flow in without
+     * losing live in-flight increments.
      */
-    public synchronized void addOrMerge(EmailBatch batch) {
-        if (batches.stream().anyMatch(b -> b.getId().equals(batch.getId()))) return;
-        batches.add(batch);
+    public synchronized void addOrMerge(EmailBatch incoming) {
+        Optional<EmailBatch> existing = getById(incoming.getId());
+        if (existing.isPresent()) {
+            EmailBatch b = existing.get();
+            boolean changed = false;
+            if (incoming.getSentCount() > b.getSentCount()) {
+                b.setSentCount(incoming.getSentCount()); changed = true;
+            }
+            if (incoming.getFailedCount() > b.getFailedCount()) {
+                b.setFailedCount(incoming.getFailedCount()); changed = true;
+            }
+            if (incoming.getOpenCount() > b.getOpenCount()) {
+                b.setOpenCount(incoming.getOpenCount()); changed = true;
+            }
+            if (changed) saveToDisk();
+            return;
+        }
+        batches.add(incoming);
         saveToDisk();
     }
 
@@ -72,6 +90,11 @@ public class BatchStore {
     /** Increments the open counter and saves. */
     public void incrementOpens(String batchId) {
         getById(batchId).ifPresent(b -> { b.incrementOpens();  saveToDisk(); });
+    }
+
+    /** Sets the link-click count for a batch (applied from Supabase sync). */
+    public void setLinkClickCount(String batchId, int count) {
+        getById(batchId).ifPresent(b -> { b.setLinkClickCount(count); saveToDisk(); });
     }
 
     // ── Queries ───────────────────────────────────────────────────────────────
@@ -103,6 +126,7 @@ public class BatchStore {
                 n.put("sentCount",       b.getSentCount());
                 n.put("failedCount",     b.getFailedCount());
                 n.put("openCount",       b.getOpenCount());
+                n.put("linkClickCount",  b.getLinkClickCount());
                 arr.add(n);
             }
             MAPPER.writerWithDefaultPrettyPrinter().writeValue(storePath.toFile(), arr);
@@ -128,7 +152,8 @@ public class BatchStore {
                         n.path("totalRecipients").asInt(0),
                         n.path("sentCount").asInt(0),
                         n.path("failedCount").asInt(0),
-                        n.path("openCount").asInt(0)
+                        n.path("openCount").asInt(0),
+                        n.path("linkClickCount").asInt(0)
                 ));
             } catch (Exception e) {
                 log.warn("Skipping malformed batch entry: {}", e.getMessage());

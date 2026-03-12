@@ -7,9 +7,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Represents one email campaign batch — a single compose-and-send action
  * targeting multiple recipients.
  *
- * <p>Counters ({@code sentCount}, {@code failedCount}, {@code openCount}) are
- * {@link AtomicInteger} so they can be incremented safely from the
- * {@code EmailDispatcher} worker threads.</p>
+ * <p>Counters ({@code sentCount}, {@code failedCount}, {@code openCount},
+ * {@code linkClickCount}) are {@link AtomicInteger} so they can be updated
+ * safely from worker threads and the Supabase sync thread.</p>
  */
 public class EmailBatch {
 
@@ -20,9 +20,10 @@ public class EmailBatch {
     private final int              totalRecipients;
 
     // Thread-safe mutable counters
-    private final AtomicInteger sentCount   = new AtomicInteger();
-    private final AtomicInteger failedCount = new AtomicInteger();
-    private final AtomicInteger openCount   = new AtomicInteger();
+    private final AtomicInteger sentCount      = new AtomicInteger();
+    private final AtomicInteger failedCount    = new AtomicInteger();
+    private final AtomicInteger openCount      = new AtomicInteger();
+    private final AtomicInteger linkClickCount = new AtomicInteger();
 
     /** New-batch constructor — all counters start at zero. */
     public EmailBatch(String id, String batchName, String subject,
@@ -34,7 +35,7 @@ public class EmailBatch {
         this.totalRecipients = totalRecipients;
     }
 
-    /** Full deserialisation constructor (all counters restored from disk). */
+    /** Full deserialisation constructor (all counters restored from disk/Supabase). */
     public EmailBatch(String id, String batchName, String subject,
                       LocalDateTime sentAt, int totalRecipients,
                       int sentCount, int failedCount, int openCount) {
@@ -44,27 +45,42 @@ public class EmailBatch {
         this.openCount.set(openCount);
     }
 
+    /** Full deserialisation constructor (all counters including linkClickCount). */
+    public EmailBatch(String id, String batchName, String subject,
+                      LocalDateTime sentAt, int totalRecipients,
+                      int sentCount, int failedCount, int openCount, int linkClickCount) {
+        this(id, batchName, subject, sentAt, totalRecipients, sentCount, failedCount, openCount);
+        this.linkClickCount.set(linkClickCount);
+    }
+
     // ── Counter mutators ──────────────────────────────────────────────────────
 
     public void incrementSent()   { sentCount.incrementAndGet(); }
     public void incrementFailed() { failedCount.incrementAndGet(); }
     public void incrementOpens()  { openCount.incrementAndGet(); }
 
+    /** Setters used by {@link com.outlookautoemailier.analytics.BatchStore#addOrMerge}
+     *  to apply the higher value from Supabase without losing local live increments. */
+    public void setSentCount(int n)      { sentCount.set(n); }
+    public void setFailedCount(int n)    { failedCount.set(n); }
+    public void setOpenCount(int n)      { openCount.set(n); }
+    public void setLinkClickCount(int n) { linkClickCount.set(n); }
+
     // ── Derived analytics metrics ─────────────────────────────────────────────
 
-    /**
-     * Open rate as a percentage of successfully delivered emails (0–100).
-     * Returns 0 if nothing was delivered yet.
-     */
+    /** Open rate as a percentage of successfully delivered emails (0–100). */
     public double openRatePct() {
         int delivered = sentCount.get();
         return delivered == 0 ? 0.0 : (openCount.get() * 100.0) / delivered;
     }
 
-    /**
-     * Delivery rate as a percentage of total attempted recipients (0–100).
-     * Returns 0 if no recipients.
-     */
+    /** Link click rate as a percentage of delivered emails (0–100). */
+    public double linkClickRatePct() {
+        int delivered = sentCount.get();
+        return delivered == 0 ? 0.0 : (linkClickCount.get() * 100.0) / delivered;
+    }
+
+    /** Delivery rate as a percentage of total attempted recipients (0–100). */
     public double deliveryRatePct() {
         return totalRecipients == 0 ? 0.0 : (sentCount.get() * 100.0) / totalRecipients;
     }
@@ -79,11 +95,12 @@ public class EmailBatch {
     public int            getSentCount()       { return sentCount.get(); }
     public int            getFailedCount()     { return failedCount.get(); }
     public int            getOpenCount()       { return openCount.get(); }
+    public int            getLinkClickCount()  { return linkClickCount.get(); }
 
     @Override
     public String toString() {
         return "EmailBatch{id=" + id + ", name=" + batchName
                 + ", sent=" + sentCount + ", failed=" + failedCount
-                + ", opens=" + openCount + "}";
+                + ", opens=" + openCount + ", clicks=" + linkClickCount + "}";
     }
 }
