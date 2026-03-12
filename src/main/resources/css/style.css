@@ -570,6 +570,17 @@
     -fx-letter-spacing: 0.06em;
 }
 
+/* ── Reachability score colours ──────────────────────────────────────────── */
+.stat-count-reachable {
+    -fx-text-fill: #16a34a;
+}
+.stat-count-at-risk {
+    -fx-text-fill: #d97706;
+}
+.stat-count-unreachable {
+    -fx-text-fill: #dc2626;
+}
+
 /* ── ProgressBar ─────────────────────────────────────────────────────────── */
 .progress-bar {
     -fx-accent: #2563eb;

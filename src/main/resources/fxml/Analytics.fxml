@@ -56,6 +56,22 @@
         </VBox>
     </HBox>
 
+    <!-- ── Reachability stat cards ─────────────────────────────────────────── -->
+    <HBox spacing="16">
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="150">
+            <Label fx:id="reachableCountLabel" text="0" styleClass="stat-count,stat-count-reachable"/>
+            <Label text="Reachable" styleClass="stat-label"/>
+        </VBox>
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="150">
+            <Label fx:id="atRiskCountLabel" text="0" styleClass="stat-count,stat-count-at-risk"/>
+            <Label text="At Risk" styleClass="stat-label"/>
+        </VBox>
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="150">
+            <Label fx:id="unreachableCountLabel" text="0" styleClass="stat-count,stat-count-unreachable"/>
+            <Label text="Unreachable" styleClass="stat-label"/>
+        </VBox>
+    </HBox>
+
     <!-- ── Toolbar ─────────────────────────────────────────────────────────── -->
     <HBox spacing="10" alignment="CENTER_LEFT">
         <Button fx:id="aiInsightsButton" text="AI Insights" onAction="#onAiInsights"

@@ -2,6 +2,7 @@ package com.outlookautoemailier.ui;
 
 import com.outlookautoemailier.AppContext;
 import com.outlookautoemailier.analytics.BatchStore;
+import com.outlookautoemailier.analytics.ContactReachabilityScorer;
 import com.outlookautoemailier.analytics.EmailBatch;
 import com.outlookautoemailier.analytics.LinkClickRecord;
 import com.outlookautoemailier.analytics.SendTimeAnalyser;
@@ -51,6 +52,11 @@ public class AnalyticsController implements Initializable {
     @FXML private Label totalFailedLabel;
     @FXML private Label totalSuppressedLabel;
     @FXML private Label suppressedThisMonthLabel;
+
+    // ── Reachability stat labels ─────────────────────────────────────────────
+    @FXML private Label reachableCountLabel;
+    @FXML private Label atRiskCountLabel;
+    @FXML private Label unreachableCountLabel;
 
     // ── AI Insights ───────────────────────────────────────────────────────────
     @FXML private Button aiInsightsButton;
@@ -497,6 +503,14 @@ public class AnalyticsController implements Initializable {
         totalSuppressedLabel.setText(String.valueOf(unsubData.size()));
         suppressedThisMonthLabel.setText(
                 String.valueOf(UnsubscribeAnalyser.countThisMonth(unsubData)));
+
+        // Reachability scores
+        Map<String, Integer> reachScores = ContactReachabilityScorer.computeScores(
+                allSends, UnsubscribeManager.getInstance().getAllSuppressed());
+        int[] categories = ContactReachabilityScorer.categorize(reachScores);
+        reachableCountLabel.setText(String.valueOf(categories[0]));
+        atRiskCountLabel.setText(String.valueOf(categories[1]));
+        unreachableCountLabel.setText(String.valueOf(categories[2]));
 
         updateChart(batches);
         refreshHourlyChart();
