@@ -819,3 +819,20 @@
     -fx-border-width: 1;
     -fx-border-radius: 6;
 }
+
+/* ── Section titles ─────────────────────────────────────────────────────── */
+.section-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1e293b;
+    -fx-padding: 4 0 2 0;
+}
+
+/* ── Advice / recommendation labels ─────────────────────────────────────── */
+.advice-label {
+    -fx-text-fill: #0d9488;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-wrap-text: true;
+    -fx-padding: 4 0 8 0;
+}

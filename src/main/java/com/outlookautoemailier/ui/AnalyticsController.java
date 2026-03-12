@@ -4,6 +4,7 @@ import com.outlookautoemailier.AppContext;
 import com.outlookautoemailier.analytics.BatchStore;
 import com.outlookautoemailier.analytics.EmailBatch;
 import com.outlookautoemailier.analytics.LinkClickRecord;
+import com.outlookautoemailier.analytics.SendTimeAnalyser;
 import com.outlookautoemailier.analytics.SentEmailRecord;
 import com.outlookautoemailier.analytics.SentEmailStore;
 import com.outlookautoemailier.integration.SupabaseAnalyticsSync;
@@ -47,11 +48,16 @@ public class AnalyticsController implements Initializable {
     @FXML private TableColumn<EmailBatch, String> batchOpensColumn;
     @FXML private TableColumn<EmailBatch, String> batchOpenRateColumn;
 
-    // ── Chart ─────────────────────────────────────────────────────────────────
+    // ── Charts ────────────────────────────────────────────────────────────────
     @FXML private WebView chartView;
+    @FXML private WebView hourlyChartView;
+    @FXML private Label   sendTimeAdvice;
 
     private boolean chartReady = false;
     private List<EmailBatch> pendingChartData = null;
+
+    private boolean hourlyChartReady = false;
+    private boolean hourlyChartPending = false;
 
     private static final String CHART_HTML = """
             <!DOCTYPE html>
@@ -119,6 +125,103 @@ public class AnalyticsController implements Initializable {
             </html>
             """;
 
+    private static final String HOURLY_CHART_HTML = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+            <meta charset="UTF-8">
+            <style>
+              * { margin:0; padding:0; box-sizing:border-box; }
+              body { background:#ffffff; font-family:"Segoe UI",Arial,sans-serif; }
+              #chart { width:100%%; height:250px; }
+            </style>
+            <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+            </head>
+            <body>
+            <div id="chart"></div>
+            <script>
+            var chart = echarts.init(document.getElementById('chart'));
+            function updateHourlyChart(hours, counts, rates) {
+              chart.setOption({
+                backgroundColor: '#ffffff',
+                tooltip: {
+                  trigger: 'axis',
+                  axisPointer: { type: 'cross' },
+                  formatter: function(params) {
+                    var s = params[0].axisValue + '<br/>';
+                    params.forEach(function(p) {
+                      s += p.marker + ' ' + p.seriesName + ': ';
+                      s += p.seriesName.indexOf('Rate') >= 0
+                           ? p.value.toFixed(1) + '%%'
+                           : p.value;
+                      s += '<br/>';
+                    });
+                    return s;
+                  }
+                },
+                legend: {
+                  data: ['Send Count', 'Success Rate %%'],
+                  textStyle: { color: '#6b7280', fontSize: 11 },
+                  top: 4
+                },
+                grid: { left: 50, right: 56, top: 40, bottom: 40 },
+                xAxis: {
+                  type: 'category',
+                  data: hours,
+                  axisLabel: { color: '#6b7280', fontSize: 11 },
+                  axisLine: { lineStyle: { color: '#dde3ec' } },
+                  axisTick: { show: false }
+                },
+                yAxis: [
+                  {
+                    type: 'value',
+                    name: 'Sends',
+                    nameTextStyle: { color: '#6b7280', fontSize: 10 },
+                    axisLabel: { color: '#6b7280', fontSize: 11 },
+                    splitLine: { lineStyle: { color: '#eef2f7' } },
+                    axisLine: { show: false }
+                  },
+                  {
+                    type: 'value',
+                    name: 'Success Rate %%',
+                    nameTextStyle: { color: '#6b7280', fontSize: 10 },
+                    max: 100,
+                    axisLabel: { color: '#6b7280', formatter: '{value}%%', fontSize: 11 },
+                    splitLine: { show: false },
+                    axisLine: { show: false }
+                  }
+                ],
+                series: [
+                  {
+                    name: 'Send Count',
+                    type: 'bar',
+                    yAxisIndex: 0,
+                    data: counts,
+                    barMaxWidth: 24,
+                    itemStyle: { color: '#2563eb', borderRadius: [4,4,0,0] },
+                    emphasis: { itemStyle: { color: '#1d4ed8' } }
+                  },
+                  {
+                    name: 'Success Rate %%',
+                    type: 'line',
+                    yAxisIndex: 1,
+                    data: rates,
+                    smooth: true,
+                    symbol: 'circle',
+                    symbolSize: 6,
+                    lineStyle: { color: '#0d9488', width: 2 },
+                    itemStyle: { color: '#0d9488' },
+                    areaStyle: { color: 'rgba(13,148,136,0.08)' }
+                  }
+                ]
+              });
+            }
+            window.addEventListener('resize', function() { chart.resize(); });
+            </script>
+            </body>
+            </html>
+            """;
+
     private final ObservableList<EmailBatch> batchRows = FXCollections.observableArrayList();
 
     // ── Initializable ─────────────────────────────────────────────────────────
@@ -129,6 +232,7 @@ public class AnalyticsController implements Initializable {
         batchTable.setItems(batchRows);
         AppContext.get().setAnalyticsController(this);
         initChart();
+        initHourlyChart();
 
         // Fetch campaigns + link-click counts from Supabase; refresh UI when done
         SupabaseAnalyticsSync.syncBatchesFromSupabaseAsync()
@@ -236,6 +340,7 @@ public class AnalyticsController implements Initializable {
         totalFailedLabel.setText(String.valueOf(totalFailed));
 
         updateChart(batches);
+        refreshHourlyChart();
     }
 
     /** Fetches per-batch unique-clicker counts from Supabase and updates BatchStore. */
@@ -289,6 +394,65 @@ public class AnalyticsController implements Initializable {
         cats.append("]"); opens.append("]"); clicks.append("]");
         chartView.getEngine().executeScript(
                 "updateChart(" + cats + "," + opens + "," + clicks + ")");
+    }
+
+    // ── Hourly distribution chart ──────────────────────────────────────────────
+
+    private void initHourlyChart() {
+        hourlyChartView.getEngine().setJavaScriptEnabled(true);
+        hourlyChartView.getEngine().loadContent(HOURLY_CHART_HTML);
+        hourlyChartView.getEngine().getLoadWorker().stateProperty().addListener(
+                (obs, oldState, newState) -> {
+                    if (newState == Worker.State.SUCCEEDED) {
+                        hourlyChartReady = true;
+                        if (hourlyChartPending) {
+                            hourlyChartPending = false;
+                            renderHourlyChart();
+                        }
+                    }
+                });
+    }
+
+    private void refreshHourlyChart() {
+        if (!hourlyChartReady) {
+            hourlyChartPending = true;
+            return;
+        }
+        renderHourlyChart();
+    }
+
+    private void renderHourlyChart() {
+        List<SentEmailRecord> allRecords = SentEmailStore.getInstance().getAll();
+
+        // Compute send counts per hour
+        int[] countsPerHour = new int[24];
+        for (SentEmailRecord r : allRecords) {
+            if (r.getSentAt() != null) {
+                countsPerHour[r.getSentAt().getHour()]++;
+            }
+        }
+
+        // Compute success rates per hour
+        double[] rates = SendTimeAnalyser.computeHourlySuccessRates(allRecords);
+
+        // Build JS arrays
+        StringBuilder hours  = new StringBuilder("[");
+        StringBuilder counts = new StringBuilder("[");
+        StringBuilder rateJs = new StringBuilder("[");
+        for (int h = 0; h < 24; h++) {
+            if (h > 0) { hours.append(","); counts.append(","); rateJs.append(","); }
+            hours.append("'").append(String.format("%02d:00", h)).append("'");
+            counts.append(countsPerHour[h]);
+            rateJs.append(String.format("%.1f", rates[h] * 100));
+        }
+        hours.append("]"); counts.append("]"); rateJs.append("]");
+
+        hourlyChartView.getEngine().executeScript(
+                "updateHourlyChart(" + hours + "," + counts + "," + rateJs + ")");
+
+        // Update advice label
+        String advice = SendTimeAnalyser.getRecommendedWindows(rates);
+        sendTimeAdvice.setText(advice);
     }
 
     // ── Drill-down dialog ─────────────────────────────────────────────────────
