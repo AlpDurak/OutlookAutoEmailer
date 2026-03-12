@@ -16,9 +16,9 @@
 
 <ScrollPane fitToWidth="true" fitToHeight="true"
             xmlns="http://javafx.com/javafx/21"
-            xmlns:fx="http://javafx.com/fxml/1">
-<VBox spacing="14"
-      fx:controller="com.outlookautoemailier.ui.AnalyticsController">
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.outlookautoemailier.ui.AnalyticsController">
+<VBox spacing="14">
 
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
