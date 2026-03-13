@@ -5,12 +5,12 @@
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToggleGroup?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -18,24 +18,37 @@
 
     <!-- ═══════════════════════════════ LEFT SIDEBAR ═══════════════════════════════ -->
     <left>
-        <VBox prefWidth="180" styleClass="sidebar" spacing="4">
+        <VBox prefWidth="180" styleClass="sidebar" spacing="2">
             <padding>
                 <Insets top="0" right="0" bottom="10" left="0"/>
             </padding>
 
-            <!-- App logo -->
-            <ImageView fitWidth="200" fitHeight="80" preserveRatio="true" smooth="true">
-                <image>
-                    <Image url="@../images/splash.png"/>
-                </image>
-                <VBox.margin>
-                    <Insets top="12" right="12" bottom="4" left="12"/>
-                </VBox.margin>
-            </ImageView>
+            <!-- ── App logo header ── -->
+            <VBox styleClass="sidebar-logo-area" alignment="CENTER_LEFT" spacing="2">
+                <padding>
+                    <Insets top="18" right="14" bottom="14" left="14"/>
+                </padding>
+                <!-- Icon mark row -->
+                <HBox alignment="CENTER_LEFT" spacing="8">
+                    <FontIcon iconLiteral="fas-envelope-open-text" iconSize="22" style="-fx-icon-color: #3b82f6; -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.4), 8, 0.2, 0, 1);"/>
+                    <VBox spacing="1">
+                        <Label text="OutlookAuto"
+                               style="-fx-font-size: 12px;
+                                      -fx-font-weight: bold;
+                                      -fx-text-fill: #e2eaf5;
+                                      -fx-font-family: 'Segoe UI', sans-serif;"/>
+                        <Label text="Emailer"
+                               style="-fx-font-size: 11px;
+                                      -fx-font-weight: 300;
+                                      -fx-text-fill: #4d6a8a;
+                                      -fx-font-family: 'Segoe UI Light', 'Segoe UI', sans-serif;"/>
+                    </VBox>
+                </HBox>
+            </VBox>
 
-            <Separator>
+            <Separator styleClass="sidebar-separator">
                 <VBox.margin>
-                    <Insets bottom="8"/>
+                    <Insets bottom="6"/>
                 </VBox.margin>
             </Separator>
 
@@ -44,18 +57,31 @@
                 <ToggleGroup fx:id="navGroup"/>
             </fx:define>
 
+            <!-- Section label: MAIL -->
+            <Label text="MAIL" styleClass="sidebar-section-label">
+                <VBox.margin><Insets top="4" left="15"/></VBox.margin>
+            </Label>
+
             <ToggleButton fx:id="btnAccounts"
-                          text="Accounts"
+                          text="  Accounts"
                           toggleGroup="$navGroup"
                           styleClass="nav-button"
-                          maxWidth="Infinity"/>
+                          maxWidth="Infinity">
+                <graphic>
+                    <FontIcon iconLiteral="fas-user-shield" iconSize="15" styleClass="nav-icon"/>
+                </graphic>
+            </ToggleButton>
 
             <StackPane>
                 <ToggleButton fx:id="btnContacts"
-                              text="Contacts"
+                              text="  Contacts"
                               toggleGroup="$navGroup"
                               styleClass="nav-button"
-                              maxWidth="Infinity"/>
+                              maxWidth="Infinity">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-address-book" iconSize="15" styleClass="nav-icon"/>
+                    </graphic>
+                </ToggleButton>
                 <Label fx:id="contactsBadge" styleClass="nav-badge"
                        visible="false" managed="false"
                        StackPane.alignment="CENTER_RIGHT" mouseTransparent="true">
@@ -66,17 +92,25 @@
             </StackPane>
 
             <ToggleButton fx:id="btnCompose"
-                          text="Compose"
+                          text="  Compose"
                           toggleGroup="$navGroup"
                           styleClass="nav-button"
-                          maxWidth="Infinity"/>
+                          maxWidth="Infinity">
+                <graphic>
+                    <FontIcon iconLiteral="fas-pen-fancy" iconSize="15" styleClass="nav-icon"/>
+                </graphic>
+            </ToggleButton>
 
             <StackPane>
                 <ToggleButton fx:id="btnQueue"
-                              text="Queue"
+                              text="  Queue"
                               toggleGroup="$navGroup"
                               styleClass="nav-button"
-                              maxWidth="Infinity"/>
+                              maxWidth="Infinity">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-paper-plane" iconSize="15" styleClass="nav-icon"/>
+                    </graphic>
+                </ToggleButton>
                 <Label fx:id="queueBadge" styleClass="nav-badge"
                        visible="false" managed="false"
                        StackPane.alignment="CENTER_RIGHT" mouseTransparent="true">
@@ -86,42 +120,77 @@
                 </Label>
             </StackPane>
 
-            <ToggleButton fx:id="btnSettings"
-                          text="Settings"
-                          toggleGroup="$navGroup"
-                          styleClass="nav-button"
-                          maxWidth="Infinity"/>
+            <!-- Section label: CREATE -->
+            <Label text="CREATE" styleClass="sidebar-section-label">
+                <VBox.margin><Insets top="10" left="15"/></VBox.margin>
+            </Label>
 
             <ToggleButton fx:id="btnStudio"
-                          text="Template Studio"
+                          text="  Templates"
                           toggleGroup="$navGroup"
                           styleClass="nav-button"
-                          maxWidth="Infinity"/>
+                          maxWidth="Infinity">
+                <graphic>
+                    <FontIcon iconLiteral="fas-palette" iconSize="15" styleClass="nav-icon"/>
+                </graphic>
+            </ToggleButton>
 
             <ToggleButton fx:id="btnImageLibrary"
-                          text="Image Library"
+                          text="  Image Library"
                           toggleGroup="$navGroup"
                           styleClass="nav-button"
-                          maxWidth="Infinity"/>
+                          maxWidth="Infinity">
+                <graphic>
+                    <FontIcon iconLiteral="fas-images" iconSize="15" styleClass="nav-icon"/>
+                </graphic>
+            </ToggleButton>
+
+            <!-- Section label: INSIGHTS -->
+            <Label text="INSIGHTS" styleClass="sidebar-section-label">
+                <VBox.margin><Insets top="10" left="15"/></VBox.margin>
+            </Label>
 
             <ToggleButton fx:id="btnAnalytics"
-                          text="Analytics"
+                          text="  Analytics"
                           toggleGroup="$navGroup"
                           styleClass="nav-button"
-                          maxWidth="Infinity"/>
+                          maxWidth="Infinity">
+                <graphic>
+                    <FontIcon iconLiteral="fas-chart-bar" iconSize="15" styleClass="nav-icon"/>
+                </graphic>
+            </ToggleButton>
 
             <ToggleButton fx:id="btnDeadLetters"
-                          text="Dead Letters"
+                          text="  Dead Letters"
                           toggleGroup="$navGroup"
                           styleClass="nav-button"
-                          maxWidth="Infinity"/>
+                          maxWidth="Infinity">
+                <graphic>
+                    <FontIcon iconLiteral="fas-exclamation-triangle" iconSize="15" styleClass="nav-icon"/>
+                </graphic>
+            </ToggleButton>
+
+            <!-- Section label: SYSTEM -->
+            <Label text="SYSTEM" styleClass="sidebar-section-label">
+                <VBox.margin><Insets top="10" left="15"/></VBox.margin>
+            </Label>
+
+            <ToggleButton fx:id="btnSettings"
+                          text="  Settings"
+                          toggleGroup="$navGroup"
+                          styleClass="nav-button"
+                          maxWidth="Infinity">
+                <graphic>
+                    <FontIcon iconLiteral="fas-cog" iconSize="15" styleClass="nav-icon"/>
+                </graphic>
+            </ToggleButton>
 
             <!-- Spacer — pushes version label to the bottom -->
             <Region VBox.vgrow="ALWAYS"/>
 
             <Label text="v1.2.0" styleClass="version-label">
                 <VBox.margin>
-                    <Insets left="12"/>
+                    <Insets left="15" bottom="4"/>
                 </VBox.margin>
             </Label>
         </VBox>
@@ -131,15 +200,15 @@
     <center>
         <StackPane styleClass="content-area">
 
-            <fx:include fx:id="accountSetupPane"  source="AccountSetup.fxml"    visible="true"/>
-            <fx:include fx:id="contactListPane"   source="ContactList.fxml"     visible="false"/>
-            <fx:include fx:id="composePane"       source="Compose.fxml"         visible="false"/>
-            <fx:include fx:id="queueDashboardPane" source="QueueDashboard.fxml" visible="false"/>
-            <fx:include fx:id="settingsPane"       source="Settings.fxml"        visible="false"/>
-            <fx:include fx:id="templateStudioPane" source="TemplateStudio.fxml"  visible="false"/>
-            <fx:include fx:id="imageLibraryPane"   source="ImageLibrary.fxml"    visible="false"/>
-            <fx:include fx:id="analyticsPane"      source="Analytics.fxml"       visible="false"/>
-            <fx:include fx:id="deadLetterPane"     source="DeadLetterExplorer.fxml" visible="false"/>
+            <fx:include fx:id="accountSetupPane"   source="AccountSetup.fxml"       visible="true"/>
+            <fx:include fx:id="contactListPane"    source="ContactList.fxml"         visible="false"/>
+            <fx:include fx:id="composePane"        source="Compose.fxml"             visible="false"/>
+            <fx:include fx:id="queueDashboardPane" source="QueueDashboard.fxml"      visible="false"/>
+            <fx:include fx:id="settingsPane"       source="Settings.fxml"            visible="false"/>
+            <fx:include fx:id="templateStudioPane" source="TemplateStudio.fxml"      visible="false"/>
+            <fx:include fx:id="imageLibraryPane"   source="ImageLibrary.fxml"        visible="false"/>
+            <fx:include fx:id="analyticsPane"      source="Analytics.fxml"           visible="false"/>
+            <fx:include fx:id="deadLetterPane"     source="DeadLetterExplorer.fxml"  visible="false"/>
 
         </StackPane>
     </center>

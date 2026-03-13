@@ -3,18 +3,20 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <AnchorPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -25,110 +27,142 @@
                AnchorPane.bottomAnchor="0"
                AnchorPane.leftAnchor="0">
 
-        <VBox spacing="10">
+        <VBox spacing="0">
+            <padding>
+                <Insets top="28" right="28" bottom="16" left="28"/>
+            </padding>
 
-        <padding>
-            <Insets top="20" right="20" bottom="10" left="20"/>
-        </padding>
+            <!-- ── Title + search toolbar ────────────────────────────────── -->
+            <HBox spacing="12" alignment="CENTER_LEFT">
+                <VBox spacing="2" HBox.hgrow="ALWAYS">
+                    <Label text="Contacts" styleClass="page-title"/>
+                    <Label fx:id="contactCountLabel" text="0 contacts" styleClass="help-label"/>
+                </VBox>
+                <TextField fx:id="searchField"
+                           promptText="Search by name, email, company…"
+                           prefWidth="220"/>
+                <Button text="Refresh" onAction="#onRefresh" styleClass="secondary-button">
+                    <graphic><FontIcon iconLiteral="fas-sync-alt" iconSize="14"/></graphic>
+                </Button>
+            </HBox>
 
-        <!-- ── Row 1: title + search + refresh ──────────────────────────── -->
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <Label text="Contacts" styleClass="page-title" HBox.hgrow="NEVER"/>
-            <javafx.scene.layout.Region HBox.hgrow="ALWAYS"/>
-            <TextField fx:id="searchField"
-                       promptText="Search contacts..."
-                       prefWidth="200"/>
-            <Button text="Refresh" onAction="#onRefresh"/>
-        </HBox>
+            <Region prefHeight="16"/>
 
-        <!-- ── Filter panel ──────────────────────────────────────────────── -->
-        <TitledPane fx:id="filterPane" text="Filters" expanded="false">
-            <VBox spacing="10">
-                <padding>
-                    <Insets top="10" right="10" bottom="10" left="10"/>
-                </padding>
+            <!-- ── Filter panel ──────────────────────────────────────────── -->
+            <TitledPane fx:id="filterPane" text="Filters" expanded="false">
+                <VBox spacing="12">
+                    <padding>
+                        <Insets top="12" right="14" bottom="12" left="14"/>
+                    </padding>
 
-                <!-- Year filter -->
-                <HBox spacing="12" alignment="CENTER_LEFT">
-                    <Label text="Min. Registration Year:" minWidth="170"/>
-                    <TextField fx:id="minYearField"
-                               promptText="e.g. 20"
-                               text="20"
-                               prefWidth="60"/>
-                    <Label text="(enter 2-digit code; students registered before this year are hidden)"/>
-                    <javafx.scene.layout.Region HBox.hgrow="ALWAYS"/>
-                    <Button text="Clear Filters" onAction="#onClearFilters" styleClass="secondary-button"/>
-                </HBox>
+                    <HBox spacing="12" alignment="CENTER_LEFT">
+                        <Label text="Min. Registration Year:" minWidth="170"
+                               style="-fx-font-weight:bold;"/>
+                        <TextField fx:id="minYearField"
+                                   promptText="e.g. 20"
+                                   text="20"
+                                   prefWidth="60"/>
+                        <Label text="(2-digit code — students before this year are hidden)"
+                               styleClass="help-label"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="Clear Filters" onAction="#onClearFilters"
+                                styleClass="secondary-button">
+                            <graphic><FontIcon iconLiteral="fas-times" iconSize="14"/></graphic>
+                        </Button>
+                    </HBox>
 
-                <!-- Faculty filter -->
-                <HBox spacing="10" alignment="TOP_LEFT">
-                    <Label text="Faculty:" minWidth="70"/>
-                    <FlowPane fx:id="facultyFilterPane" hgap="10" vgap="6" prefWrapLength="700"/>
-                </HBox>
+                    <HBox spacing="10" alignment="TOP_LEFT">
+                        <Label text="Faculty:" minWidth="70" style="-fx-font-weight:bold;"/>
+                        <FlowPane fx:id="facultyFilterPane" hgap="10" vgap="6" prefWrapLength="700"/>
+                    </HBox>
 
-                <!-- Major filter -->
-                <HBox spacing="10" alignment="TOP_LEFT">
-                    <Label text="Major:" minWidth="70"/>
-                    <FlowPane fx:id="majorFilterPane" hgap="10" vgap="6" prefWrapLength="700"/>
-                </HBox>
+                    <HBox spacing="10" alignment="TOP_LEFT">
+                        <Label text="Major:" minWidth="70" style="-fx-font-weight:bold;"/>
+                        <FlowPane fx:id="majorFilterPane" hgap="10" vgap="6" prefWrapLength="700"/>
+                    </HBox>
+                </VBox>
+            </TitledPane>
 
-            </VBox>
-        </TitledPane>
+            <Region prefHeight="12"/>
 
-        <!-- ── Groups bar ────────────────────────────────────────────────── -->
-        <HBox spacing="8" alignment="CENTER_LEFT">
-            <Label text="Group:" minWidth="50"/>
-            <ComboBox fx:id="groupComboBox" promptText="All contacts" prefWidth="160"/>
-            <Button text="+ New Group" onAction="#onCreateGroup"/>
-            <Button text="Add to Group" onAction="#onAddToGroup"/>
-            <Button text="Remove from Group" onAction="#onRemoveFromGroup"/>
-            <Button text="Delete Group" onAction="#onDeleteGroup" styleClass="danger-button"/>
-        </HBox>
+            <!-- ── Groups bar ────────────────────────────────────────────── -->
+            <HBox spacing="8" alignment="CENTER_LEFT"
+                  style="-fx-padding: 10 14 10 14;
+                         -fx-background-color: #ffffff;
+                         -fx-background-radius: 8;
+                         -fx-border-color: #dde3ec;
+                         -fx-border-width: 1;
+                         -fx-border-radius: 8;">
+                <Label text="Group:" style="-fx-font-weight:bold; -fx-min-width:50px;"/>
+                <ComboBox fx:id="groupComboBox" promptText="All contacts" prefWidth="160"/>
+                <Button text="+ New" onAction="#onCreateGroup">
+                    <graphic><FontIcon iconLiteral="fas-plus-circle" iconSize="14"/></graphic>
+                </Button>
+                <Button text="Add Selected" onAction="#onAddToGroup">
+                    <graphic><FontIcon iconLiteral="fas-user-plus" iconSize="14"/></graphic>
+                </Button>
+                <Button text="Remove Selected" onAction="#onRemoveFromGroup">
+                    <graphic><FontIcon iconLiteral="fas-user-minus" iconSize="14"/></graphic>
+                </Button>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Delete Group" onAction="#onDeleteGroup" styleClass="danger-button">
+                    <graphic><FontIcon iconLiteral="fas-trash-alt" iconSize="14"/></graphic>
+                </Button>
+            </HBox>
 
-        <!-- ── Row 2: count + bulk-select actions ───────────────────────── -->
-        <HBox spacing="8" alignment="CENTER_LEFT">
-            <Label fx:id="contactCountLabel" text="0 contacts"/>
-            <javafx.scene.layout.Region HBox.hgrow="ALWAYS"/>
-            <Button text="Select All"       onAction="#onSelectAll"/>
-            <Button text="Deselect All"     onAction="#onDeselectAll"/>
-            <Button text="Send to Selected →"
-                    styleClass="primary-button"
-                    onAction="#onSendToSelected"/>
-        </HBox>
+            <Region prefHeight="12"/>
 
-        <!-- ── Contact table ────────────────────────────────────────────── -->
-        <TableView fx:id="contactTable" VBox.vgrow="ALWAYS">
-            <columns>
-                <TableColumn fx:id="selectColumn"   text=""          prefWidth="40"/>
-                <TableColumn fx:id="nameColumn"     text="Name"      prefWidth="180"/>
-                <TableColumn fx:id="emailColumn"    text="Email"     prefWidth="220"/>
-                <TableColumn fx:id="companyColumn"  text="Company"   prefWidth="160"/>
-                <TableColumn fx:id="jobTitleColumn" text="Job Title" prefWidth="150"/>
-                <TableColumn fx:id="unsubColumn" text="Status" prefWidth="100"/>
-            </columns>
-            <placeholder>
-                <Label text="No contacts loaded. Click Refresh to fetch from Outlook."/>
-            </placeholder>
-        </TableView>
+            <!-- ── Bulk-select actions ───────────────────────────────────── -->
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <Button text="Select All" onAction="#onSelectAll" styleClass="secondary-button">
+                    <graphic><FontIcon iconLiteral="fas-check-double" iconSize="14"/></graphic>
+                </Button>
+                <Button text="Deselect All" onAction="#onDeselectAll" styleClass="secondary-button">
+                    <graphic><FontIcon iconLiteral="fas-times" iconSize="14"/></graphic>
+                </Button>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Send to Selected"
+                        styleClass="primary-button"
+                        onAction="#onSendToSelected">
+                    <graphic><FontIcon iconLiteral="fas-paper-plane" iconSize="14"/></graphic>
+                </Button>
+            </HBox>
 
-        <!-- ── Bottom status bar ────────────────────────────────────────── -->
-        <Label fx:id="statusLabel" text="">
-            <VBox.margin>
-                <Insets bottom="6"/>
-            </VBox.margin>
-        </Label>
+            <Region prefHeight="12"/>
+
+            <!-- ── Contact table ────────────────────────────────────────── -->
+            <TableView fx:id="contactTable" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="selectColumn"   text=""          prefWidth="40"/>
+                    <TableColumn fx:id="nameColumn"     text="Name"      prefWidth="180"/>
+                    <TableColumn fx:id="emailColumn"    text="Email"     prefWidth="220"/>
+                    <TableColumn fx:id="companyColumn"  text="Company"   prefWidth="160"/>
+                    <TableColumn fx:id="jobTitleColumn" text="Job Title" prefWidth="150"/>
+                    <TableColumn fx:id="unsubColumn"    text="Status"    prefWidth="100"/>
+                </columns>
+                <placeholder>
+                    <Label text="No contacts loaded. Click Refresh to fetch from Outlook."
+                           styleClass="help-label"/>
+                </placeholder>
+            </TableView>
+
+            <!-- ── Status bar ───────────────────────────────────────────── -->
+            <Label fx:id="statusLabel" text="" styleClass="help-label">
+                <VBox.margin><Insets top="8" bottom="4"/></VBox.margin>
+            </Label>
 
         </VBox>
 
-        <!-- Loading overlay: shown while contacts are being fetched -->
+        <!-- ── Loading overlay ──────────────────────────────────────────── -->
         <VBox fx:id="loadingOverlay"
               alignment="CENTER"
-              spacing="12"
+              spacing="14"
               visible="false"
               managed="false"
-              style="-fx-background-color: rgba(255,255,255,0.75);">
-            <ProgressIndicator fx:id="loadingSpinner" prefWidth="60" prefHeight="60"/>
-            <Label fx:id="loadingLabel" text="Loading contacts…" style="-fx-font-size: 14px;"/>
+              style="-fx-background-color: rgba(238,242,247,0.85); -fx-background-radius: 0;">
+            <ProgressIndicator fx:id="loadingSpinner" prefWidth="48" prefHeight="48"/>
+            <Label fx:id="loadingLabel" text="Loading contacts…"
+                   style="-fx-font-size:13px; -fx-text-fill:#374151; -fx-font-weight:bold;"/>
         </VBox>
 
     </StackPane>

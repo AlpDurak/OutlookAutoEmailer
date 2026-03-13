@@ -1,98 +1,115 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.geometry.Pos?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<VBox spacing="15"
+<VBox spacing="0"
       xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.outlookautoemailier.ui.QueueDashboardController">
 
     <padding>
-        <Insets top="20" right="20" bottom="20" left="20"/>
+        <Insets top="28" right="28" bottom="24" left="28"/>
     </padding>
 
-    <!-- ── Page title ──────────────────────────────────────────────────────── -->
-    <Label text="Queue Dashboard" styleClass="page-title"/>
+    <!-- ── Page heading ─────────────────────────────────────────────────── -->
+    <VBox spacing="4">
+        <Label text="Send Queue" styleClass="page-title"/>
+        <Label text="Monitor and control active email delivery jobs."
+               styleClass="help-label"/>
+    </VBox>
 
-    <!-- ── Stats bar: four metric cards ───────────────────────────────────── -->
-    <HBox spacing="20" alignment="CENTER_LEFT">
+    <Region prefHeight="20"/>
+    <Separator/>
+    <Region prefHeight="20"/>
 
-        <!-- Pending -->
-        <VBox styleClass="stat-card" alignment="CENTER" minWidth="120">
-            <Label fx:id="pendingCount" text="0" styleClass="stat-count"/>
-            <Label text="Pending"       styleClass="stat-label"/>
+    <!-- ── Stats bar: five metric cards ─────────────────────────────────── -->
+    <HBox spacing="12" alignment="CENTER_LEFT">
+
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="110">
+            <Label fx:id="pendingCount"   text="0" styleClass="stat-count"/>
+            <Label text="Pending"                  styleClass="stat-label"/>
         </VBox>
 
-        <!-- Sending -->
-        <VBox styleClass="stat-card" alignment="CENTER" minWidth="120">
-            <Label fx:id="sendingCount" text="0" styleClass="stat-count"/>
-            <Label text="Sending"       styleClass="stat-label"/>
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="110">
+            <Label fx:id="sendingCount"   text="0" styleClass="stat-count"
+                   style="-fx-text-fill:#2563eb;"/>
+            <Label text="Sending"                  styleClass="stat-label"/>
         </VBox>
 
-        <!-- Sent -->
-        <VBox styleClass="stat-card" alignment="CENTER" minWidth="120">
-            <Label fx:id="sentCount"    text="0" styleClass="stat-count"/>
-            <Label text="Sent"          styleClass="stat-label"/>
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="110">
+            <Label fx:id="sentCount"      text="0" styleClass="stat-count"
+                   style="-fx-text-fill:#16a34a;"/>
+            <Label text="Sent"                     styleClass="stat-label"/>
         </VBox>
 
-        <!-- Scheduled -->
-        <VBox styleClass="stat-card" alignment="CENTER" minWidth="120">
-            <Label fx:id="scheduledCount" text="0" styleClass="stat-count, scheduled-stat"/>
-            <Label text="Scheduled"       styleClass="stat-label"/>
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="110">
+            <Label fx:id="scheduledCount" text="0" styleClass="stat-count,scheduled-stat"/>
+            <Label text="Scheduled"                styleClass="stat-label"/>
         </VBox>
 
-        <!-- Failed -->
-        <VBox styleClass="stat-card" alignment="CENTER" minWidth="120">
-            <Label fx:id="failedCount"  text="0" styleClass="stat-count"/>
-            <Label text="Failed"        styleClass="stat-label"/>
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="110">
+            <Label fx:id="failedCount"    text="0" styleClass="stat-count"
+                   style="-fx-text-fill:#dc2626;"/>
+            <Label text="Failed"                   styleClass="stat-label"/>
         </VBox>
 
     </HBox>
 
-    <!-- ── Overall progress ───────────────────────────────────────────────── -->
-    <ProgressBar fx:id="overallProgress"
-                 progress="0"
-                 maxWidth="Infinity"
-                 prefHeight="12"/>
-    <Label fx:id="progressLabel" text="Idle"/>
+    <Region prefHeight="16"/>
 
-    <!-- ── Job table ──────────────────────────────────────────────────────── -->
+    <!-- ── Overall progress ─────────────────────────────────────────────── -->
+    <VBox spacing="6">
+        <ProgressBar fx:id="overallProgress"
+                     progress="0"
+                     maxWidth="Infinity"
+                     prefHeight="10"/>
+        <Label fx:id="progressLabel" text="Idle" styleClass="help-label"/>
+    </VBox>
+
+    <Region prefHeight="16"/>
+
+    <!-- ── Job table ────────────────────────────────────────────────────── -->
     <TableView fx:id="jobTable" VBox.vgrow="ALWAYS">
         <columns>
-            <TableColumn fx:id="jobIdColumn"       text="Job ID"        prefWidth="200"/>
-            <TableColumn fx:id="contactNameColumn" text="Contact Name"  prefWidth="180"/>
-            <TableColumn fx:id="statusColumn"      text="Status"        prefWidth="100"/>
-            <TableColumn fx:id="attemptsColumn"    text="Attempts"      prefWidth="80"/>
+            <TableColumn fx:id="jobIdColumn"        text="Job ID"        prefWidth="200"/>
+            <TableColumn fx:id="contactNameColumn"  text="Contact Name"  prefWidth="180"/>
+            <TableColumn fx:id="statusColumn"       text="Status"        prefWidth="100"/>
+            <TableColumn fx:id="attemptsColumn"     text="Attempts"      prefWidth="80"/>
             <TableColumn fx:id="scheduledAtColumn"  text="Scheduled At"  prefWidth="140"/>
-            <TableColumn fx:id="lastUpdatedColumn" text="Last Updated"  prefWidth="160"/>
+            <TableColumn fx:id="lastUpdatedColumn"  text="Last Updated"  prefWidth="160"/>
         </columns>
         <placeholder>
-            <Label text="No email jobs in queue."/>
+            <Label text="No email jobs in queue." styleClass="help-label"/>
         </placeholder>
     </TableView>
 
-    <!-- ── Control buttons ────────────────────────────────────────────────── -->
+    <Region prefHeight="16"/>
+
+    <!-- ── Control buttons ──────────────────────────────────────────────── -->
     <HBox spacing="8" alignment="CENTER_LEFT">
-        <Button fx:id="btnPause"
-                text="Pause"
-                onAction="#onPause"/>
-        <Button text="Resume"
-                onAction="#onResume"/>
-        <Button text="Cancel All"
-                styleClass="danger-button"
-                onAction="#onCancelAll"/>
+        <Button fx:id="btnPause" text="Pause" onAction="#onPause" styleClass="secondary-button">
+            <graphic><FontIcon iconLiteral="fas-pause" iconSize="14"/></graphic>
+        </Button>
+        <Button text="Resume" onAction="#onResume" styleClass="secondary-button">
+            <graphic><FontIcon iconLiteral="fas-play" iconSize="14"/></graphic>
+        </Button>
+        <Button text="Cancel All" onAction="#onCancelAll" styleClass="danger-button">
+            <graphic><FontIcon iconLiteral="fas-stop" iconSize="14"/></graphic>
+        </Button>
         <Region HBox.hgrow="ALWAYS"/>
-        <Button text="Retry Failed"
-                onAction="#onRetryFailed"/>
+        <Button text="Retry Failed" onAction="#onRetryFailed">
+            <graphic><FontIcon iconLiteral="fas-redo" iconSize="14"/></graphic>
+        </Button>
     </HBox>
 
 </VBox>

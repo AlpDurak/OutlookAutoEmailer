@@ -1,34 +1,85 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.geometry.Insets?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <StackPane xmlns="http://javafx.com/javafx/21"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.outlookautoemailier.ui.SplashController"
            fx:id="root"
-           style="-fx-background-color:#0f172a;">
+           style="-fx-background-color: #0d1526;">
 
-    <!-- Background image fills the whole pane -->
-    <ImageView fx:id="splashImage" preserveRatio="true"
-               fitWidth="900" fitHeight="560" smooth="true">
-        <image>
-            <Image url="@../images/splash.png"/>
-        </image>
-    </ImageView>
+    <!-- Hidden ImageView — retained for SplashController fx:id binding -->
+    <ImageView fx:id="splashImage" visible="false" managed="false"
+               fitWidth="900" fitHeight="560"/>
 
-    <!-- Semi-transparent bottom bar with app name -->
-    <VBox alignment="BOTTOM_CENTER">
-        <StackPane style="-fx-background-color:rgba(0,0,0,0.55);-fx-padding:18 0 18 0;">
-            <Label text="Outlook Auto Emailer"
-                   style="-fx-font-size:28px;-fx-font-weight:bold;-fx-text-fill:white;
-                          -fx-font-family:'Segoe UI',sans-serif;
-                          -fx-effect:dropshadow(gaussian,black,6,0.4,0,2);"/>
-        </StackPane>
+    <!-- Subtle radial glow behind the logo -->
+    <Region style="-fx-background-color: radial-gradient(center 50% 45%, radius 55%, rgba(37,99,235,0.18) 0%, transparent 100%);
+                   -fx-background-radius: 0;"/>
+
+    <!-- Central logo block -->
+    <VBox alignment="CENTER" spacing="0" maxWidth="340" maxHeight="260">
+
+        <!-- Icon mark: envelope with lightning bolt -->
+        <HBox alignment="CENTER" spacing="0">
+            <FontIcon iconLiteral="fas-envelope-open-text" iconSize="68" style="-fx-icon-color: #3b82f6; -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.55), 28, 0.2, 0, 4);"/>
+        </HBox>
+
+        <!-- Small accent line between icon and wordmark -->
+        <Region prefHeight="12"/>
+
+        <!-- App wordmark: two-weight treatment -->
+        <HBox alignment="CENTER" spacing="0">
+            <Label text="Outlook"
+                   style="-fx-font-size: 26px;
+                          -fx-font-weight: 300;
+                          -fx-text-fill: #c8d8e8;
+                          -fx-font-family: 'Segoe UI Light', 'Segoe UI', sans-serif;"/>
+            <Label text="Auto"
+                   style="-fx-font-size: 26px;
+                          -fx-font-weight: 700;
+                          -fx-text-fill: #ffffff;
+                          -fx-font-family: 'Segoe UI', sans-serif;"/>
+            <Label text="Emailer"
+                   style="-fx-font-size: 26px;
+                          -fx-font-weight: 300;
+                          -fx-text-fill: #c8d8e8;
+                          -fx-font-family: 'Segoe UI Light', 'Segoe UI', sans-serif;"/>
+        </HBox>
+
+        <!-- Tagline -->
+        <Region prefHeight="8"/>
+        <Label text="Microsoft 365 Mass Email Automation"
+               style="-fx-font-size: 12px;
+                      -fx-text-fill: #4d6480;
+                      -fx-font-family: 'Segoe UI', sans-serif;
+                      -fx-letter-spacing: 0.06em;"/>
+
+        <!-- Divider accent -->
+        <Region prefHeight="28"/>
+        <Region prefHeight="1" prefWidth="60"
+                style="-fx-background-color: #1e3a6e; -fx-background-radius: 1;"/>
+        <Region prefHeight="24"/>
+
+        <!-- Loading indicator -->
+        <ProgressIndicator prefWidth="24" prefHeight="24"
+                           style="-fx-progress-color: #3b82f6; -fx-opacity: 0.75;"/>
+
+        <Region prefHeight="10"/>
+
+        <!-- Version -->
+        <Label text="v1.2.0"
+               style="-fx-font-size: 11px;
+                      -fx-text-fill: #2d4460;
+                      -fx-font-family: 'Segoe UI', sans-serif;"/>
+
     </VBox>
 
 </StackPane>

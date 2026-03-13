@@ -11,72 +11,97 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<VBox spacing="16" xmlns="http://javafx.com/javafx/21"
+<VBox spacing="0"
+      xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.outlookautoemailier.ui.ImageLibraryController">
+
     <padding>
-        <Insets top="24" right="28" bottom="24" left="28"/>
+        <Insets top="28" right="28" bottom="24" left="28"/>
     </padding>
 
-    <!-- Page title -->
-    <Label text="Image Library" styleClass="page-title"/>
+    <!-- ── Page heading ─────────────────────────────────────────────────── -->
+    <VBox spacing="4">
+        <Label text="Image Library" styleClass="page-title"/>
+        <Label text="Manage images stored in Google Drive for use in email templates."
+               styleClass="help-label"/>
+    </VBox>
 
-    <!-- Toolbar -->
+    <Region prefHeight="20"/>
+    <Separator/>
+    <Region prefHeight="16"/>
+
+    <!-- ── Toolbar ──────────────────────────────────────────────────────── -->
     <HBox spacing="10" alignment="CENTER_LEFT">
         <Button fx:id="connectDriveBtn" text="Connect Google Drive"
-                styleClass="primary-button" onAction="#onConnectDrive"/>
+                styleClass="primary-button" onAction="#onConnectDrive">
+            <graphic><FontIcon iconLiteral="fas-cloud" iconSize="14"/></graphic>
+        </Button>
         <Label fx:id="driveStatusLabel" styleClass="help-label"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Button fx:id="uploadBtn" text="Upload Image"
-                styleClass="primary-button" onAction="#onUpload" disable="true"/>
-        <Button text="Refresh" onAction="#onRefresh"/>
+                styleClass="primary-button" onAction="#onUpload" disable="true">
+            <graphic><FontIcon iconLiteral="fas-upload" iconSize="14"/></graphic>
+        </Button>
+        <Button text="Refresh" onAction="#onRefresh" styleClass="secondary-button">
+            <graphic><FontIcon iconLiteral="fas-sync-alt" iconSize="14"/></graphic>
+        </Button>
     </HBox>
 
-    <Separator/>
+    <Region prefHeight="16"/>
 
-    <!-- Image grid -->
+    <!-- ── Image grid ───────────────────────────────────────────────────── -->
     <FlowPane fx:id="imageGrid" hgap="16" vgap="16">
         <padding>
-            <Insets top="4"/>
+            <Insets top="4" bottom="8"/>
         </padding>
     </FlowPane>
 
-    <Separator/>
+    <!-- ── Detail panel (hidden until image selected) ───────────────────── -->
+    <VBox fx:id="detailPanel" spacing="0" visible="false" managed="false">
+        <Separator>
+            <VBox.margin><Insets top="8" bottom="16"/></VBox.margin>
+        </Separator>
 
-    <!-- Detail panel (hidden until an image is selected) -->
-    <VBox fx:id="detailPanel" spacing="12" visible="false" managed="false"
-          styleClass="image-detail-panel">
-        <padding>
-            <Insets top="16" right="16" bottom="16" left="16"/>
-        </padding>
+        <VBox styleClass="image-detail-panel" spacing="14">
+            <Label text="Image Details" styleClass="section-title"/>
 
-        <Label text="Image Details" styleClass="section-title"/>
+            <HBox spacing="16">
+                <ImageView fx:id="detailPreview" fitWidth="200" fitHeight="160" preserveRatio="true"/>
+                <VBox spacing="10" HBox.hgrow="ALWAYS">
+                    <Label fx:id="detailFileName" styleClass="template-card-name"/>
+                    <Label fx:id="detailUrl" styleClass="help-label" wrapText="true"/>
 
-        <HBox spacing="16">
-            <ImageView fx:id="detailPreview" fitWidth="200" fitHeight="160" preserveRatio="true"/>
-            <VBox spacing="8" HBox.hgrow="ALWAYS">
-                <Label fx:id="detailFileName" styleClass="template-card-name"/>
-                <Label fx:id="detailUrl" styleClass="help-label" wrapText="true"/>
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <TextField fx:id="tagField" promptText="Add tag…" prefWidth="180"/>
+                        <Button text="Add Tag" onAction="#onAddTag">
+                            <graphic><FontIcon iconLiteral="fas-tag" iconSize="12"/></graphic>
+                        </Button>
+                    </HBox>
 
-                <HBox spacing="8" alignment="CENTER_LEFT">
-                    <TextField fx:id="tagField" promptText="Add tag..." prefWidth="180"/>
-                    <Button text="Add Tag" onAction="#onAddTag"/>
-                </HBox>
+                    <FlowPane fx:id="tagDisplay" hgap="6" vgap="6"/>
 
-                <FlowPane fx:id="tagDisplay" hgap="6" vgap="6"/>
+                    <Label text="Notes for AI:" styleClass="help-label"/>
+                    <TextArea fx:id="notesArea" prefRowCount="3"
+                              promptText="e.g. 'Company logo, use in email header for branding'"
+                              wrapText="true"/>
 
-                <Label text="Notes for AI:" styleClass="help-label"/>
-                <TextArea fx:id="notesArea" prefRowCount="3"
-                          promptText="e.g. 'Company logo, use in email header for branding'"
-                          wrapText="true"/>
-
-                <HBox spacing="8">
-                    <Button text="Save Changes" styleClass="primary-button" onAction="#onSaveDetails"/>
-                    <Button text="Copy URL" onAction="#onCopyUrl"/>
-                    <Button text="Delete Image" styleClass="danger-button" onAction="#onDeleteImage"/>
-                </HBox>
-            </VBox>
-        </HBox>
+                    <HBox spacing="8">
+                        <Button text="Save Changes" styleClass="primary-button" onAction="#onSaveDetails">
+                            <graphic><FontIcon iconLiteral="fas-save" iconSize="14"/></graphic>
+                        </Button>
+                        <Button text="Copy URL" onAction="#onCopyUrl">
+                            <graphic><FontIcon iconLiteral="fas-link" iconSize="14"/></graphic>
+                        </Button>
+                        <Button text="Delete Image" styleClass="danger-button" onAction="#onDeleteImage">
+                            <graphic><FontIcon iconLiteral="fas-trash-alt" iconSize="14"/></graphic>
+                        </Button>
+                    </HBox>
+                </VBox>
+            </HBox>
+        </VBox>
     </VBox>
+
 </VBox>

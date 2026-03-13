@@ -8,75 +8,78 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<VBox spacing="24"
+<VBox spacing="0"
       xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.outlookautoemailier.ui.AccountSetupController">
 
     <padding>
-        <Insets top="30" right="30" bottom="30" left="30"/>
+        <Insets top="32" right="32" bottom="32" left="32"/>
     </padding>
 
-    <!-- Page heading -->
+    <!-- ── Page heading ─────────────────────────────────────────────────── -->
     <VBox spacing="4">
         <Label text="Account Setup" styleClass="page-title"/>
         <Label text="Connect your Microsoft 365 accounts to get started."
                styleClass="help-label"/>
     </VBox>
 
+    <Region prefHeight="20"/>
     <Separator/>
+    <Region prefHeight="24"/>
 
-    <!-- Two account cards side-by-side -->
+    <!-- ── Two account cards side-by-side ───────────────────────────────── -->
     <HBox spacing="20" fillHeight="true">
 
-        <!-- ── Source Account card ──────────────────────────────────────── -->
+        <!-- Source Account card -->
         <VBox styleClass="account-card" HBox.hgrow="ALWAYS">
 
-            <!-- Card header -->
             <HBox styleClass="account-card-header" alignment="CENTER_LEFT" spacing="10">
-                <Label text="Source Account" styleClass="account-card-title"/>
-                <Region HBox.hgrow="ALWAYS"/>
+                <VBox spacing="2" HBox.hgrow="ALWAYS">
+                    <Label text="Source Account" styleClass="account-card-title"/>
+                    <Label text="Reads contacts from your Outlook directory"
+                           styleClass="help-label"/>
+                </VBox>
                 <Label fx:id="sourceStatusLabel" text="Not connected"
                        styleClass="status-disconnected"/>
             </HBox>
 
-            <!-- Card body -->
-            <VBox styleClass="account-card-body" spacing="14">
-                <Label text="Used to read Outlook contacts from your directory."
-                       styleClass="help-label" wrapText="true"/>
-
+            <VBox styleClass="account-card-body" spacing="16">
+                <Region prefHeight="4"/>
                 <Label fx:id="sourceEmailLabel" text=""
                        style="-fx-font-size:12px; -fx-text-fill:#1d4ed8; -fx-font-weight:bold;"
                        wrapText="true"/>
-
                 <Button fx:id="btnConnectSource"
-                        text="Connect Source Account"
+                        text="Connect via Microsoft OAuth"
                         onAction="#onConnectSource"
                         styleClass="primary-button"
-                        maxWidth="Infinity"/>
+                        maxWidth="Infinity">
+                    <graphic><FontIcon iconLiteral="fas-sign-in-alt" iconSize="14"/></graphic>
+                </Button>
             </VBox>
         </VBox>
 
-        <!-- ── Sender Account card ───────────────────────────────────────── -->
+        <!-- Sender Account card -->
         <VBox styleClass="account-card" HBox.hgrow="ALWAYS">
 
-            <!-- Card header -->
             <HBox styleClass="account-card-header" alignment="CENTER_LEFT" spacing="10">
-                <Label text="Sender Account" styleClass="account-card-title"/>
-                <Region HBox.hgrow="ALWAYS"/>
+                <VBox spacing="2" HBox.hgrow="ALWAYS">
+                    <Label text="Sender Account" styleClass="account-card-title"/>
+                    <Label text="Sends emails via SMTP on your behalf"
+                           styleClass="help-label"/>
+                </VBox>
                 <Label fx:id="senderStatusLabel" text="Not connected"
                        styleClass="status-disconnected"/>
             </HBox>
 
-            <!-- Card body -->
-            <VBox styleClass="account-card-body" spacing="14">
-                <Label text="Used to send emails. Choose your email provider below."
-                       styleClass="help-label" wrapText="true"/>
+            <VBox styleClass="account-card-body" spacing="16">
+                <Region prefHeight="4"/>
 
                 <!-- Provider selector -->
-                <HBox spacing="10" alignment="CENTER_LEFT">
-                    <Label text="Provider:" style="-fx-min-width:70px;"/>
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <Label text="Provider:" style="-fx-min-width:70px; -fx-font-weight:bold;"/>
                     <ChoiceBox fx:id="senderProviderChoice" prefWidth="200"/>
                 </HBox>
 
@@ -92,7 +95,9 @@
                         text="Connect Sender Account"
                         onAction="#onConnectSender"
                         styleClass="primary-button"
-                        maxWidth="Infinity"/>
+                        maxWidth="Infinity">
+                    <graphic><FontIcon iconLiteral="fas-sign-in-alt" iconSize="14"/></graphic>
+                </Button>
             </VBox>
         </VBox>
 

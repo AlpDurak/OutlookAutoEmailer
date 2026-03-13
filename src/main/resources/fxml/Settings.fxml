@@ -11,91 +11,175 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<VBox spacing="15"
+<VBox spacing="0"
       xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.outlookautoemailier.ui.SettingsController">
 
     <padding>
-        <Insets top="20" right="20" bottom="20" left="20"/>
+        <Insets top="28" right="32" bottom="28" left="32"/>
     </padding>
 
-    <!-- ── Page title ──────────────────────────────────────────────────────── -->
-    <Label text="Settings" styleClass="page-title"/>
+    <!-- ── Page heading ─────────────────────────────────────────────────── -->
+    <VBox spacing="4">
+        <Label text="Settings" styleClass="page-title"/>
+        <Label text="Configure sending rate, SMTP, and retry behaviour."
+               styleClass="help-label"/>
+    </VBox>
 
-    <!-- ── Settings grid ──────────────────────────────────────────────────── -->
-    <GridPane hgap="16" vgap="14">
-
-        <columnConstraints>
-            <ColumnConstraints minWidth="180" prefWidth="200" halignment="RIGHT"/>
-            <ColumnConstraints minWidth="200" prefWidth="260" hgrow="ALWAYS"/>
-        </columnConstraints>
-
-        <!-- Row 0: Emails per hour -->
-        <Label text="Emails per hour:"
-               GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-        <Spinner fx:id="emailsPerHourSpinner"
-                 min="1" max="500" initialValue="100"
-                 editable="true" prefWidth="120"
-                 GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-
-        <!-- Row 1: Min delay (ms) -->
-        <Label text="Min delay (ms):"
-               GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-        <Spinner fx:id="minDelaySpinner"
-                 min="500" max="30000" initialValue="3000"
-                 editable="true" prefWidth="120"
-                 GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-
-        <!-- Row 2: Max delay (ms) -->
-        <Label text="Max delay (ms):"
-               GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-        <Spinner fx:id="maxDelaySpinner"
-                 min="1000" max="60000" initialValue="8000"
-                 editable="true" prefWidth="120"
-                 GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-
-        <!-- Row 3: SMTP Host -->
-        <Label text="SMTP Host:"
-               GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-        <TextField fx:id="smtpHostField"
-                   text="smtp.office365.com"
-                   prefWidth="240"
-                   GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-
-        <!-- Row 4: SMTP Port -->
-        <Label text="SMTP Port:"
-               GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-        <Spinner fx:id="smtpPortSpinner"
-                 min="1" max="65535" initialValue="587"
-                 editable="true" prefWidth="120"
-                 GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-
-        <!-- Row 5: Max retry attempts -->
-        <Label text="Max Retry Attempts:"
-               GridPane.columnIndex="0" GridPane.rowIndex="5"/>
-        <Spinner fx:id="maxRetrySpinner"
-                 min="1" max="10" initialValue="3"
-                 editable="true" prefWidth="120"
-                 GridPane.columnIndex="1" GridPane.rowIndex="5"/>
-
-    </GridPane>
-
-    <Label text="API keys (IMGBB_API_KEY, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET) are read from the .env file in the project root."
-           wrapText="true" styleClass="help-label"/>
-
+    <Region prefHeight="20"/>
     <Separator/>
+    <Region prefHeight="24"/>
 
-    <!-- ── Footer: reset + save ────────────────────────────────────────────── -->
+    <!-- ── Rate &amp; timing card ───────────────────────────────────────── -->
+    <VBox styleClass="card" spacing="16">
+        <Label text="RATE &amp; TIMING" styleClass="section-header"/>
+
+        <GridPane hgap="16" vgap="14">
+            <columnConstraints>
+                <ColumnConstraints minWidth="190" prefWidth="210" halignment="RIGHT"/>
+                <ColumnConstraints minWidth="160" prefWidth="260" hgrow="ALWAYS"/>
+                <ColumnConstraints minWidth="200" prefWidth="260"/>
+            </columnConstraints>
+
+            <!-- Row 0: Emails per hour -->
+            <Label text="Emails per hour:"
+                   style="-fx-font-weight:bold;"
+                   GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <Spinner fx:id="emailsPerHourSpinner"
+                     min="1" max="500" initialValue="100"
+                     editable="true" prefWidth="120"
+                     GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+            <Label text="Maximum send rate (token bucket, default 100)"
+                   styleClass="help-label"
+                   GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+
+            <!-- Row 1: Min delay -->
+            <Label text="Min delay (ms):"
+                   style="-fx-font-weight:bold;"
+                   GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <Spinner fx:id="minDelaySpinner"
+                     min="500" max="30000" initialValue="3000"
+                     editable="true" prefWidth="120"
+                     GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+            <Label text="Minimum pause between sends"
+                   styleClass="help-label"
+                   GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+
+            <!-- Row 2: Max delay -->
+            <Label text="Max delay (ms):"
+                   style="-fx-font-weight:bold;"
+                   GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+            <Spinner fx:id="maxDelaySpinner"
+                     min="1000" max="60000" initialValue="8000"
+                     editable="true" prefWidth="120"
+                     GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+            <Label text="Maximum pause between sends"
+                   styleClass="help-label"
+                   GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+        </GridPane>
+    </VBox>
+
+    <Region prefHeight="16"/>
+
+    <!-- ── SMTP card ────────────────────────────────────────────────────── -->
+    <VBox styleClass="card" spacing="16">
+        <Label text="SMTP" styleClass="section-header"/>
+
+        <GridPane hgap="16" vgap="14">
+            <columnConstraints>
+                <ColumnConstraints minWidth="190" prefWidth="210" halignment="RIGHT"/>
+                <ColumnConstraints minWidth="160" prefWidth="260" hgrow="ALWAYS"/>
+                <ColumnConstraints minWidth="200" prefWidth="260"/>
+            </columnConstraints>
+
+            <!-- Row 0: SMTP Host -->
+            <Label text="SMTP Host:"
+                   style="-fx-font-weight:bold;"
+                   GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <TextField fx:id="smtpHostField"
+                       text="smtp.office365.com"
+                       prefWidth="240"
+                       GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+            <Label text="Microsoft 365 default: smtp.office365.com"
+                   styleClass="help-label"
+                   GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+
+            <!-- Row 1: SMTP Port -->
+            <Label text="SMTP Port:"
+                   style="-fx-font-weight:bold;"
+                   GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <Spinner fx:id="smtpPortSpinner"
+                     min="1" max="65535" initialValue="587"
+                     editable="true" prefWidth="120"
+                     GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+            <Label text="587 (STARTTLS) or 465 (SSL)"
+                   styleClass="help-label"
+                   GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+        </GridPane>
+    </VBox>
+
+    <Region prefHeight="16"/>
+
+    <!-- ── Retry card ───────────────────────────────────────────────────── -->
+    <VBox styleClass="card" spacing="16">
+        <Label text="RETRY POLICY" styleClass="section-header"/>
+
+        <GridPane hgap="16" vgap="14">
+            <columnConstraints>
+                <ColumnConstraints minWidth="190" prefWidth="210" halignment="RIGHT"/>
+                <ColumnConstraints minWidth="160" prefWidth="260" hgrow="ALWAYS"/>
+                <ColumnConstraints minWidth="200" prefWidth="260"/>
+            </columnConstraints>
+
+            <!-- Row 0: Max retry attempts -->
+            <Label text="Max Retry Attempts:"
+                   style="-fx-font-weight:bold;"
+                   GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <Spinner fx:id="maxRetrySpinner"
+                     min="1" max="10" initialValue="3"
+                     editable="true" prefWidth="120"
+                     GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+            <Label text="Exponential backoff (×2 multiplier)"
+                   styleClass="help-label"
+                   GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+        </GridPane>
+    </VBox>
+
+    <Region prefHeight="16"/>
+
+    <!-- ── API keys info banner ──────────────────────────────────────────── -->
+    <VBox style="-fx-background-color:#fffbeb;
+                 -fx-border-color:#fcd34d;
+                 -fx-border-width:1;
+                 -fx-border-radius:8;
+                 -fx-background-radius:8;
+                 -fx-padding: 12 16 12 16;">
+        <Label text="API Keys"
+               style="-fx-font-weight:bold; -fx-text-fill:#92400e; -fx-font-size:12px;"/>
+        <Label text="IMGBB_API_KEY, GOOGLE_CLIENT_ID, and GOOGLE_CLIENT_SECRET are read from the .env file in the project root. They are not stored here."
+               wrapText="true" styleClass="help-label"
+               style="-fx-text-fill:#78350f;"/>
+    </VBox>
+
+    <Region prefHeight="20"/>
+    <Separator/>
+    <Region prefHeight="16"/>
+
+    <!-- ── Footer ───────────────────────────────────────────────────────── -->
     <HBox spacing="10" alignment="CENTER_LEFT">
-        <Button text="Reset to Defaults" onAction="#onReset"/>
+        <Button text="Reset to Defaults" onAction="#onReset" styleClass="secondary-button">
+            <graphic><FontIcon iconLiteral="fas-undo" iconSize="14"/></graphic>
+        </Button>
         <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="saveStatusLabel" text="" styleClass="help-label"/>
         <Button text="Save Settings"
                 styleClass="primary-button"
-                onAction="#onSave"/>
+                onAction="#onSave">
+            <graphic><FontIcon iconLiteral="fas-save" iconSize="14"/></graphic>
+        </Button>
     </HBox>
-
-    <Label fx:id="saveStatusLabel" text=""/>
 
 </VBox>

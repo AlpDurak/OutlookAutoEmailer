@@ -8,43 +8,68 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<VBox spacing="12"
+<VBox spacing="0"
       xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.outlookautoemailier.ui.PreviewModalController"
-      prefWidth="800" prefHeight="600">
+      prefWidth="820" prefHeight="620"
+      style="-fx-background-color: #ffffff;">
 
     <padding>
         <Insets top="20" right="24" bottom="20" left="24"/>
     </padding>
 
     <!-- ── Header ────────────────────────────────────────────────────────── -->
-    <Label text="Email Preview" styleClass="page-title"/>
+    <VBox spacing="4">
+        <Label text="Email Preview" styleClass="page-title"/>
+        <Label text="Review personalised content before sending."
+               styleClass="help-label"/>
+    </VBox>
+
+    <Region prefHeight="14"/>
 
     <!-- ── Subject display ───────────────────────────────────────────────── -->
-    <HBox spacing="8" alignment="CENTER_LEFT">
+    <HBox spacing="10" alignment="CENTER_LEFT"
+          style="-fx-background-color:#f4f7fb;
+                 -fx-border-color:#dde3ec;
+                 -fx-border-width:1;
+                 -fx-border-radius:8;
+                 -fx-background-radius:8;
+                 -fx-padding: 10 14 10 14;">
         <Label text="Subject:" styleClass="preview-field-label"/>
         <Label fx:id="subjectLabel" styleClass="preview-subject" wrapText="true"
                HBox.hgrow="ALWAYS"/>
     </HBox>
 
-    <Separator/>
+    <Region prefHeight="12"/>
 
     <!-- ── Recipient navigation ──────────────────────────────────────────── -->
     <HBox spacing="10" alignment="CENTER_LEFT" styleClass="preview-nav-bar">
         <Button fx:id="prevButton" text="Previous" onAction="#onPrevious"
-                styleClass="secondary-button"/>
+                styleClass="secondary-button">
+            <graphic><FontIcon iconLiteral="fas-chevron-left" iconSize="14"/></graphic>
+        </Button>
         <Label fx:id="recipientLabel" styleClass="preview-recipient-label"/>
         <Label fx:id="counterLabel" styleClass="help-label"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Button fx:id="nextButton" text="Next" onAction="#onNext"
-                styleClass="secondary-button"/>
+                styleClass="secondary-button">
+            <graphic><FontIcon iconLiteral="fas-chevron-right" iconSize="14"/></graphic>
+        </Button>
     </HBox>
+
+    <Region prefHeight="8"/>
 
     <!-- ── Unresolved token warning ──────────────────────────────────────── -->
     <Label fx:id="unresolvedWarning" styleClass="preview-warning"
            wrapText="true" managed="false" visible="false"/>
+
+    <Region prefHeight="8"/>
+
+    <Separator/>
+    <Region prefHeight="8"/>
 
     <!-- ── HTML preview ──────────────────────────────────────────────────── -->
     <WebView fx:id="previewWebView" VBox.vgrow="ALWAYS"/>

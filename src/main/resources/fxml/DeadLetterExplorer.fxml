@@ -11,23 +11,33 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<VBox spacing="15"
+<VBox spacing="0"
       xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.outlookautoemailier.ui.DeadLetterExplorerController">
 
     <padding>
-        <Insets top="20" right="20" bottom="20" left="20"/>
+        <Insets top="28" right="28" bottom="24" left="28"/>
     </padding>
 
-    <!-- Page title -->
-    <Label text="Dead-Letter Queue" styleClass="page-title"/>
+    <!-- ── Page heading ─────────────────────────────────────────────────── -->
+    <VBox spacing="4">
+        <Label text="Dead-Letter Queue" styleClass="page-title"/>
+        <Label text="Emails that failed all retry attempts and require manual action."
+               styleClass="help-label"/>
+    </VBox>
 
-    <!-- Stat summary bar -->
-    <HBox spacing="20" alignment="CENTER_LEFT">
+    <Region prefHeight="20"/>
+    <Separator/>
+    <Region prefHeight="20"/>
+
+    <!-- ── Stat summary bar ─────────────────────────────────────────────── -->
+    <HBox spacing="12" alignment="CENTER_LEFT">
         <VBox styleClass="stat-card" alignment="CENTER" minWidth="140">
-            <Label fx:id="totalDeadLabel" text="0" styleClass="stat-count"/>
+            <Label fx:id="totalDeadLabel" text="0" styleClass="stat-count"
+                   style="-fx-text-fill:#dc2626;"/>
             <Label text="Dead-Lettered" styleClass="stat-label"/>
         </VBox>
         <VBox styleClass="stat-card,dl-top-reason-card" alignment="CENTER" minWidth="220">
@@ -36,53 +46,66 @@
         </VBox>
     </HBox>
 
-    <!-- Filter controls -->
+    <Region prefHeight="16"/>
+
+    <!-- ── Filter controls ──────────────────────────────────────────────── -->
     <HBox spacing="10" alignment="CENTER_LEFT">
         <TextField fx:id="searchField"
-                   promptText="Search by email or domain..."
+                   promptText="Search by email or domain…"
                    prefWidth="260"/>
         <ComboBox fx:id="reasonFilter" promptText="All Failure Reasons" prefWidth="220"/>
-        <Button text="Clear Filters" onAction="#onClearFilters"/>
+        <Button text="Clear Filters" onAction="#onClearFilters" styleClass="secondary-button">
+            <graphic><FontIcon iconLiteral="fas-times" iconSize="14"/></graphic>
+        </Button>
     </HBox>
 
-    <!-- Job table -->
-    <TableView fx:id="deadLetterTable" prefHeight="320">
+    <Region prefHeight="12"/>
+
+    <!-- ── Job table ────────────────────────────────────────────────────── -->
+    <TableView fx:id="deadLetterTable" VBox.vgrow="ALWAYS" prefHeight="300">
         <columns>
-            <TableColumn fx:id="recipientColumn"    text="Recipient"      prefWidth="200"/>
-            <TableColumn fx:id="domainColumn"       text="Domain"         prefWidth="130"/>
-            <TableColumn fx:id="subjectColumn"      text="Subject"        prefWidth="180"/>
+            <TableColumn fx:id="recipientColumn"     text="Recipient"      prefWidth="200"/>
+            <TableColumn fx:id="domainColumn"        text="Domain"         prefWidth="130"/>
+            <TableColumn fx:id="subjectColumn"       text="Subject"        prefWidth="180"/>
             <TableColumn fx:id="failureReasonColumn" text="Failure Reason" prefWidth="200"/>
-            <TableColumn fx:id="attemptsColumn"     text="Attempts"       prefWidth="70"/>
-            <TableColumn fx:id="timestampColumn"    text="Timestamp"      prefWidth="140"/>
+            <TableColumn fx:id="attemptsColumn"      text="Attempts"       prefWidth="70"/>
+            <TableColumn fx:id="timestampColumn"     text="Timestamp"      prefWidth="140"/>
         </columns>
         <placeholder>
-            <Label text="No dead-letter jobs found."/>
+            <Label text="No dead-letter jobs found." styleClass="help-label"/>
         </placeholder>
     </TableView>
 
-    <!-- Failure breakdown -->
-    <Separator/>
+    <Region prefHeight="16"/>
+
+    <!-- ── Failure breakdown ────────────────────────────────────────────── -->
     <Label text="FAILURE BREAKDOWN" styleClass="section-header"/>
+    <Region prefHeight="8"/>
     <VBox fx:id="failureBreakdownBox" spacing="4">
         <padding>
             <Insets left="4"/>
         </padding>
     </VBox>
 
-    <!-- Action buttons -->
-    <Separator/>
+    <Separator>
+        <VBox.margin><Insets top="16" bottom="16"/></VBox.margin>
+    </Separator>
+
+    <!-- ── Action buttons ───────────────────────────────────────────────── -->
     <HBox spacing="8" alignment="CENTER_LEFT">
-        <Button text="Retry Selected"
-                styleClass="primary-button"
-                onAction="#onRetrySelected"/>
-        <Button text="Retry All Visible"
-                onAction="#onRetryAll"/>
-        <Button text="Export CSV"
-                onAction="#onExportCsv"/>
+        <Button text="Retry Selected" styleClass="primary-button" onAction="#onRetrySelected">
+            <graphic><FontIcon iconLiteral="fas-redo" iconSize="14"/></graphic>
+        </Button>
+        <Button text="Retry All Visible" onAction="#onRetryAll">
+            <graphic><FontIcon iconLiteral="fas-redo" iconSize="14"/></graphic>
+        </Button>
+        <Button text="Export CSV" onAction="#onExportCsv">
+            <graphic><FontIcon iconLiteral="fas-download" iconSize="14"/></graphic>
+        </Button>
         <Region HBox.hgrow="ALWAYS"/>
-        <Button text="Delete Selected"
-                styleClass="danger-button"
-                onAction="#onDeleteSelected"/>
+        <Button text="Delete Selected" styleClass="danger-button" onAction="#onDeleteSelected">
+            <graphic><FontIcon iconLiteral="fas-trash-alt" iconSize="14"/></graphic>
+        </Button>
     </HBox>
 
 </VBox>

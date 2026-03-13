@@ -15,117 +15,171 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<VBox spacing="15"
+<VBox spacing="0"
       xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.outlookautoemailier.ui.ComposeController">
 
     <padding>
-        <Insets top="20" right="20" bottom="20" left="20"/>
+        <Insets top="28" right="28" bottom="24" left="28"/>
     </padding>
 
-    <!-- ── Page title ──────────────────────────────────────────────────────── -->
-    <Label text="Compose Email" styleClass="page-title"/>
-
-    <!-- ── Template toolbar ────────────────────────────────────────────────── -->
-    <HBox spacing="10" alignment="CENTER_LEFT">
-        <Label text="Template Name:"/>
-        <TextField fx:id="templateNameField"
-                   promptText="My Template"
-                   prefWidth="180"/>
-        <Button text="Save Template" onAction="#onSaveTemplate"/>
-        <Button text="Load Template" onAction="#onLoadTemplate"/>
-    </HBox>
-
-    <!-- ── Campaign name ───────────────────────────────────────────────────── -->
-    <HBox spacing="10" alignment="CENTER_LEFT">
-        <Label text="Campaign Name:"/>
-        <TextField fx:id="campaignNameField"
-                   promptText="e.g. March Newsletter 2026"
-                   prefWidth="250"/>
-    </HBox>
-
-    <!-- ── Group quick-select ────────────────────────────────────────────────── -->
-    <HBox spacing="10" alignment="CENTER_LEFT">
-        <Label text="Send to Group:"/>
-        <ComboBox fx:id="groupComboBox"
-                  promptText="Select a group (optional)"
-                  prefWidth="220"
-                  onAction="#onGroupSelected"/>
-        <Label text="(selecting a group replaces current recipients)"
+    <!-- ── Page heading ─────────────────────────────────────────────────── -->
+    <VBox spacing="4">
+        <Label text="Compose Email" styleClass="page-title"/>
+        <Label text="Build and send a personalised email campaign."
                styleClass="help-label"/>
-    </HBox>
+    </VBox>
 
+    <Region prefHeight="20"/>
     <Separator/>
+    <Region prefHeight="20"/>
 
-    <!-- ── Subject row ─────────────────────────────────────────────────────── -->
-    <Label text="Subject:" style="-fx-font-weight:bold; -fx-text-fill:#374151;"/>
-    <HBox spacing="6" alignment="CENTER_LEFT">
-        <TextField fx:id="subjectField"
-                   promptText="Enter email subject…"
-                   HBox.hgrow="ALWAYS"/>
-        <!-- Variable-insertion buttons targeting the subject field -->
-        <Button text="{{firstName}}" onAction="#onInsertVariable" userData="subject" styleClass="tag-btn"/>
-        <Button text="{{lastName}}"  onAction="#onInsertVariable" userData="subject" styleClass="tag-btn"/>
-        <Button text="{{email}}"     onAction="#onInsertVariable" userData="subject" styleClass="tag-btn"/>
-        <Button text="{{company}}"   onAction="#onInsertVariable" userData="subject" styleClass="tag-btn"/>
-    </HBox>
+    <!-- ── Campaign metadata card ───────────────────────────────────────── -->
+    <VBox styleClass="card" spacing="14">
+        <Label text="CAMPAIGN" styleClass="section-header"/>
 
-    <!-- ── Body area ───────────────────────────────────────────────────────── -->
-    <HBox spacing="10" alignment="CENTER_LEFT">
-        <Label text="Message Body:"/>
-        <javafx.scene.layout.Region HBox.hgrow="ALWAYS"/>
-        <ToggleButton fx:id="htmlModeToggle"
-                      text="HTML Mode"
-                      onAction="#onToggleHtmlMode"/>
-    </HBox>
-    <TextArea fx:id="bodyArea"
-              prefRowCount="15"
-              wrapText="true"
-              promptText="Write your email body here. Use the buttons below to insert personalization variables."
-              VBox.vgrow="ALWAYS"/>
+        <!-- Template name + load/save -->
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Template:" style="-fx-min-width:110px; -fx-font-weight:bold;"/>
+            <TextField fx:id="templateNameField"
+                       promptText="My Template"
+                       prefWidth="180"/>
+            <Button text="Save Template" onAction="#onSaveTemplate" styleClass="secondary-button">
+                <graphic><FontIcon iconLiteral="fas-save" iconSize="14"/></graphic>
+            </Button>
+            <Button text="Load Template" onAction="#onLoadTemplate" styleClass="secondary-button">
+                <graphic><FontIcon iconLiteral="fas-folder-open" iconSize="14"/></graphic>
+            </Button>
+        </HBox>
 
-    <!-- ── HTML preview (shown only in HTML mode) ──────────────────────────── -->
-    <WebView fx:id="htmlPreview"
-             prefHeight="200"
-             visible="false"
-             managed="false"
-             VBox.vgrow="SOMETIMES"/>
+        <!-- Campaign name -->
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Campaign Name:" style="-fx-min-width:110px; -fx-font-weight:bold;"/>
+            <TextField fx:id="campaignNameField"
+                       promptText="e.g. March Newsletter 2026"
+                       HBox.hgrow="ALWAYS"/>
+        </HBox>
 
-    <!-- Variable-insertion buttons targeting the body area -->
-    <HBox spacing="6">
-        <Button text="{{firstName}}" onAction="#onInsertVariable" userData="body" styleClass="tag-btn"/>
-        <Button text="{{lastName}}"  onAction="#onInsertVariable" userData="body" styleClass="tag-btn"/>
-        <Button text="{{email}}"     onAction="#onInsertVariable" userData="body" styleClass="tag-btn"/>
-        <Button text="{{company}}"   onAction="#onInsertVariable" userData="body" styleClass="tag-btn"/>
-    </HBox>
+        <!-- Group quick-select -->
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Send to Group:" style="-fx-min-width:110px; -fx-font-weight:bold;"/>
+            <ComboBox fx:id="groupComboBox"
+                      promptText="Select a group (optional)"
+                      prefWidth="220"
+                      onAction="#onGroupSelected"/>
+            <Label text="Selecting a group replaces current recipients"
+                   styleClass="help-label"/>
+        </HBox>
+    </VBox>
 
-    <Separator/>
+    <Region prefHeight="16"/>
 
-    <!-- ── Schedule controls ───────────────────────────────────────────────── -->
-    <HBox spacing="10" alignment="CENTER_LEFT">
-        <CheckBox fx:id="scheduleCheckbox" text="Schedule for later" onAction="#onScheduleToggle"/>
-    </HBox>
-    <HBox fx:id="scheduleControls" spacing="10" alignment="CENTER_LEFT"
-          visible="false" managed="false">
-        <Label text="Date:"/>
-        <DatePicker fx:id="scheduleDatePicker" prefWidth="150"/>
-        <Label text="Hour:"/>
-        <Spinner fx:id="scheduleHourSpinner" prefWidth="75"/>
-        <Label text="Min:"/>
-        <Spinner fx:id="scheduleMinuteSpinner" prefWidth="75"/>
-        <Label fx:id="schedulePreviewLabel" styleClass="help-label"/>
-    </HBox>
+    <!-- ── Email content card ───────────────────────────────────────────── -->
+    <VBox styleClass="card" spacing="14" VBox.vgrow="ALWAYS">
+        <Label text="EMAIL CONTENT" styleClass="section-header"/>
 
-    <!-- ── Footer: recipient count + actions ───────────────────────────────── -->
-    <HBox spacing="10" alignment="CENTER_LEFT">
-        <Label fx:id="recipientCountLabel" text="0 recipients selected"/>
+        <!-- Subject row -->
+        <VBox spacing="6">
+            <Label text="Subject" style="-fx-font-weight:bold; -fx-text-fill:#374151;"/>
+            <HBox spacing="6" alignment="CENTER_LEFT">
+                <TextField fx:id="subjectField"
+                           promptText="Enter email subject…"
+                           HBox.hgrow="ALWAYS"/>
+                <Button text="{{firstName}}" onAction="#onInsertVariable" userData="subject" styleClass="tag-btn">
+                    <graphic><FontIcon iconLiteral="fas-code" iconSize="12"/></graphic>
+                </Button>
+                <Button text="{{lastName}}"  onAction="#onInsertVariable" userData="subject" styleClass="tag-btn">
+                    <graphic><FontIcon iconLiteral="fas-code" iconSize="12"/></graphic>
+                </Button>
+                <Button text="{{email}}"     onAction="#onInsertVariable" userData="subject" styleClass="tag-btn">
+                    <graphic><FontIcon iconLiteral="fas-code" iconSize="12"/></graphic>
+                </Button>
+                <Button text="{{company}}"   onAction="#onInsertVariable" userData="subject" styleClass="tag-btn">
+                    <graphic><FontIcon iconLiteral="fas-code" iconSize="12"/></graphic>
+                </Button>
+            </HBox>
+        </VBox>
+
+        <!-- Body area header -->
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Message Body" style="-fx-font-weight:bold; -fx-text-fill:#374151;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <ToggleButton fx:id="htmlModeToggle"
+                          text="HTML Mode"
+                          onAction="#onToggleHtmlMode">
+                <graphic><FontIcon iconLiteral="fas-code" iconSize="14"/></graphic>
+            </ToggleButton>
+        </HBox>
+
+        <TextArea fx:id="bodyArea"
+                  prefRowCount="14"
+                  wrapText="true"
+                  promptText="Write your email body here. Use the variable buttons below to personalise."
+                  VBox.vgrow="ALWAYS"/>
+
+        <!-- HTML preview (shown only in HTML mode) -->
+        <WebView fx:id="htmlPreview"
+                 prefHeight="200"
+                 visible="false"
+                 managed="false"
+                 VBox.vgrow="SOMETIMES"/>
+
+        <!-- Variable-insertion buttons targeting body -->
+        <HBox spacing="6" alignment="CENTER_LEFT">
+            <Label text="Insert:" styleClass="help-label"/>
+            <Button text="{{firstName}}" onAction="#onInsertVariable" userData="body" styleClass="tag-btn">
+                <graphic><FontIcon iconLiteral="fas-code" iconSize="12"/></graphic>
+            </Button>
+            <Button text="{{lastName}}"  onAction="#onInsertVariable" userData="body" styleClass="tag-btn">
+                <graphic><FontIcon iconLiteral="fas-code" iconSize="12"/></graphic>
+            </Button>
+            <Button text="{{email}}"     onAction="#onInsertVariable" userData="body" styleClass="tag-btn">
+                <graphic><FontIcon iconLiteral="fas-code" iconSize="12"/></graphic>
+            </Button>
+            <Button text="{{company}}"   onAction="#onInsertVariable" userData="body" styleClass="tag-btn">
+                <graphic><FontIcon iconLiteral="fas-code" iconSize="12"/></graphic>
+            </Button>
+        </HBox>
+    </VBox>
+
+    <Region prefHeight="16"/>
+
+    <!-- ── Schedule card ────────────────────────────────────────────────── -->
+    <VBox styleClass="card" spacing="12">
+        <Label text="DELIVERY" styleClass="section-header"/>
+        <CheckBox fx:id="scheduleCheckbox" text="Schedule for later" onAction="#onScheduleToggle">
+            <graphic><FontIcon iconLiteral="fas-clock" iconSize="14"/></graphic>
+        </CheckBox>
+        <HBox fx:id="scheduleControls" spacing="12" alignment="CENTER_LEFT"
+              visible="false" managed="false">
+            <Label text="Date:" style="-fx-font-weight:bold;"/>
+            <DatePicker fx:id="scheduleDatePicker" prefWidth="150"/>
+            <Label text="Hour:" style="-fx-font-weight:bold;"/>
+            <Spinner fx:id="scheduleHourSpinner" prefWidth="72"/>
+            <Label text="Min:" style="-fx-font-weight:bold;"/>
+            <Spinner fx:id="scheduleMinuteSpinner" prefWidth="72"/>
+            <Label fx:id="schedulePreviewLabel" styleClass="help-label"/>
+        </HBox>
+    </VBox>
+
+    <Region prefHeight="20"/>
+
+    <!-- ── Footer: recipient count + actions ────────────────────────────── -->
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <Label fx:id="recipientCountLabel" text="0 recipients selected"
+               style="-fx-font-weight:bold; -fx-text-fill:#374151;"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <Button text="Preview"      onAction="#onPreview"/>
+        <Button text="Preview" onAction="#onPreview" styleClass="secondary-button">
+            <graphic><FontIcon iconLiteral="fas-eye" iconSize="14"/></graphic>
+        </Button>
         <Button fx:id="sendButton" text="Send Emails"
                 styleClass="primary-button"
-                onAction="#onSendEmails"/>
+                onAction="#onSendEmails">
+            <graphic><FontIcon iconLiteral="fas-paper-plane" iconSize="14"/></graphic>
+        </Button>
     </HBox>
 
 </VBox>
