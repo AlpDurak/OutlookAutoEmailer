@@ -32,25 +32,44 @@ OutlookAutoEmailer is a Windows desktop tool for sending personalised mass email
 - **Source account** — read-only access to Outlook contacts via Microsoft Graph API
 - **Sender account** — SMTP delivery via Office 365 SMTP relay (XOAUTH2 bearer token)
 
-Both accounts authenticate independently using MSAL4J PKCE OAuth2 flows (no passwords stored). Email templates are composed in a rich Template Studio with an optional **Google Gemini 2.5-flash AI assistant** that generates HTML email bodies from a natural-language prompt. Sends are dispatched through a thread-safe priority queue with token-bucket rate limiting, exponential-backoff retry, and spam guard validation. Delivery analytics are persisted locally and synced to a **Supabase** cloud backend.
+Both accounts authenticate independently using MSAL4J PKCE OAuth2 flows (no passwords stored). Email templates are composed in a rich Template Studio with an optional **Google Gemini 2.5-flash AI assistant** that generates HTML email bodies from a natural-language prompt. Sends are dispatched through a thread-safe priority queue with token-bucket rate limiting, exponential-backoff retry, and spam guard validation. Delivery analytics are persisted locally and optionally synced to a **Supabase** cloud backend.
 
 ---
 
 ## Features
 
+### Authentication and Accounts
 - **Dual OAuth2 authentication** — independent MSAL4J PKCE flows for source and sender accounts; tokens cached to `~/.outlookautoemailier/msal-cache-{type}.json`
 - **Microsoft Graph contact import** — paginated retrieval from Outlook contacts (`GraphApiClient`, `ContactFetcher`); supports contact groups with local and Supabase persistence
 - **SMTP delivery with XOAUTH2** — Office 365 SMTP relay using bearer tokens; password fallback available
+
+### Email Composition
 - **AI-powered template generation** — `GeminiEmailAgent` calls Gemini 2.5-flash with a structured RAG system prompt to produce inline-CSS, table-layout HTML email bodies
+- **IEEE-branded generation** — system prompt encodes Isik University IEEE CS brand colours (IEEE Blue `#00629B`, Gold `#F7A800`) and layout rules
+- **Image Library** — upload images to Google Drive (`GoogleDriveService`), tag and annotate them, and inject them as context so Gemini embeds them in generated templates
+- **Template Studio** — full FXML editor with live WebView preview; templates saved as JSON to `~/.outlookautoemailier/templates/`
+- **Personalisation variables** — `{{firstName}}`, `{{lastName}}`, `{{email}}`, `{{company}}`, `{{jobTitle}}` are substituted per recipient
+
+### Email Delivery Pipeline
 - **HTML email normalisation** — `HtmlEmailNormalizer` (jsoup 1.17.2) inlines CSS rules, adds MSO conditional comments for Outlook rendering compatibility
 - **Image hosting with cache** — `ImageHostingService` uploads embedded images to imgbb; `ImageCache` deduplicates uploads using MD5 hashing, persisted to `image-cache.json`
-- **Email queue with priority and retry** — `EmailQueue` (thread-safe priority queue), `EmailDispatcher` (2 worker threads), `RetryPolicy` (up to 3 attempts, x2 exponential backoff)
+- **Unsubscribe footer** — `EmailFooter` appends a branded unsubscribe footer to every outgoing HTML email
+- **Link tracking** — `LinkTracker` rewrites links for click-through tracking
+- **Email queue with priority and retry** — `EmailQueue` (thread-safe priority blocking queue), `EmailDispatcher` (2 worker threads), `RetryPolicy` (up to 3 attempts, x2 exponential backoff)
 - **Rate limiting and spam guard** — token-bucket `RateLimiter` (default 100 emails/hour, configurable jitter delay), `SpamGuard` pre-flight checks
 - **Suppression list** — `UnsubscribeManager` maintains `unsubscribed.txt`; suppressed addresses are silently skipped before every send
-- **Template Studio** — full FXML editor with live WebView preview, save/load from `~/.outlookautoemailier/templates/*.json`
-- **Analytics dashboard** — Apache ECharts charts rendered in JavaFX WebView; batch-level stats synced with Supabase (`email_batches`, `email_sends`, `link_clicks` tables)
-- **Supabase cloud sync** — `SupabaseAnalyticsSync`, `SupabaseContactGroupSync`, `SupabaseTemplateSync` push/pull data on a fire-and-forget basis; no-ops gracefully when `SUPABASE_SERVICE_ROLE_KEY` is absent
+
+### Monitoring and Analytics
+- **Queue Dashboard** — real-time queue status with job list, active/failed counts, and sidebar badge
+- **Dead Letter Explorer** — browse, filter, retry, and export emails that exhausted all retry attempts
+- **Analytics dashboard** — Apache ECharts charts rendered in JavaFX WebView; batch-level stats with send time optimisation recommendations and contact reachability scoring
+- **Supabase cloud sync** — `SupabaseAnalyticsSync`, `SupabaseContactGroupSync`, `SupabaseTemplateSync`, `SupabaseUnsubscribeSync` push/pull data on a fire-and-forget basis; no-ops gracefully when `SUPABASE_SERVICE_ROLE_KEY` is absent
 - **Audit trail** — `SecurityAuditLog` writes JSON Lines to `audit.jsonl`
+
+### Infrastructure
+- **Secure credential storage** — `CredentialStore` encrypts OAuth tokens with AES-256/GCM
+- **DKIM/SPF checking** — `DkimSpfChecker` performs DNS-based domain verification
+- **Bounce handling** — `BounceHandler` records and reacts to delivery bounce events
 - **Windows EXE packaging** — `jpackage` Maven profile bundles a self-contained EXE (no JRE required on target machine)
 
 ---
@@ -64,7 +83,7 @@ Both accounts authenticate independently using MSAL4J PKCE OAuth2 flows (no pass
 | Microsoft 365 accounts | One for contacts (source), one for sending (sender) |
 | Azure AD app registration | See [Azure setup](#azure-ad-app-registration) below |
 | imgbb account | Free API key from [imgbb.com](https://imgbb.com) for image hosting |
-| Google AI Studio account | Optional — required only for Gemini AI template generation |
+| Google Cloud project | Optional — required only for Gemini AI and Google Drive image library |
 | Supabase project | Optional — required only for cloud analytics sync |
 
 ### Azure AD App Registration
@@ -105,21 +124,19 @@ On first launch the app shows an Account Setup screen. Click **Sign in** for eac
 Copy `.env.example` to `.env` and supply the required values. The `.env` file takes precedence over all other configuration sources.
 
 ```dotenv
-# Required — Azure App Registration
+# Required — Azure App Registration (portal.azure.com)
 AZURE_CLIENT_ID=your-azure-client-id-here
 AZURE_TENANT_ID=your-azure-tenant-id-here
 
 # Required for image embedding in emails
 IMGBB_API_KEY=your_imgbb_key_here
 
-# Optional — Google Gemini AI template generation
-GEMINI_API_KEY=your_gemini_api_key_here
+# Optional — Google (Drive image library + Gemini AI template generation)
 GOOGLE_CLIENT_ID=your_google_client_id_here
 GOOGLE_CLIENT_SECRET=your_google_client_secret_here
+GEMINI_API_KEY=your_gemini_api_key_here
 
 # Optional — Supabase cloud sync (analytics, templates, contact groups)
-SUPABASE_URL=https://your_supabase_url_here
-SUPABASE_ANON_KEY=your_supabase_anon_key_here
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 
 # SMTP (defaults work for Office 365)
@@ -140,17 +157,17 @@ RETRY_BACKOFF_MULTIPLIER=2
 LOGGING_LEVEL=INFO
 ```
 
-All optional integrations (Gemini, Supabase, Google OAuth) degrade gracefully — the app runs fully without them; those features simply become unavailable.
+All optional integrations (Gemini, Supabase, Google OAuth) degrade gracefully — the app runs fully without them; those features simply become unavailable in the UI.
 
 ### `application.properties` (classpath + user override)
 
 `AppConfig` loads configuration in this priority order:
 
-1. `src/main/resources/application.properties` — checked-in defaults
-2. `~/.outlookautoemailier/application.properties` — user overrides (written by the Settings screen)
+1. `src/main/resources/application.properties` — checked-in defaults (Azure IDs, SMTP, rate limits)
+2. `~/.outlookautoemailier/application.properties` — user overrides, written by the Settings screen
 3. `.env` at project root — **highest priority**, wins over both above
 
-The `SettingsController` writes changes to the user-home file; calling `AppConfig.reload()` programmatically picks up those changes at runtime.
+The `SettingsController` writes changes to the user-home file; calling `AppConfig.reload()` picks up those changes at runtime without restarting.
 
 ### User-home data directory
 
@@ -161,11 +178,13 @@ All runtime data is stored under `~/.outlookautoemailier/` (created automaticall
 | `credentials.enc` | AES-256/GCM encrypted OAuth tokens (`CredentialStore`) |
 | `msal-cache-source.json` | MSAL4J token cache for the source account |
 | `msal-cache-sender.json` | MSAL4J token cache for the sender account |
+| `google-drive-tokens.json` | Google Drive OAuth2 token cache (`GoogleDriveService`) |
+| `image-library.json` | Image library metadata — Drive file IDs, tags, notes |
 | `templates/*.json` | Saved email templates (Jackson-serialised `EmailTemplate`) |
 | `image-cache.json` | MD5-keyed imgbb upload cache (`ImageCache`) |
 | `audit.jsonl` | JSON Lines audit trail of every send/fail/skip event |
 | `unsubscribed.txt` | Suppression list — one email address per line |
-| `application.properties` | User settings overrides (written by the Settings screen) |
+| `application.properties` | User settings overrides written by the Settings screen |
 
 ### Supabase schema
 
@@ -225,6 +244,7 @@ OutlookAutoEmailer/
 ├── pom.xml                               # Maven build (v1.2.0)
 ├── package-windows.bat                   # Convenience script for EXE packaging
 ├── CLAUDE.md                             # AI agent memory and architecture notes
+├── CHANGELOG.md                          # Version history
 │
 ├── src/main/java/com/outlookautoemailier/
 │   ├── Main.java                         # Entry point — shows Splash then MainView
@@ -237,9 +257,12 @@ OutlookAutoEmailer/
 │   ├── analytics/
 │   │   ├── SentEmailRecord.java          # Per-recipient delivery record
 │   │   ├── SentEmailStore.java           # In-memory store with addIfAbsent deduplication
-│   │   ├── EmailBatch.java               # Batch-level stats (sent, failed, opens)
+│   │   ├── EmailBatch.java               # Batch-level stats (sent, failed)
 │   │   ├── BatchStore.java               # In-memory batch registry
 │   │   ├── LinkClickRecord.java          # Aggregated link-click data per URL per batch
+│   │   ├── ContactReachabilityScorer.java # Scores contacts 0-100 by delivery history
+│   │   ├── SendTimeAnalyser.java         # Computes hourly success rates; recommends send windows
+│   │   ├── UnsubscribeAnalyser.java      # Surfaces unsubscribe trends by week/campaign
 │   │   └── TrackingPixelServer.java      # No-op stub (open tracking removed by design)
 │   │
 │   ├── config/
@@ -249,6 +272,7 @@ OutlookAutoEmailer/
 │   │
 │   ├── integration/
 │   │   ├── GeminiEmailAgent.java         # Calls Gemini 2.5-flash to generate HTML email bodies
+│   │   ├── GoogleDriveService.java       # Google Drive API v3 — upload, list, delete images
 │   │   ├── SupabaseClient.java           # Centralised Supabase REST API singleton
 │   │   ├── SupabaseAnalyticsSync.java    # Pushes/pulls email_batches and email_sends
 │   │   ├── SupabaseContactGroupSync.java # Syncs contact groups to/from Supabase
@@ -261,7 +285,9 @@ OutlookAutoEmailer/
 │   │   ├── EmailJob.java                 # Unit of work enqueued for delivery (priority-aware)
 │   │   ├── EmailTemplate.java            # Template data model (subject, body, isHtml)
 │   │   ├── ContactGroup.java             # Named group of contact email addresses
-│   │   └── ContactGroupStore.java        # JSON-persisted registry of contact groups
+│   │   ├── ContactGroupStore.java        # JSON-persisted registry of contact groups
+│   │   ├── ImageLibraryItem.java         # Image metadata — Drive file ID, public URL, tags, notes
+│   │   └── ImageLibraryStore.java        # Singleton JSON store for image library items
 │   │
 │   ├── queue/
 │   │   ├── EmailQueue.java               # Thread-safe priority blocking queue
@@ -290,15 +316,19 @@ OutlookAutoEmailer/
 │   │   └── LinkTracker.java              # Rewrites links for click tracking
 │   │
 │   ├── ui/
-│   │   ├── MainController.java           # Sidebar navigation (7 ToggleButtons); navigateToQueue()
+│   │   ├── MainController.java           # Sidebar navigation (9 ToggleButtons + badge updates)
 │   │   ├── SplashController.java         # Splash screen shown during initialisation
 │   │   ├── AccountSetupController.java   # OAuth2 login UI; triggers AppContext.initBackend()
-│   │   ├── ContactListController.java    # Displays paginated contact list from Graph API
+│   │   ├── ContactListController.java    # Paginated contact list with group management
 │   │   ├── ComposeController.java        # Email composition; enqueues EmailJob objects
 │   │   ├── TemplateStudioController.java # Template editor with live WebView preview
+│   │   ├── ImageLibraryController.java   # Google Drive image browser; tag/annotate images
+│   │   ├── ImageLibraryPickerDialog.java # Modal image picker for use inside Template Studio
 │   │   ├── QueueDashboardController.java # Real-time queue status and job list
+│   │   ├── DeadLetterExplorerController.java # Browse/retry/export permanently-failed jobs
 │   │   ├── AnalyticsController.java      # Apache ECharts charts in JavaFX WebView
 │   │   ├── SettingsController.java       # Edits and saves application.properties
+│   │   ├── PreviewModalController.java   # Full-screen email preview modal
 │   │   └── EChartsTemplates.java         # Java-side HTML/JS templates for ECharts charts
 │   │
 │   └── util/
@@ -307,6 +337,7 @@ OutlookAutoEmailer/
 └── src/main/resources/
     ├── application.properties            # Default configuration (overridden by user-home file and .env)
     ├── logback.xml                       # Logback logging configuration
+    ├── env.sample                        # Sample .env for user-home placement
     ├── css/
     │   └── style.css                     # Global JavaFX stylesheet
     ├── fxml/
@@ -316,9 +347,12 @@ OutlookAutoEmailer/
     │   ├── ContactList.fxml              # Contact browser and group management
     │   ├── Compose.fxml                  # Email composition screen
     │   ├── TemplateStudio.fxml           # Template editor with live preview
+    │   ├── ImageLibrary.fxml             # Google Drive image library browser
     │   ├── QueueDashboard.fxml           # Dispatch queue monitor
+    │   ├── DeadLetterExplorer.fxml       # Dead-letter job inspector
     │   ├── Analytics.fxml                # Analytics dashboard with ECharts
-    │   └── Settings.fxml                 # Application settings screen
+    │   ├── Settings.fxml                 # Application settings screen
+    │   └── PreviewModal.fxml             # Full-screen email preview modal
     └── images/
         └── splash.png                    # Splash screen branding image
 ```
@@ -332,7 +366,7 @@ OutlookAutoEmailer/
 ```
 Main.java
   └─ show Splash.fxml (SplashController)
-       └─ load MainView.fxml (MainController + 7 content panes)
+       └─ load MainView.fxml (MainController + 9 content panes)
             └─ AccountSetup.fxml shown first
                  └─ user completes OAuth2 for both accounts
                       └─ AccountSetupController.maybeInitBackend()
@@ -354,9 +388,9 @@ Backend initialisation is deferred until both OAuth2 logins complete, then trigg
 ### `AppConfig` — 3-tier configuration
 
 ```
-classpath:  application.properties                      (lowest — checked-in defaults)
+classpath:  application.properties                         (lowest — checked-in defaults)
 user-home:  ~/.outlookautoemailier/application.properties  (user overrides)
-project:    .env                                        (highest — secrets and local overrides)
+project:    .env                                           (highest — secrets and local overrides)
 ```
 
 ### Email dispatch pipeline
@@ -370,6 +404,8 @@ ComposeController.onSend()
                       └─ UnsubscribeManager.isSuppressed() — skip if true
                            └─ SmtpSender.send()
                                 ├─ HtmlEmailNormalizer.normalize() (CSS inline + MSO)
+                                ├─ EmailFooter.append() (unsubscribe link)
+                                ├─ LinkTracker.rewriteLinks() (click tracking)
                                 ├─ ImageHostingService.uploadIfNeeded() + ImageCache
                                 ├─ Jakarta Mail XOAUTH2 delivery
                                 └─ RetryPolicy on failure (max 3, x2 backoff)
@@ -393,6 +429,18 @@ ContactFetcher.fetchContacts()
        └─ GraphApiClient.getContacts()  (paginated, Graph v1.0)
             └─ returns List<Contact>
                  └─ ContactListController.populate()
+```
+
+### AI template generation
+
+```
+TemplateStudioController (user enters prompt)
+  └─ ImageLibraryStore.buildGeminiContext()  (image URLs + tags)
+       └─ GeminiEmailAgent.generateWithLibraryAsync(prompt, imageContext)
+            └─ POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash
+                 └─ returns inline-CSS HTML (body fragment only)
+                      └─ HtmlEmailNormalizer.normalize()
+                           └─ populates editor for review + save
 ```
 
 ---
@@ -436,6 +484,7 @@ Test reports are written to `target/surefire-reports/`.
 - **Post-enqueue navigation** — `ComposeController` shows an informational alert after enqueuing instead of navigating to the Queue Dashboard via `MainController.navigateToQueue()`. This is a one-line fix.
 - **Windows only for EXE packaging** — the `package-exe` Maven profile includes Windows-native JavaFX JARs. Running `mvn javafx:run` works cross-platform.
 - **Open tracking removed by design** — `TrackingPixelServer` is a no-op stub. `SentEmailStore` records delivery counts only; per-email open timestamps are populated from Supabase if configured.
+- **Google Drive image library requires public sharing** — uploaded images are shared as "anyone with link can view" to enable embedding in emails. Do not upload sensitive images.
 
 ---
 
@@ -443,4 +492,4 @@ Test reports are written to `target/surefire-reports/`.
 
 <!-- TODO: Add screenshots of the main UI screens -->
 
-*Account Setup, Compose, Template Studio, Queue Dashboard, and Analytics screens coming soon.*
+*Account Setup, Compose, Template Studio, Image Library, Queue Dashboard, Dead Letter Explorer, and Analytics screens coming soon.*
