@@ -3,6 +3,7 @@ package com.outlookautoemailier.ui;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.outlookautoemailier.AppContext;
 import com.outlookautoemailier.integration.GeminiEmailAgent;
+import com.outlookautoemailier.model.ImageLibraryItem;
 import com.outlookautoemailier.model.ImageLibraryStore;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -465,7 +466,55 @@ public class TemplateStudioController implements Initializable {
     }
 
     @FXML
-    private void onInsertImage() {
+    private void onInsertImage(ActionEvent event) {
+        ContextMenu menu = new ContextMenu();
+
+        MenuItem fromLibrary = new MenuItem("From Image Library");
+        fromLibrary.setOnAction(e -> insertImageFromLibrary());
+
+        MenuItem fromComputer = new MenuItem("From Computer");
+        fromComputer.setOnAction(e -> insertImageFromComputer());
+
+        menu.getItems().addAll(fromLibrary, new SeparatorMenuItem(), fromComputer);
+
+        // Anchor the context menu below the Image toolbar button
+        if (event.getSource() instanceof javafx.scene.Node btn) {
+            javafx.geometry.Bounds screenBounds = btn.localToScreen(btn.getBoundsInLocal());
+            if (screenBounds != null) {
+                menu.show(btn, screenBounds.getMinX(), screenBounds.getMaxY());
+                return;
+            }
+        }
+        menu.show(getStage());
+    }
+
+    /**
+     * Opens the Image Library picker dialog and inserts the selected image
+     * using its hosted Drive public URL.
+     */
+    private void insertImageFromLibrary() {
+        ImageLibraryPickerDialog picker = new ImageLibraryPickerDialog(getStage());
+        Optional<ImageLibraryItem> result = picker.showAndWait();
+        result.ifPresent(item -> {
+            String url = item.getPublicUrl();
+            if (url == null || url.isBlank()) {
+                showAlert("No URL", "This image does not have a public URL. "
+                        + "Re-upload it in the Image Library tab.");
+                return;
+            }
+            String alt = escapeAttr(item.getFileName());
+            String html = "<img src='" + escapeAttr(url) + "' alt='" + alt
+                        + "' class='resizable' style='max-width:100%;height:auto;display:block;'/>&#8203;";
+            editorView.getEngine().executeScript(
+                "document.execCommand('insertHTML', false, " + jsStr(html) + ")");
+            log.info("Inserted image from library: {} ({})", item.getFileName(), url);
+        });
+    }
+
+    /**
+     * Opens a FileChooser to insert a local image as base64 (original behaviour).
+     */
+    private void insertImageFromComputer() {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Insert Image");
         chooser.getExtensionFilters().add(
@@ -579,7 +628,7 @@ public class TemplateStudioController implements Initializable {
         boolean nowVisible = !aiPanel.isVisible();
         aiPanel.setVisible(nowVisible);
         aiPanel.setManaged(nowVisible);
-        aiToggleBtn.setText(nowVisible ? "\u2715 Close AI" : "\u2728 AI Assist");
+        aiToggleBtn.setText(nowVisible ? "Close AI" : "AI Assist");
     }
 
     @FXML
