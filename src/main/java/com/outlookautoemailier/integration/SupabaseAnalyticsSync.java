@@ -337,20 +337,63 @@ public final class SupabaseAnalyticsSync {
                         .replace("Z", "").substring(0, 19);
                 LocalDateTime openedAt = LocalDateTime.parse(normalized);
 
+                // Set openedAt on the SentEmailRecord (only the first time — filter ensures idempotency)
                 store.getAll().stream()
                         .filter(r -> trackingId.equals(r.getTrackingId()))
                         .filter(r -> r.getOpenedAt() == null)
                         .findFirst()
-                        .ifPresent(r -> {
-                            r.setOpenedAt(openedAt);
-                            if (!rawBatchId.isBlank() && !"null".equals(rawBatchId)) {
-                                batchStore.incrementOpens(rawBatchId);
-                            }
-                        });
+                        .ifPresent(r -> r.setOpenedAt(openedAt));
             } catch (Exception e) {
                 log.debug("Could not parse open event: {}", e.getMessage());
             }
         }
+
+        // BUG FIX: Compute unique open counts from SentEmailRecords using SET (idempotent)
+        // instead of INCREMENT (additive). This prevents open count inflation on every sync cycle.
+        Map<String, Long> uniqueOpensPerBatch = new HashMap<>();
+        for (SentEmailRecord r : store.getAll()) {
+            if (r.getOpenedAt() != null && r.getBatchId() != null && !r.getBatchId().isBlank()) {
+                uniqueOpensPerBatch.merge(r.getBatchId(), 1L, Long::sum);
+            }
+        }
+        uniqueOpensPerBatch.forEach((batchId, count) ->
+                batchStore.setUniqueOpenCount(batchId, count.intValue()));
+    }
+
+    /**
+     * Future-proofing: Fetches unique open counts from the {@code email_opens} Supabase
+     * table (if it exists) and SETs them on local batches. Falls back silently if the
+     * table does not exist yet.
+     */
+    public static CompletableFuture<Void> syncUniqueOpenCountsAsync() {
+        String key = serviceRoleKey();
+        if (key == null) return CompletableFuture.completedFuture(null);
+        return CompletableFuture.runAsync(() -> {
+            try {
+                HttpClient client = HttpClient.newHttpClient();
+                HttpRequest req = HttpRequest.newBuilder()
+                        .uri(URI.create(SUPABASE_URL + "/rest/v1/email_opens?select=batch_id,tracking_id&limit=100000"))
+                        .header("apikey", key)
+                        .header("Authorization", "Bearer " + key)
+                        .GET().build();
+                HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                if (resp.statusCode() == 200) {
+                    // Count distinct tracking_ids per batch_id
+                    Map<String, Set<String>> batchToOpeners = new HashMap<>();
+                    Pattern pat = Pattern.compile("\"batch_id\"\\s*:\\s*\"([^\"]+)\"[^}]*\"tracking_id\"\\s*:\\s*\"([^\"]+)\"");
+                    Matcher mat = pat.matcher(resp.body());
+                    while (mat.find()) {
+                        batchToOpeners.computeIfAbsent(mat.group(1), k -> new HashSet<>()).add(mat.group(2));
+                    }
+                    BatchStore batchStore = BatchStore.getInstance();
+                    batchToOpeners.forEach((batchId, openers) -> batchStore.setUniqueOpenCount(batchId, openers.size()));
+                    log.info("Synced unique open counts for {} batches from email_opens.", batchToOpeners.size());
+                }
+                // If 404 (table doesn't exist yet), silently ignore
+            } catch (Exception e) {
+                log.debug("syncUniqueOpenCounts skipped (email_opens table may not exist): {}", e.getMessage());
+            }
+        });
     }
 
     private static Map<String, Integer> aggregateLinkClickCounts(String json) {

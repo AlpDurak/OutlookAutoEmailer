@@ -97,6 +97,11 @@ public class BatchStore {
         getById(batchId).ifPresent(b -> { b.setLinkClickCount(count); saveToDisk(); });
     }
 
+    /** Sets the unique open count for a batch (idempotent — no inflation). */
+    public void setUniqueOpenCount(String batchId, int count) {
+        getById(batchId).ifPresent(b -> { b.setUniqueOpenCount(count); saveToDisk(); });
+    }
+
     // ── Queries ───────────────────────────────────────────────────────────────
 
     /** Returns an unmodifiable snapshot, newest-first. */
@@ -127,6 +132,7 @@ public class BatchStore {
                 n.put("failedCount",     b.getFailedCount());
                 n.put("openCount",       b.getOpenCount());
                 n.put("linkClickCount",  b.getLinkClickCount());
+                n.put("uniqueOpenCount", b.getUniqueOpenCount());
                 arr.add(n);
             }
             MAPPER.writerWithDefaultPrettyPrinter().writeValue(storePath.toFile(), arr);
@@ -153,7 +159,8 @@ public class BatchStore {
                         n.path("sentCount").asInt(0),
                         n.path("failedCount").asInt(0),
                         n.path("openCount").asInt(0),
-                        n.path("linkClickCount").asInt(0)
+                        n.path("linkClickCount").asInt(0),
+                        n.path("uniqueOpenCount").asInt(0)
                 ));
             } catch (Exception e) {
                 log.warn("Skipping malformed batch entry: {}", e.getMessage());

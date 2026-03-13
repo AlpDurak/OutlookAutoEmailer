@@ -12,38 +12,69 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<VBox spacing="14"
+<VBox spacing="0"
       xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.outlookautoemailier.ui.AnalyticsController">
 
     <padding>
-        <Insets top="20" right="20" bottom="20" left="20"/>
+        <Insets top="28" right="28" bottom="24" left="28"/>
     </padding>
 
-    <Label text="Email Analytics" styleClass="page-title"/>
+    <!-- ── Page heading ─────────────────────────────────────────────────── -->
+    <VBox spacing="4">
+        <Label text="Email Analytics" styleClass="page-title"/>
+        <Label text="Campaign performance and delivery statistics."
+               styleClass="help-label"/>
+    </VBox>
 
-    <!-- ── Summary stat cards ──────────────────────────────────────────────── -->
-    <HBox spacing="16">
-        <VBox styleClass="stat-card" alignment="CENTER" minWidth="130">
+    <Region prefHeight="20"/>
+    <Separator/>
+    <Region prefHeight="20"/>
+
+    <!-- ── Primary stat cards ───────────────────────────────────────────── -->
+    <HBox spacing="12">
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="160">
+            <Label fx:id="healthScoreLabel" text="--" styleClass="stat-count"/>
+            <Label fx:id="healthScoreTierLabel" text="Health Score" styleClass="stat-label"/>
+        </VBox>
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="120">
+            <Label fx:id="totalSentLabel" text="0" styleClass="stat-count"
+                   style="-fx-text-fill:#2563eb;"/>
+            <Label text="Emails Sent" styleClass="stat-label"/>
+        </VBox>
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="120">
+            <Label fx:id="totalDeliveredLabel" text="0" styleClass="stat-count"
+                   style="-fx-text-fill:#16a34a;"/>
+            <Label text="Delivered" styleClass="stat-label"/>
+        </VBox>
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="120">
             <Label fx:id="totalBatchesLabel" text="0" styleClass="stat-count"/>
             <Label text="Campaigns" styleClass="stat-label"/>
         </VBox>
-        <VBox styleClass="stat-card" alignment="CENTER" minWidth="130">
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="120">
             <Label fx:id="avgOpenRateLabel" text="0.0%" styleClass="stat-count"/>
-            <Label text="Avg Open Rate" styleClass="stat-label"/>
+            <Label text="Avg Unique Open Rate" styleClass="stat-label"/>
         </VBox>
-        <VBox styleClass="stat-card" alignment="CENTER" minWidth="130">
-            <Label fx:id="totalSentLabel" text="0" styleClass="stat-count"/>
-            <Label text="Emails Sent" styleClass="stat-label"/>
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="120">
+            <Label fx:id="avgCtorLabel" text="0.0%" styleClass="stat-count"
+                   style="-fx-text-fill:#0d9488;"/>
+            <Label text="Avg CTOR" styleClass="stat-label"/>
         </VBox>
-        <VBox styleClass="stat-card" alignment="CENTER" minWidth="130">
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="120">
             <Label fx:id="totalFailedLabel" text="0" styleClass="stat-count"
-                   style="-fx-text-fill:#ef4444;"/>
+                   style="-fx-text-fill:#dc2626;"/>
             <Label text="Failed Sends" styleClass="stat-label"/>
         </VBox>
-        <VBox styleClass="stat-card" alignment="CENTER" minWidth="130">
+    </HBox>
+
+    <Region prefHeight="12"/>
+
+    <!-- ── Suppression stat cards ────────────────────────────────────────── -->
+    <HBox spacing="12">
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="120">
             <Label fx:id="totalSuppressedLabel" text="0" styleClass="stat-count"/>
             <Label text="Total Suppressed" styleClass="stat-label"/>
         </VBox>
@@ -54,77 +85,144 @@
         </VBox>
     </HBox>
 
-    <!-- ── Reachability stat cards ─────────────────────────────────────────── -->
-    <HBox spacing="16">
-        <VBox styleClass="stat-card" alignment="CENTER" minWidth="150">
-            <Label fx:id="reachableCountLabel" text="0" styleClass="stat-count,stat-count-reachable"/>
+    <Region prefHeight="12"/>
+
+    <!-- ── Reachability stat cards ──────────────────────────────────────── -->
+    <HBox spacing="12">
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="140">
+            <Label fx:id="reachableCountLabel" text="0"
+                   styleClass="stat-count,stat-count-reachable"/>
             <Label text="Reachable" styleClass="stat-label"/>
         </VBox>
-        <VBox styleClass="stat-card" alignment="CENTER" minWidth="150">
-            <Label fx:id="atRiskCountLabel" text="0" styleClass="stat-count,stat-count-at-risk"/>
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="140">
+            <Label fx:id="atRiskCountLabel" text="0"
+                   styleClass="stat-count,stat-count-at-risk"/>
             <Label text="At Risk" styleClass="stat-label"/>
         </VBox>
-        <VBox styleClass="stat-card" alignment="CENTER" minWidth="150">
-            <Label fx:id="unreachableCountLabel" text="0" styleClass="stat-count,stat-count-unreachable"/>
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="140">
+            <Label fx:id="unreachableCountLabel" text="0"
+                   styleClass="stat-count,stat-count-unreachable"/>
             <Label text="Unreachable" styleClass="stat-label"/>
         </VBox>
     </HBox>
 
-    <!-- ── Toolbar ─────────────────────────────────────────────────────────── -->
-    <HBox spacing="10" alignment="CENTER_LEFT">
-        <Button fx:id="aiInsightsButton" text="AI Insights" onAction="#onAiInsights"
-                styleClass="ai-toggle-btn"/>
-        <ProgressIndicator fx:id="aiSpinner" prefWidth="20" prefHeight="20"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Button text="Sync Opens" onAction="#onSyncOpens"/>
-        <Button text="Refresh"    onAction="#onRefresh"/>
+    <Region prefHeight="12"/>
+
+    <!-- ── Engagement tier cards ─────────────────────────────────────────── -->
+    <Label text="RECIPIENT ENGAGEMENT TIERS" styleClass="section-header"/>
+    <Region prefHeight="4"/>
+    <HBox spacing="12">
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="130">
+            <Label fx:id="championsCountLabel" text="0" styleClass="stat-count"
+                   style="-fx-text-fill:#16a34a;"/>
+            <Label text="Champions" styleClass="stat-label"/>
+        </VBox>
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="130">
+            <Label fx:id="activeCountLabel" text="0" styleClass="stat-count"
+                   style="-fx-text-fill:#0d9488;"/>
+            <Label text="Active" styleClass="stat-label"/>
+        </VBox>
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="130">
+            <Label fx:id="atRiskEngagementLabel" text="0" styleClass="stat-count"
+                   style="-fx-text-fill:#d97706;"/>
+            <Label text="At-Risk" styleClass="stat-label"/>
+        </VBox>
+        <VBox styleClass="stat-card" alignment="CENTER" minWidth="130">
+            <Label fx:id="dormantCountLabel" text="0" styleClass="stat-count"
+                   style="-fx-text-fill:#dc2626;"/>
+            <Label text="Dormant" styleClass="stat-label"/>
+        </VBox>
     </HBox>
 
-    <!-- ── AI Insights panel ───────────────────────────────────────────────── -->
+    <Region prefHeight="16"/>
+
+    <!-- ── Toolbar ──────────────────────────────────────────────────────── -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button fx:id="aiInsightsButton" text="AI Insights" onAction="#onAiInsights"
+                styleClass="ai-toggle-btn">
+            <graphic><FontIcon iconLiteral="fas-magic" iconSize="14" style="-fx-icon-color: #ffffff;"/></graphic>
+        </Button>
+        <ProgressIndicator fx:id="aiSpinner" prefWidth="20" prefHeight="20"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Subject Analysis" onAction="#onSubjectAnalysis" styleClass="secondary-button">
+            <graphic><FontIcon iconLiteral="fas-heading" iconSize="14"/></graphic>
+        </Button>
+        <Button text="Link Leaderboard" onAction="#onLinkLeaderboard" styleClass="secondary-button">
+            <graphic><FontIcon iconLiteral="fas-link" iconSize="14"/></graphic>
+        </Button>
+        <Button text="Sync Opens" onAction="#onSyncOpens" styleClass="secondary-button">
+            <graphic><FontIcon iconLiteral="fas-sync-alt" iconSize="14"/></graphic>
+        </Button>
+        <Button text="Refresh" onAction="#onRefresh" styleClass="secondary-button">
+            <graphic><FontIcon iconLiteral="fas-sync-alt" iconSize="14"/></graphic>
+        </Button>
+    </HBox>
+
+    <Region prefHeight="12"/>
+
+    <!-- ── AI Insights panel ────────────────────────────────────────────── -->
     <VBox fx:id="aiInsightsPanel" styleClass="ai-insights-panel" spacing="8">
-        <TextArea fx:id="aiInsightsArea" prefRowCount="14" editable="false"
-                  wrapText="true" promptText="AI-generated campaign insights will appear here..."/>
+        <TextArea fx:id="aiInsightsArea" prefRowCount="12" editable="false"
+                  wrapText="true"
+                  promptText="AI-generated campaign insights will appear here..."/>
     </VBox>
 
-    <!-- ── Campaign batch table ────────────────────────────────────────────── -->
-    <TableView fx:id="batchTable" prefHeight="280">
+    <Region prefHeight="16"/>
+
+    <!-- ── Campaign batch table ─────────────────────────────────────────── -->
+    <Label text="CAMPAIGNS" styleClass="section-header"/>
+    <Region prefHeight="8"/>
+    <TableView fx:id="batchTable" prefHeight="260">
         <columns>
-            <TableColumn fx:id="batchNameColumn"     text="Campaign"    prefWidth="150"/>
-            <TableColumn fx:id="batchSubjectColumn"  text="Subject"     prefWidth="180"/>
-            <TableColumn fx:id="batchSentAtColumn"   text="Sent At"     prefWidth="130"/>
-            <TableColumn fx:id="batchTotalColumn"    text="Total"       prefWidth="55"/>
-            <TableColumn fx:id="batchSentColumn"     text="Delivered"   prefWidth="70"/>
-            <TableColumn fx:id="batchFailedColumn"   text="Failed"      prefWidth="55"/>
-            <TableColumn fx:id="batchOpensColumn"    text="Opens"       prefWidth="55"/>
-            <TableColumn fx:id="batchOpenRateColumn" text="Open Rate"   prefWidth="75"/>
-            <TableColumn fx:id="batchUnsubRateColumn" text="Unsub Rate" prefWidth="80"/>
+            <TableColumn fx:id="batchNameColumn"      text="Campaign"   prefWidth="150"/>
+            <TableColumn fx:id="batchSubjectColumn"   text="Subject"    prefWidth="170"/>
+            <TableColumn fx:id="batchSentAtColumn"    text="Sent At"    prefWidth="130"/>
+            <TableColumn fx:id="batchTotalColumn"     text="Total"      prefWidth="50"/>
+            <TableColumn fx:id="batchSentColumn"      text="Delivered"  prefWidth="65"/>
+            <TableColumn fx:id="batchFailedColumn"    text="Failed"     prefWidth="50"/>
+            <TableColumn fx:id="batchOpensColumn"     text="Uniq.Opens" prefWidth="72"/>
+            <TableColumn fx:id="batchOpenRateColumn"  text="Open Rate"  prefWidth="72"/>
+            <TableColumn fx:id="batchCtorColumn"      text="CTOR"       prefWidth="62"/>
+            <TableColumn fx:id="batchUnsubRateColumn" text="Unsub Rate" prefWidth="75"/>
         </columns>
         <placeholder>
-            <Label text="No campaigns sent yet."/>
+            <Label text="No campaigns sent yet." styleClass="help-label"/>
         </placeholder>
     </TableView>
 
-    <!-- ── Detail button ───────────────────────────────────────────────────── -->
     <HBox spacing="10" alignment="CENTER_RIGHT">
-        <Button text="View Campaign Details" onAction="#onViewDetails"/>
+        <Region prefHeight="8"/>
+        <Button text="View Campaign Details" onAction="#onViewDetails">
+            <graphic><FontIcon iconLiteral="fas-eye" iconSize="14"/></graphic>
+        </Button>
     </HBox>
 
-    <Separator/>
+    <Separator>
+        <VBox.margin><Insets top="16" bottom="16"/></VBox.margin>
+    </Separator>
 
-    <!-- ── ECharts panel (campaign open/click rates) ───────────────────────── -->
+    <!-- ── ECharts: campaign open/click rates ───────────────────────────── -->
+    <Label text="CAMPAIGN PERFORMANCE" styleClass="section-header"/>
+    <Region prefHeight="8"/>
     <WebView fx:id="chartView" prefHeight="240" VBox.vgrow="NEVER"/>
 
-    <Separator/>
+    <Separator>
+        <VBox.margin><Insets top="16" bottom="16"/></VBox.margin>
+    </Separator>
 
-    <!-- ── Hourly distribution chart (send count + success rate overlay) ─── -->
-    <Label text="Hourly Send Distribution" styleClass="section-title"/>
+    <!-- ── Hourly distribution ──────────────────────────────────────────── -->
+    <Label text="HOURLY SEND DISTRIBUTION" styleClass="section-header"/>
+    <Region prefHeight="8"/>
     <WebView fx:id="hourlyChartView" prefHeight="260" VBox.vgrow="NEVER"/>
     <Label fx:id="sendTimeAdvice" text="" styleClass="advice-label"/>
 
-    <Separator/>
+    <Separator>
+        <VBox.margin><Insets top="16" bottom="16"/></VBox.margin>
+    </Separator>
 
-    <!-- ── Unsubscribe weekly trend chart ──────────────────────────────────── -->
-    <Label text="Weekly Unsubscribe Trend" styleClass="section-title"/>
+    <!-- ── Weekly unsubscribe trend ─────────────────────────────────────── -->
+    <Label text="WEEKLY UNSUBSCRIBE TREND" styleClass="section-header"/>
+    <Region prefHeight="8"/>
     <WebView fx:id="unsubChartView" prefHeight="240" VBox.vgrow="NEVER"/>
 
 </VBox>

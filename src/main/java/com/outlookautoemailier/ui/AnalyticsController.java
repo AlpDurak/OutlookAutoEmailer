@@ -3,11 +3,13 @@ package com.outlookautoemailier.ui;
 import com.outlookautoemailier.AppContext;
 import com.outlookautoemailier.analytics.BatchStore;
 import com.outlookautoemailier.analytics.ContactReachabilityScorer;
+import com.outlookautoemailier.analytics.DeliverabilityHealthScorer;
 import com.outlookautoemailier.analytics.EmailBatch;
 import com.outlookautoemailier.analytics.LinkClickRecord;
 import com.outlookautoemailier.analytics.SendTimeAnalyser;
 import com.outlookautoemailier.analytics.SentEmailRecord;
 import com.outlookautoemailier.analytics.SentEmailStore;
+import com.outlookautoemailier.analytics.SubjectLineAnalyser;
 import com.outlookautoemailier.analytics.UnsubscribeAnalyser;
 import com.outlookautoemailier.integration.GeminiEmailAgent;
 import com.outlookautoemailier.integration.SupabaseAnalyticsSync;
@@ -35,9 +37,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class AnalyticsController implements Initializable {
 
@@ -49,14 +49,26 @@ public class AnalyticsController implements Initializable {
     @FXML private Label totalBatchesLabel;
     @FXML private Label avgOpenRateLabel;
     @FXML private Label totalSentLabel;
+    @FXML private Label totalDeliveredLabel;
     @FXML private Label totalFailedLabel;
     @FXML private Label totalSuppressedLabel;
     @FXML private Label suppressedThisMonthLabel;
+
+    // ── Deliverability health ────────────────────────────────────────────────
+    @FXML private Label healthScoreLabel;
+    @FXML private Label healthScoreTierLabel;
+    @FXML private Label avgCtorLabel;
 
     // ── Reachability stat labels ─────────────────────────────────────────────
     @FXML private Label reachableCountLabel;
     @FXML private Label atRiskCountLabel;
     @FXML private Label unreachableCountLabel;
+
+    // ── Engagement tier labels ───────────────────────────────────────────────
+    @FXML private Label championsCountLabel;
+    @FXML private Label activeCountLabel;
+    @FXML private Label atRiskEngagementLabel;
+    @FXML private Label dormantCountLabel;
 
     // ── AI Insights ───────────────────────────────────────────────────────────
     @FXML private Button aiInsightsButton;
@@ -82,6 +94,7 @@ public class AnalyticsController implements Initializable {
     @FXML private TableColumn<EmailBatch, String> batchFailedColumn;
     @FXML private TableColumn<EmailBatch, String> batchOpensColumn;
     @FXML private TableColumn<EmailBatch, String> batchOpenRateColumn;
+    @FXML private TableColumn<EmailBatch, String> batchCtorColumn;
 
     // ── Charts ────────────────────────────────────────────────────────────────
     @FXML private WebView chartView;
@@ -110,12 +123,12 @@ public class AnalyticsController implements Initializable {
             <div id="chart"></div>
             <script>
             var chart = echarts.init(document.getElementById('chart'));
-            function updateChart(categories, openData, clickData) {
+            function updateChart(categories, openData, clickData, ctorData) {
               chart.setOption({
                 backgroundColor: '#ffffff',
                 tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
                 legend: {
-                  data: ['Open Rate %', 'Click Rate %'],
+                  data: ['Unique Open Rate %', 'Click Rate %', 'CTOR %'],
                   textStyle: { color: '#6b7280', fontSize: 11 },
                   top: 4
                 },
@@ -136,10 +149,10 @@ public class AnalyticsController implements Initializable {
                 },
                 series: [
                   {
-                    name: 'Open Rate %',
+                    name: 'Unique Open Rate %',
                     type: 'bar',
                     data: openData,
-                    barMaxWidth: 36,
+                    barMaxWidth: 28,
                     itemStyle: { color: '#2563eb', borderRadius: [4,4,0,0] },
                     emphasis: { itemStyle: { color: '#1d4ed8' } }
                   },
@@ -147,9 +160,19 @@ public class AnalyticsController implements Initializable {
                     name: 'Click Rate %',
                     type: 'bar',
                     data: clickData,
-                    barMaxWidth: 36,
+                    barMaxWidth: 28,
                     itemStyle: { color: '#7c3aed', borderRadius: [4,4,0,0] },
                     emphasis: { itemStyle: { color: '#6d28d9' } }
+                  },
+                  {
+                    name: 'CTOR %',
+                    type: 'line',
+                    data: ctorData,
+                    smooth: true,
+                    symbol: 'circle',
+                    symbolSize: 6,
+                    lineStyle: { color: '#0d9488', width: 2 },
+                    itemStyle: { color: '#0d9488' }
                   }
                 ]
               });
@@ -343,6 +366,8 @@ public class AnalyticsController implements Initializable {
         SupabaseAnalyticsSync.syncBatchesFromSupabaseAsync()
                 .thenRun(() -> javafx.application.Platform.runLater(this::refresh));
         syncLinkClickCounts();
+        SupabaseAnalyticsSync.syncUniqueOpenCountsAsync()
+                .thenRun(() -> javafx.application.Platform.runLater(this::refresh));
         refresh();
 
         // Auto-refresh local data every 5 seconds
@@ -355,6 +380,8 @@ public class AnalyticsController implements Initializable {
         Timeline openSync = new Timeline(
                 new KeyFrame(Duration.seconds(60), e -> {
                     SupabaseAnalyticsSync.syncOpensAsync()
+                            .thenRun(() -> javafx.application.Platform.runLater(this::refresh));
+                    SupabaseAnalyticsSync.syncUniqueOpenCountsAsync()
                             .thenRun(() -> javafx.application.Platform.runLater(this::refresh));
                     syncLinkClickCounts();
                 }));
@@ -380,9 +407,20 @@ public class AnalyticsController implements Initializable {
         batchFailedColumn.setCellValueFactory(cd ->
                 new SimpleStringProperty(String.valueOf(cd.getValue().getFailedCount())));
         batchOpensColumn.setCellValueFactory(cd ->
-                new SimpleStringProperty(String.valueOf(cd.getValue().getOpenCount())));
+                new SimpleStringProperty(String.valueOf(cd.getValue().getUniqueOpenCount())));
         batchOpenRateColumn.setCellValueFactory(cd ->
-                new SimpleStringProperty(String.format("%.1f%%", cd.getValue().openRatePct())));
+                new SimpleStringProperty(String.format("%.1f%%", cd.getValue().uniqueOpenRatePct())));
+
+        batchCtorColumn.setCellValueFactory(cd ->
+                new SimpleStringProperty(String.format("%.1f%%", cd.getValue().ctorPct())));
+        batchCtorColumn.setCellFactory(col -> new TableCell<>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item);
+                setStyle("-fx-text-fill:#0d9488;-fx-font-weight:bold;");
+            }
+        });
 
         batchFailedColumn.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(String item, boolean empty) {
@@ -473,6 +511,148 @@ public class AnalyticsController implements Initializable {
         showBatchDetails(selected);
     }
 
+    @FXML
+    private void onSubjectAnalysis() {
+        List<EmailBatch> batches = BatchStore.getInstance().getAll();
+        List<SubjectLineAnalyser.FeatureInsight> insights = SubjectLineAnalyser.analyse(batches);
+
+        if (insights.isEmpty()) {
+            new Alert(Alert.AlertType.INFORMATION,
+                    "Not enough data for subject line analysis.\n\n" +
+                    "At least 15 campaigns with delivered emails are needed.")
+                    .showAndWait();
+            return;
+        }
+
+        TableView<SubjectLineAnalyser.FeatureInsight> table = new TableView<>();
+        table.setPrefHeight(320);
+
+        TableColumn<SubjectLineAnalyser.FeatureInsight, String> colFeature =
+                makeCol("Feature", 200, SubjectLineAnalyser.FeatureInsight::getFeatureName);
+        TableColumn<SubjectLineAnalyser.FeatureInsight, String> colWith =
+                makeCol("With (#)", 65, f -> String.valueOf(f.getWithCount()));
+        TableColumn<SubjectLineAnalyser.FeatureInsight, String> colOpenWith =
+                makeCol("Avg Open% With", 110, f -> String.format("%.1f%%", f.getAvgOpenRateWith()));
+        TableColumn<SubjectLineAnalyser.FeatureInsight, String> colWithout =
+                makeCol("Without (#)", 75, f -> String.valueOf(f.getWithoutCount()));
+        TableColumn<SubjectLineAnalyser.FeatureInsight, String> colOpenWithout =
+                makeCol("Avg Open% Without", 120, f -> String.format("%.1f%%", f.getAvgOpenRateWithout()));
+        TableColumn<SubjectLineAnalyser.FeatureInsight, String> colLift =
+                makeCol("Lift", 70, f -> String.format("%+.1f%%", f.getLift()));
+
+        colLift.setCellFactory(col -> new TableCell<>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item);
+                try {
+                    double val = Double.parseDouble(item.replace("%", "").replace("+", ""));
+                    setStyle(val > 0 ? "-fx-text-fill:#16a34a;-fx-font-weight:bold;"
+                                     : val < 0 ? "-fx-text-fill:#dc2626;-fx-font-weight:bold;" : "");
+                } catch (NumberFormatException ignored) { setStyle(""); }
+            }
+        });
+
+        table.getColumns().addAll(colFeature, colWith, colOpenWith, colWithout, colOpenWithout, colLift);
+        table.setItems(FXCollections.observableArrayList(insights));
+
+        VBox content = new VBox(8,
+                new Label("Subject line features correlated with unique open rates:"),
+                table);
+        content.setPrefWidth(680);
+
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Subject Line Analysis");
+        dialog.setHeaderText(null);
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        dialog.getDialogPane().setPrefWidth(700);
+        dialog.showAndWait();
+    }
+
+    @FXML
+    private void onLinkLeaderboard() {
+        List<EmailBatch> batches = BatchStore.getInstance().getAll();
+        if (batches.isEmpty()) {
+            new Alert(Alert.AlertType.INFORMATION, "No campaigns to analyse.")
+                    .showAndWait();
+            return;
+        }
+
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Link Performance Leaderboard");
+        dialog.setHeaderText(null);
+
+        Label loadingLabel = new Label("Loading link click data...");
+        VBox content = new VBox(8, loadingLabel);
+        content.setPrefWidth(680);
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        dialog.getDialogPane().setPrefWidth(700);
+
+        javafx.concurrent.Task<List<LinkLeaderboardEntry>> task = new javafx.concurrent.Task<>() {
+            @Override protected List<LinkLeaderboardEntry> call() {
+                Map<String, LinkLeaderboardEntry> urlMap = new LinkedHashMap<>();
+                for (EmailBatch batch : batches) {
+                    List<LinkClickRecord> clicks =
+                            SupabaseAnalyticsSync.fetchLinkClicksForBatch(batch.getId());
+                    for (LinkClickRecord click : clicks) {
+                        LinkLeaderboardEntry entry = urlMap.computeIfAbsent(
+                                click.getOriginalUrl(), u -> new LinkLeaderboardEntry(u));
+                        entry.totalClicks    += click.getClickCount();
+                        entry.uniqueClickers += click.getUniqueClickerCount();
+                        entry.campaignCount++;
+                    }
+                }
+                List<LinkLeaderboardEntry> result = new ArrayList<>(urlMap.values());
+                result.sort((a, b) -> Integer.compare(b.totalClicks, a.totalClicks));
+                return result;
+            }
+        };
+        task.setOnSucceeded(e -> {
+            List<LinkLeaderboardEntry> entries = task.getValue();
+            content.getChildren().clear();
+            if (entries.isEmpty()) {
+                content.getChildren().add(new Label("No link click data found."));
+                return;
+            }
+            TableView<LinkLeaderboardEntry> table = new TableView<>();
+            table.setPrefHeight(360);
+            TableColumn<LinkLeaderboardEntry, String> colUrl =
+                    makeCol("URL", 320, entry -> {
+                        String url = entry.url;
+                        return url.length() > 60 ? url.substring(0, 57) + "..." : url;
+                    });
+            TableColumn<LinkLeaderboardEntry, String> colClicks =
+                    makeCol("Total Clicks", 90, entry -> String.valueOf(entry.totalClicks));
+            TableColumn<LinkLeaderboardEntry, String> colUnique =
+                    makeCol("Unique Clickers", 110, entry -> String.valueOf(entry.uniqueClickers));
+            TableColumn<LinkLeaderboardEntry, String> colCampaigns =
+                    makeCol("In N Campaigns", 100, entry -> String.valueOf(entry.campaignCount));
+            table.getColumns().addAll(colUrl, colClicks, colUnique, colCampaigns);
+            table.setItems(FXCollections.observableArrayList(entries));
+            content.getChildren().add(new Label("Links ranked by total clicks across all campaigns:"));
+            content.getChildren().add(table);
+        });
+        task.setOnFailed(e -> {
+            content.getChildren().clear();
+            content.getChildren().add(new Label("Failed to load link click data."));
+        });
+        Thread t = new Thread(task);
+        t.setDaemon(true);
+        t.start();
+        dialog.showAndWait();
+    }
+
+    /** Lightweight holder for link leaderboard aggregation. */
+    private static class LinkLeaderboardEntry {
+        final String url;
+        int totalClicks;
+        int uniqueClickers;
+        int campaignCount;
+        LinkLeaderboardEntry(String url) { this.url = url; }
+    }
+
     // ── Refresh ───────────────────────────────────────────────────────────────
 
     public void refresh() {
@@ -489,15 +669,31 @@ public class AnalyticsController implements Initializable {
 
         long totalSent   = batches.stream().mapToInt(EmailBatch::getSentCount).sum();
         long totalFailed = batches.stream().mapToInt(EmailBatch::getFailedCount).sum();
+        long totalDelivered = totalSent;
         double avgOpen   = batches.stream()
                 .filter(b -> b.getSentCount() > 0)
-                .mapToDouble(EmailBatch::openRatePct)
+                .mapToDouble(EmailBatch::uniqueOpenRatePct)
                 .average().orElse(0.0);
 
         totalBatchesLabel.setText(String.valueOf(batches.size()));
         avgOpenRateLabel.setText(String.format("%.1f%%", avgOpen));
         totalSentLabel.setText(String.valueOf(totalSent));
+        totalDeliveredLabel.setText(String.valueOf(totalDelivered));
         totalFailedLabel.setText(String.valueOf(totalFailed));
+
+        // Deliverability health score
+        int healthScore = DeliverabilityHealthScorer.compute(batches, unsubData.size());
+        healthScoreLabel.setText(healthScore + "/100");
+        healthScoreLabel.setStyle("-fx-text-fill:" + DeliverabilityHealthScorer.color(healthScore) + ";");
+        healthScoreTierLabel.setText(DeliverabilityHealthScorer.label(healthScore));
+        healthScoreTierLabel.setStyle("-fx-text-fill:" + DeliverabilityHealthScorer.color(healthScore) + ";");
+
+        // Avg CTOR
+        double avgCtor = batches.stream()
+                .filter(b -> b.getUniqueOpenCount() > 0)
+                .mapToDouble(EmailBatch::ctorPct)
+                .average().orElse(0.0);
+        avgCtorLabel.setText(String.format("%.1f%%", avgCtor));
 
         // Unsub stats
         totalSuppressedLabel.setText(String.valueOf(unsubData.size()));
@@ -512,9 +708,75 @@ public class AnalyticsController implements Initializable {
         atRiskCountLabel.setText(String.valueOf(categories[1]));
         unreachableCountLabel.setText(String.valueOf(categories[2]));
 
+        // Engagement tiers
+        computeEngagementTiers(allSends, batches);
+
         updateChart(batches);
         refreshHourlyChart();
         refreshUnsubChart(unsubData);
+    }
+
+    /**
+     * Computes engagement tiers by grouping all sent records by recipient email.
+     * <ul>
+     *   <li><b>Champion</b> -- opened AND was in a batch with link clicks</li>
+     *   <li><b>Active</b> -- opened but no click attribution</li>
+     *   <li><b>At-Risk</b> -- sent to but never opened (1-2 campaigns)</li>
+     *   <li><b>Dormant</b> -- sent to 3+ times and never opened</li>
+     * </ul>
+     */
+    private void computeEngagementTiers(List<SentEmailRecord> allSends, List<EmailBatch> batches) {
+        // Group by recipient email
+        Map<String, List<SentEmailRecord>> byRecipient = new HashMap<>();
+        for (SentEmailRecord r : allSends) {
+            if (r.getRecipientEmail() == null) continue;
+            byRecipient.computeIfAbsent(r.getRecipientEmail().toLowerCase(Locale.ROOT),
+                    k -> new ArrayList<>()).add(r);
+        }
+
+        // Collect batch IDs that have link clicks > 0
+        Set<String> batchesWithClicks = new HashSet<>();
+        for (EmailBatch b : batches) {
+            if (b.getLinkClickCount() > 0) {
+                batchesWithClicks.add(b.getId());
+            }
+        }
+
+        int champions = 0, active = 0, atRisk = 0, dormant = 0;
+
+        for (Map.Entry<String, List<SentEmailRecord>> entry : byRecipient.entrySet()) {
+            List<SentEmailRecord> records = entry.getValue();
+            boolean hasOpened = records.stream().anyMatch(r -> r.getOpenedAt() != null);
+
+            if (hasOpened) {
+                // Check if any opened campaign also had clicks
+                boolean hasClickBatch = records.stream()
+                        .filter(r -> r.getOpenedAt() != null && r.getBatchId() != null)
+                        .anyMatch(r -> batchesWithClicks.contains(r.getBatchId()));
+                if (hasClickBatch) {
+                    champions++;
+                } else {
+                    active++;
+                }
+            } else {
+                // Never opened -- how many distinct campaigns?
+                long distinctCampaigns = records.stream()
+                        .map(SentEmailRecord::getBatchId)
+                        .filter(Objects::nonNull)
+                        .distinct()
+                        .count();
+                if (distinctCampaigns >= 3) {
+                    dormant++;
+                } else {
+                    atRisk++;
+                }
+            }
+        }
+
+        championsCountLabel.setText(String.valueOf(champions));
+        activeCountLabel.setText(String.valueOf(active));
+        atRiskEngagementLabel.setText(String.valueOf(atRisk));
+        dormantCountLabel.setText(String.valueOf(dormant));
     }
 
     /** Fetches per-batch unique-clicker counts from Supabase and updates BatchStore. */
@@ -555,20 +817,24 @@ public class AnalyticsController implements Initializable {
         StringBuilder cats   = new StringBuilder("[");
         StringBuilder opens  = new StringBuilder("[");
         StringBuilder clicks = new StringBuilder("[");
+        StringBuilder ctors  = new StringBuilder("[");
         for (int i = from; i < batches.size(); i++) {
             EmailBatch b = batches.get(i);
             String label = b.getBatchName().length() > 14
                     ? b.getBatchName().substring(0, 11) + "\u2026"
                     : b.getBatchName();
-            if (i > from) { cats.append(","); opens.append(","); clicks.append(","); }
+            if (i > from) {
+                cats.append(","); opens.append(","); clicks.append(","); ctors.append(",");
+            }
             cats.append("'").append(label.replace("'", "\\'")).append("'");
-            opens.append(String.format("%.1f", b.openRatePct()));
+            opens.append(String.format("%.1f", b.uniqueOpenRatePct()));
             clicks.append(String.format("%.1f", b.linkClickRatePct()));
+            ctors.append(String.format("%.1f", b.ctorPct()));
         }
-        cats.append("]"); opens.append("]"); clicks.append("]");
+        cats.append("]"); opens.append("]"); clicks.append("]"); ctors.append("]");
         try {
             chartView.getEngine().executeScript(
-                    "updateChart(" + cats + "," + opens + "," + clicks + ")");
+                    "updateChart(" + cats + "," + opens + "," + clicks + "," + ctors + ")");
         } catch (Exception e) {
             log.debug("Campaign chart script not ready yet, will retry on next refresh cycle");
         }
@@ -709,9 +975,10 @@ public class AnalyticsController implements Initializable {
                 bn.put("totalRecipients", b.getTotalRecipients());
                 bn.put("delivered", b.getSentCount());
                 bn.put("failed", b.getFailedCount());
-                bn.put("opens", b.getOpenCount());
-                bn.put("openRate", String.format("%.1f%%", b.openRatePct()));
+                bn.put("uniqueOpens", b.getUniqueOpenCount());
+                bn.put("openRate", String.format("%.1f%%", b.uniqueOpenRatePct()));
                 bn.put("clickRate", String.format("%.1f%%", b.linkClickRatePct()));
+                bn.put("ctor", String.format("%.1f%%", b.ctorPct()));
                 double unsubRate = cachedUnsubRates.getOrDefault(b.getId(), 0.0);
                 bn.put("unsubRate", String.format("%.1f%%", unsubRate));
             }

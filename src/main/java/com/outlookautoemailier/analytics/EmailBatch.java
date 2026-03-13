@@ -20,10 +20,11 @@ public class EmailBatch {
     private final int              totalRecipients;
 
     // Thread-safe mutable counters
-    private final AtomicInteger sentCount      = new AtomicInteger();
-    private final AtomicInteger failedCount    = new AtomicInteger();
-    private final AtomicInteger openCount      = new AtomicInteger();
-    private final AtomicInteger linkClickCount = new AtomicInteger();
+    private final AtomicInteger sentCount        = new AtomicInteger();
+    private final AtomicInteger failedCount      = new AtomicInteger();
+    private final AtomicInteger openCount        = new AtomicInteger();
+    private final AtomicInteger linkClickCount   = new AtomicInteger();
+    private final AtomicInteger uniqueOpenCount  = new AtomicInteger();
 
     /** New-batch constructor — all counters start at zero. */
     public EmailBatch(String id, String batchName, String subject,
@@ -53,6 +54,15 @@ public class EmailBatch {
         this.linkClickCount.set(linkClickCount);
     }
 
+    /** Full deserialisation constructor (all counters including uniqueOpenCount). */
+    public EmailBatch(String id, String batchName, String subject,
+                      LocalDateTime sentAt, int totalRecipients,
+                      int sentCount, int failedCount, int openCount,
+                      int linkClickCount, int uniqueOpenCount) {
+        this(id, batchName, subject, sentAt, totalRecipients, sentCount, failedCount, openCount, linkClickCount);
+        this.uniqueOpenCount.set(uniqueOpenCount);
+    }
+
     // ── Counter mutators ──────────────────────────────────────────────────────
 
     public void incrementSent()   { sentCount.incrementAndGet(); }
@@ -61,10 +71,11 @@ public class EmailBatch {
 
     /** Setters used by {@link com.outlookautoemailier.analytics.BatchStore#addOrMerge}
      *  to apply the higher value from Supabase without losing local live increments. */
-    public void setSentCount(int n)      { sentCount.set(n); }
-    public void setFailedCount(int n)    { failedCount.set(n); }
-    public void setOpenCount(int n)      { openCount.set(n); }
-    public void setLinkClickCount(int n) { linkClickCount.set(n); }
+    public void setSentCount(int n)       { sentCount.set(n); }
+    public void setFailedCount(int n)     { failedCount.set(n); }
+    public void setOpenCount(int n)       { openCount.set(n); }
+    public void setLinkClickCount(int n)  { linkClickCount.set(n); }
+    public void setUniqueOpenCount(int n) { uniqueOpenCount.set(n); }
 
     // ── Derived analytics metrics ─────────────────────────────────────────────
 
@@ -72,6 +83,18 @@ public class EmailBatch {
     public double openRatePct() {
         int delivered = sentCount.get();
         return delivered == 0 ? 0.0 : (openCount.get() * 100.0) / delivered;
+    }
+
+    /** Unique open rate — one count per distinct opener, not inflated by re-fetches (0–100). */
+    public double uniqueOpenRatePct() {
+        int delivered = sentCount.get();
+        return delivered == 0 ? 0.0 : (uniqueOpenCount.get() * 100.0) / delivered;
+    }
+
+    /** Click-To-Open Rate (industry standard): clicks as % of unique openers (0–100). */
+    public double ctorPct() {
+        int openers = uniqueOpenCount.get();
+        return openers == 0 ? 0.0 : (linkClickCount.get() * 100.0) / openers;
     }
 
     /** Link click rate as a percentage of delivered emails (0–100). */
@@ -96,11 +119,13 @@ public class EmailBatch {
     public int            getFailedCount()     { return failedCount.get(); }
     public int            getOpenCount()       { return openCount.get(); }
     public int            getLinkClickCount()  { return linkClickCount.get(); }
+    public int            getUniqueOpenCount() { return uniqueOpenCount.get(); }
 
     @Override
     public String toString() {
         return "EmailBatch{id=" + id + ", name=" + batchName
                 + ", sent=" + sentCount + ", failed=" + failedCount
-                + ", opens=" + openCount + ", clicks=" + linkClickCount + "}";
+                + ", opens=" + openCount + ", uniqueOpens=" + uniqueOpenCount
+                + ", clicks=" + linkClickCount + "}";
     }
 }
